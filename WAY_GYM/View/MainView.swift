@@ -341,7 +341,7 @@ struct MapView: UIViewRepresentable {
     @Binding var currentLocation: CLLocationCoordinate2D?
     
     func makeUIView(context: Context) -> MKMapView {
-        let mapView = MKMapView()
+        let mapView = MKMapView() 
         mapView.delegate = context.coordinator
         mapView.showsUserLocation = false
         return mapView
