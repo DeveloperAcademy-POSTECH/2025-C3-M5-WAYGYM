@@ -9,7 +9,7 @@ extension RunRecordModel {
             totalDistance: 1263,
             caloriesBurned: 100,
             steps: 1600,
-            routeImage: "route_1.png",
+            routeImage: "route_1",
             capturedAreas: [[
                 CoordinatePair(latitude: 37.5665, longitude: 126.9780),
                 CoordinatePair(latitude: 37.5666, longitude: 126.9782),
@@ -25,7 +25,7 @@ extension RunRecordModel {
             totalDistance: 826,
             caloriesBurned: 70,
             steps: 1100,
-            routeImage: "route_2.png",
+            routeImage: "route_2",
             capturedAreas: []
         ),
         RunRecordModel(
@@ -35,7 +35,7 @@ extension RunRecordModel {
             totalDistance: 1546,
             caloriesBurned: 130,
             steps: 2000,
-            routeImage: "route_3.png",
+            routeImage: "route_3",
             capturedAreas: [[
                 CoordinatePair(latitude: 37.5655, longitude: 126.9770),
                 CoordinatePair(latitude: 37.5657, longitude: 126.9773),
@@ -52,7 +52,7 @@ extension RunRecordModel {
             totalDistance: 2275,
             caloriesBurned: 180,
             steps: 3000,
-            routeImage: "route_4.png",
+            routeImage: "route_4",
             capturedAreas: [
                 [
                     CoordinatePair(latitude: 37.5645, longitude: 126.9760),
@@ -76,7 +76,7 @@ extension RunRecordModel {
             totalDistance: 1275,
             caloriesBurned: 90,
             steps: 1400,
-            routeImage: "route_5.png",
+            routeImage: "route_5",
             capturedAreas: []
         ),
         RunRecordModel(
@@ -86,7 +86,7 @@ extension RunRecordModel {
             totalDistance: 2347,
             caloriesBurned: 170,
             steps: 2900,
-            routeImage: "route_6.png",
+            routeImage: "route_6",
             capturedAreas: [
                 [
                     CoordinatePair(latitude: 36.0310, longitude: 129.3620),
