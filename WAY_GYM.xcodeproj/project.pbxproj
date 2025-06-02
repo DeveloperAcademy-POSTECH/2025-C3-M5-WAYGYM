@@ -375,6 +375,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = WAY_GYM/WAY_GYM.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
@@ -382,6 +383,10 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 7653A24B9G;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "WAY-GYM-Info.plist";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "걸음 수와 칼로리 데이터를 읽기 위해 HealthKit 접근이 필요합니다.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "HealthKit 데이터를 사용하기 위해 권한이 필요합니다.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = please;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -408,6 +413,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = WAY_GYM/WAY_GYM.entitlements;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
@@ -415,6 +421,10 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 7653A24B9G;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "WAY-GYM-Info.plist";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "걸음 수와 칼로리 데이터를 읽기 위해 HealthKit 접근이 필요합니다.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "HealthKit 데이터를 사용하기 위해 권한이 필요합니다.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = please;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
