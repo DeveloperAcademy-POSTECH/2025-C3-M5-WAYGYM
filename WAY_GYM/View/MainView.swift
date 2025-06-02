@@ -60,7 +60,6 @@ struct MainView: View {
         .onAppear {
             locationManager.requestHealthKitAuthorization()
         }
-    
     }
 }
 
