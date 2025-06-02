@@ -33,7 +33,7 @@ struct MainView: View {
                     }) {
                         Image(systemName: "person.fill")
                             .font(.system(size: 40))
-                            .foregroundColor(.white)
+                            .foregroundColor(.yellow)
                     }
                     .padding(20)
                 }
