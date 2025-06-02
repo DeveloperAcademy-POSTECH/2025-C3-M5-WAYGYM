@@ -11,7 +11,9 @@ import SwiftUI
 struct WAY_GYMApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ProfileView() // 추후 수정
+                .environmentObject(MinionViewModel())
+                .environmentObject(WeaponViewModel())
         }
     }
 }
