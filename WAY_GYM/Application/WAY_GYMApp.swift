@@ -14,7 +14,7 @@ struct WAY_GYMApp: App {
 //            ProfileView() // 추후 수정
 //                .environmentObject(MinionViewModel())
 //                .environmentObject(WeaponViewModel())
-                MainView()
+                RootView()
         }
     }
 }

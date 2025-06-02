@@ -12,6 +12,7 @@ import HealthKit
 // MARK: - 메인 뷰
 struct MainView: View {
     @StateObject private var locationManager = LocationManager()
+    @EnvironmentObject var router: AppRouter
     @State private var showResult = false
     
     var body: some View {
@@ -25,6 +26,17 @@ struct MainView: View {
             .edgesIgnoringSafeArea(.all)
             
             VStack {
+                HStack{
+                    Spacer()
+                    Button(action: {
+                        router.currentScreen = .profile
+                    }) {
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 40))
+                            .foregroundColor(.white)
+                    }
+                    .padding(20)
+                }
                 Spacer()
                 Text(String(format: "이동 거리: %.3f m", locationManager.calculateTotalDistance()))
                     .font(.system(size: 16, weight: .bold))
@@ -32,7 +44,6 @@ struct MainView: View {
                     .background(Color.black.opacity(0.7))
                     .foregroundColor(.white)
                     .cornerRadius(8)
-                    .padding(.bottom, 80)
                 
                 ControlPanel(
                     isSimulating: $locationManager.isSimulating,
@@ -43,12 +54,13 @@ struct MainView: View {
                 )
             }
         }
-        .sheet(isPresented: $showResult) {
-            ResultView(locationManager: locationManager, showResult: $showResult)
-        }
+//        .sheet(isPresented: $showResult) {
+//            ResultView(locationManager: locationManager, showResult: $showResult)
+//        }
         .onAppear {
             locationManager.requestHealthKitAuthorization()
         }
+    
     }
 }
 
@@ -429,16 +441,16 @@ struct ControlPanel: View {
                     .shadow(radius: 3)
             }
             
-            Button(action: { showResult = true }) {
-                Text("결과보기")
-                    .font(.system(size: 18, weight: .bold))
-                    .frame(width: 100, height: 40)
-                    .background(Color.green)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .shadow(radius: 3)
-            }
-            
+//            Button(action: { showResult = true }) {
+//                Text("결과보기")
+//                    .font(.system(size: 18, weight: .bold))
+//                    .frame(width: 100, height: 40)
+//                    .background(Color.green)
+//                    .foregroundColor(.white)
+//                    .cornerRadius(10)
+//                    .shadow(radius: 3)
+//            }
+//            
             Button(action: moveToCurrentLocationAction) {
                 Text("현재 위치")
                     .font(.system(size: 18, weight: .bold))
@@ -458,45 +470,47 @@ struct ControlPanel: View {
 }
 
 // MARK: - 결과 뷰 (모달)
-struct ResultView: View {
-    @ObservedObject var locationManager: LocationManager
-    @Binding var showResult: Bool
-    
-    var body: some View {
-        VStack {
-            Text(String(format: "총 이동 거리: %.3f m", locationManager.calculateTotalDistance()))
-                .font(.title2)
-                .padding(.bottom)
-            
-            Text(String(format: "걸음 수: %.0f 걸음", locationManager.stepCount))
-                .font(.title2)
-                .padding(.bottom)
-            
-            Text(String(format: "소모 칼로리: %.0f kcal", locationManager.caloriesBurned))
-                .font(.title2)
-                .padding(.bottom)
-            
-            Button(action: { showResult = false }) {
-                Text("닫기")
-                    .font(.system(size: 18, weight: .bold))
-                    .frame(width: 100, height: 40)
-                    .background(Color.gray)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .shadow(radius: 3)
-            }
-            .padding(.top, 10)
-        }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(15)
-        .shadow(radius: 10)
-    }
-}
+//struct ResultView: View {
+//    @ObservedObject var locationManager: LocationManager
+//    @Binding var showResult: Bool
+//    
+//    var body: some View {
+//        VStack {
+//            Text(String(format: "총 이동 거리: %.3f m", locationManager.calculateTotalDistance()))
+//                .font(.title2)
+//                .padding(.bottom)
+//            
+//            Text(String(format: "걸음 수: %.0f 걸음", locationManager.stepCount))
+//                .font(.title2)
+//                .padding(.bottom)
+//            
+//            Text(String(format: "소모 칼로리: %.0f kcal", locationManager.caloriesBurned))
+//                .font(.title2)
+//                .padding(.bottom)
+//            
+//            Button(action: { showResult = false }) {
+//                Text("닫기")
+//                    .font(.system(size: 18, weight: .bold))
+//                    .frame(width: 100, height: 40)
+//                    .background(Color.gray)
+//                    .foregroundColor(.white)
+//                    .cornerRadius(10)
+//                    .shadow(radius: 3)
+//            }
+//            .padding(.top, 10)
+//        }
+//        .padding()
+//        .background(Color.white)
+//        .cornerRadius(15)
+//        .shadow(radius: 10)
+//    }
+//}
 
 // MARK: - 프리뷰
 struct MainView_Previews: PreviewProvider {
     static var previews: some View {
         MainView()
+            .environmentObject(AppRouter())
     }
 }
+
