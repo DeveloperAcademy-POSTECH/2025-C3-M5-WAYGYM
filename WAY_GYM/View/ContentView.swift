@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  MainView.swift
 //  WAY_GYM
 //
 //  Created by Leo on 5/27/25.
@@ -10,7 +10,7 @@ import CoreLocation
 import HealthKit
 
 // MARK: - 메인 뷰
-struct ContentView: View {
+struct MainView: View {
     @StateObject private var locationManager = LocationManager()
     @State private var showResult = false
     
@@ -495,8 +495,8 @@ struct ResultView: View {
 }
 
 // MARK: - 프리뷰
-struct ContentView_Previews: PreviewProvider {
+struct MainView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        MainView()
     }
 }

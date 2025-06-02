@@ -8,7 +8,7 @@
 import Foundation
 
 enum AppScreen {
-    case content
+    case main
     case running
     case result(RunRecordModel)
     case profile
