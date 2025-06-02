@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ResultModalView: View {
+struct RunResultModalView: View {
     let capture: RunRecordModel
     let onComplete: () -> Void
 
@@ -102,6 +102,6 @@ struct ResultModalView: View {
 }
 
 #Preview {
-    ResultModalView(capture: RunRecordModel.dummyData[5], onComplete: {})
+    RunResultModalView(capture: RunRecordModel.dummyData[5], onComplete: {})
 }
 
