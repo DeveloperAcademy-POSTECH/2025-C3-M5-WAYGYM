@@ -29,22 +29,9 @@
 		B34B7AB52DE54FDD00B14CAB /* WAY_GYMUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WAY_GYMUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		B18649822DED747600DB2D80 /* Exceptions for "WAY_GYM" folder in "WAY_GYM" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"WAY-GYM-Info.plist",
-			);
-			target = B34B7A9D2DE54FDB00B14CAB /* WAY_GYM */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B34B7AA02DE54FDB00B14CAB /* WAY_GYM */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				B18649822DED747600DB2D80 /* Exceptions for "WAY_GYM" folder in "WAY_GYM" target */,
-			);
 			path = WAY_GYM;
 			sourceTree = "<group>";
 		};
@@ -388,11 +375,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-
-				CODE_SIGN_IDENTITY = "Apple Development";
-
 				CODE_SIGN_ENTITLEMENTS = WAY_GYM/WAY_GYM.entitlements;
-
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
@@ -401,19 +384,15 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "WAY-GYM-Info.plist";
-
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "걸음 수와 칼로리 데이터를 읽기 위해 HealthKit 접근이 필요합니다.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "HealthKit 데이터를 사용하기 위해 권한이 필요합니다.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = please;
-
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
-
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -434,11 +413,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-
-				CODE_SIGN_IDENTITY = "Apple Development";
-
 				CODE_SIGN_ENTITLEMENTS = WAY_GYM/WAY_GYM.entitlements;
-
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
@@ -447,19 +422,15 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "WAY-GYM-Info.plist";
-
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "걸음 수와 칼로리 데이터를 읽기 위해 HealthKit 접근이 필요합니다.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "HealthKit 데이터를 사용하기 위해 권한이 필요합니다.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = please;
-
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
-
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
