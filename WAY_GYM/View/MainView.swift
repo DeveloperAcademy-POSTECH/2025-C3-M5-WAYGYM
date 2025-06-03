@@ -59,9 +59,15 @@ struct MainView: View {
 //        }
         .onAppear {
             locationManager.requestHealthKitAuthorization()
+            
+            // 더미데이터로 만든 면적들을 지도에 로드
+            locationManager.loadCapturedPolygons(from: RunRecordModel.dummyData)
+            locationManager.moveToCurrentLocation() // 현위치로 region 이동
         }
     }
+    
 }
+
 
 // MARK: - 위치 관리 클래스
 final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
@@ -72,6 +78,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     @Published var currentLocation: CLLocationCoordinate2D?
     @Published var stepCount: Double = 0
     @Published var caloriesBurned: Double = 0
+    @Published var currentRun = RunRecordModel(id: UUID(), startTime: Date()) // capturedAreas(도형 좌표), capturedAreaValue(총 면적) 저장
     
     private let clManager = CLLocationManager()
     private var coordinates: [CLLocationCoordinate2D] = []
@@ -198,17 +205,27 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     
     // 현재 위치로 지도 이동
     func moveToCurrentLocation() {
-        guard clManager.authorizationStatus == .authorizedWhenInUse || clManager.authorizationStatus == .authorizedAlways else {
-            clManager.requestWhenInUseAuthorization()
-            return
-        }
-        
-        if let currentLocation = clManager.location {
-            updateRegion(coordinate: currentLocation.coordinate)
-            self.currentLocation = currentLocation.coordinate
-        } else {
-            clManager.startUpdatingLocation()
-        }
+        //        guard clManager.authorizationStatus == .authorizedWhenInUse || clManager.authorizationStatus == .authorizedAlways else {
+        //            clManager.requestWhenInUseAuthorization()
+        //            return
+        //        }
+        //
+        //        if let currentLocation = clManager.location {
+        //            updateRegion(coordinate: currentLocation.coordinate)
+        //            self.currentLocation = currentLocation.coordinate
+        //        } else {
+        //            clManager.startUpdatingLocation()
+        //        }
+        clManager.requestWhenInUseAuthorization()
+            
+            if let currentLocation = clManager.location {
+                print("📍 Current location available: \(currentLocation.coordinate)")
+                updateRegion(coordinate: currentLocation.coordinate)
+                self.currentLocation = currentLocation.coordinate
+            } else {
+                print("⏳ No current location available yet.")
+                clManager.startUpdatingLocation()
+            }
     }
     
     // 좌표 업데이트
@@ -238,6 +255,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     }
     
     // 교차점 감지
+    // 교차점이 생겨서 닫힌 도형이 만들어졌는지 검사
     private func checkForPolygon() {
         guard coordinates.count >= 4 else { return }
 
@@ -260,10 +278,17 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
                     line2Start: newLineStart,
                     line2End: newLineEnd
                 ) {
-                    let polygonCoordinates: [CLLocationCoordinate2D] =
+                    let polygonCoordinates: [CLLocationCoordinate2D] = // 도형을 이룬 실질적인 좌표들의 배열
                         [x] + coordinates[(i+1)...(coordinates.count - 2)] + [x]
                     let polygon = MKPolygon(coordinates: polygonCoordinates, count: polygonCoordinates.count)
                     polygons.append(polygon)
+                    
+                    // currentRun 객체에 captured area 좌표(하나의 도형을 만드는 좌표들) 넣기
+                    let areaCoordinatePairs = polygonCoordinates.map {
+                        CoordinatePair(latitude: $0.latitude, longitude: $0.longitude)
+                    }
+                    currentRun.capturedAreas.append(areaCoordinatePairs) // 도형 하나 당 좌표 배열 하나씩.
+                    // 지금 만든 도형 좌표들을 currentRun에 저장
 
                     lastIntersectionIndex = coordinates.count - 2
                 }
@@ -330,6 +355,23 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         }
         return totalDistance
     }
+    
+    // 저장된 면적을 지도에 불러오기
+    func loadCapturedPolygons(from records: [RunRecordModel]) {
+        var result: [MKPolygon] = []
+
+        for record in records {
+            for area in record.capturedAreas {
+                let coords = area.map {
+                    CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+                }
+                let polygon = MKPolygon(coordinates: coords, count: coords.count)
+                result.append(polygon)
+            }
+        }
+
+        self.polygons.append(contentsOf: result)
+    }
 }
 
 // MARK: - 지도 뷰
@@ -340,7 +382,7 @@ struct MapView: UIViewRepresentable {
     @Binding var currentLocation: CLLocationCoordinate2D?
     
     func makeUIView(context: Context) -> MKMapView {
-        let mapView = MKMapView() 
+        let mapView = MKMapView()
         mapView.delegate = context.coordinator
         mapView.showsUserLocation = false
         return mapView
@@ -379,16 +421,18 @@ struct MapView: UIViewRepresentable {
         func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
             if let polyline = overlay as? MKPolyline {
                 let renderer = MKPolylineRenderer(polyline: polyline)
-                renderer.strokeColor = .systemGreen // 경로 선을 연두색으로 설정
+                // renderer.strokeColor = .systemGreen // 경로 선을 연두색으로 설정
+                renderer.strokeColor = UIColor(Color.gangHighlight) // 경로 선 색 설정
+
                 renderer.lineWidth = 3
                 return renderer
             }
             
             if let polygon = overlay as? MKPolygon {
                 let renderer = MKPolygonRenderer(polygon: polygon)
-                renderer.fillColor = UIColor.green.withAlphaComponent(0.5) // 폴리곤 채우기를 초록색으로 설정
-                renderer.strokeColor = .green // 폴리곤 테두리를 초록색으로 설정
-                renderer.lineWidth = 4
+                renderer.fillColor = UIColor(Color.gangHighlight).withAlphaComponent(0.5) // 폴리곤 채우기를 초록색으로 설정
+                renderer.strokeColor = UIColor(Color.gangHighlight) // 폴리곤 테두리를 초록색으로 설정
+                renderer.lineWidth = 3
                 return renderer
             }
             
@@ -449,7 +493,7 @@ struct ControlPanel: View {
 //                    .cornerRadius(10)
 //                    .shadow(radius: 3)
 //            }
-//            
+//
             Button(action: moveToCurrentLocationAction) {
                 Text("현재 위치")
                     .font(.system(size: 18, weight: .bold))
@@ -472,21 +516,21 @@ struct ControlPanel: View {
 //struct ResultView: View {
 //    @ObservedObject var locationManager: LocationManager
 //    @Binding var showResult: Bool
-//    
+//
 //    var body: some View {
 //        VStack {
 //            Text(String(format: "총 이동 거리: %.3f m", locationManager.calculateTotalDistance()))
 //                .font(.title2)
 //                .padding(.bottom)
-//            
+//
 //            Text(String(format: "걸음 수: %.0f 걸음", locationManager.stepCount))
 //                .font(.title2)
 //                .padding(.bottom)
-//            
+//
 //            Text(String(format: "소모 칼로리: %.0f kcal", locationManager.caloriesBurned))
 //                .font(.title2)
 //                .padding(.bottom)
-//            
+//
 //            Button(action: { showResult = false }) {
 //                Text("닫기")
 //                    .font(.system(size: 18, weight: .bold))
@@ -506,10 +550,16 @@ struct ControlPanel: View {
 //}
 
 // MARK: - 프리뷰
-struct MainView_Previews: PreviewProvider {
+//struct MainView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        MainView()
+//            .environmentObject(AppRouter())
+//    }
+//}
+
+
+struct RView_Previews: PreviewProvider {
     static var previews: some View {
-        MainView()
-            .environmentObject(AppRouter())
+        RootView()
     }
 }
-
