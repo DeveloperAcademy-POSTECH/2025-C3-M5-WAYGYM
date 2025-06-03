@@ -22,12 +22,12 @@ class RunRecordViewModel: ObservableObject {
         db.collection("RunRecordsModels")
             .getDocuments { [weak self] snapshot, error in
                 if let error = error {
-                    print("Error fetching run records: \(error.localizedDescription)")
+                    print("⚠️ 런닝 기록 불러오기 실패: \(error.localizedDescription)")
                     return
                 }
                 
                 guard let documents = snapshot?.documents else {
-                    print("No documents in RunRecordsModels")
+                    print("⚠️ 서버에 RunRecordsModels 기록 없음")
                     return
                 }
                 
@@ -42,7 +42,7 @@ class RunRecordViewModel: ObservableObject {
         db.collection("RunRecordModels")
             .getDocuments { [weak self] snapshot, error in
                 guard let documents = snapshot?.documents else {
-                    print("No documents or error: \(error?.localizedDescription ?? "")")
+                    print("⚠️ 런닝 총거리 불러오기 실패: \(error?.localizedDescription ?? "")")
                     return
                 }
 
@@ -59,7 +59,7 @@ class RunRecordViewModel: ObservableObject {
 
                 DispatchQueue.main.async {
                     self?.totalDistance = distances.reduce(0, +)
-                    print("🎯 Total distance (fallback): \(self?.totalDistance ?? 0)")
+                    print("🎯 총 달린 거리 계산 완료: \(self?.totalDistance ?? 0)")
                 }
             }
     }
@@ -69,7 +69,7 @@ class RunRecordViewModel: ObservableObject {
         db.collection("RunRecordModels")
             .getDocuments { [weak self] snapshot, error in
                 guard let documents = snapshot?.documents else {
-                    print("No documents or error: \(error?.localizedDescription ?? "")")
+                    print("⚠️ 런닝 딴 땅 불러오기 실패: \(error?.localizedDescription ?? "")")
                     return
                 }
 
@@ -90,7 +90,7 @@ class RunRecordViewModel: ObservableObject {
 
                 DispatchQueue.main.async {
                     self?.totalCapturedAreaValue = areas.reduce(0, +)
-                    print("🎯 Total capturedAreaValue 합계: \(self?.totalCapturedAreaValue ?? 0)")
+                    print("🎯 총 딴 땅 계산 완료: \(self?.totalCapturedAreaValue ?? 0)")
                 }
             }
     }
