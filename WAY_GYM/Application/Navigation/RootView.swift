@@ -27,7 +27,13 @@ struct RootView: View {
                         hasReward: true // 조건에 맞는 값 필요
                     )
                 case .profile:
-                    ProfileView().environmentObject(router)
+                    ProfileView()
+                        .environmentObject(router)
+                        .environmentObject(MinionViewModel())
+                        .environmentObject(WeaponViewModel())
+                        .font(.text01)
+                        .foregroundColor(Color("gang_text_2"))
+
                 }
             }
         }

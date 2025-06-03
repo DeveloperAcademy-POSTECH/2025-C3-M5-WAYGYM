@@ -16,6 +16,7 @@ struct RunResultModalView: View {
         ZStack{
             Color.black.opacity(0.7)
                 .ignoresSafeArea()
+
             VStack(spacing: 20) {
                 Text("이번엔 여기까지...")
                     .font(.custom("NeoDunggeunmoPro-Regular", size: 30))

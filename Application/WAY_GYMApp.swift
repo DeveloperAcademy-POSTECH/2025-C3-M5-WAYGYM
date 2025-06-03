@@ -11,10 +11,16 @@ import SwiftUI
 struct WAY_GYMApp: App {
     var body: some Scene {
         WindowGroup {
-//            ProfileView() // 추후 수정
-//                .environmentObject(MinionViewModel())
-//                .environmentObject(WeaponViewModel())
-                ContentView()
+            // 주디제이
+            ProfileView()
+                .environmentObject(MinionViewModel())
+                .environmentObject(WeaponViewModel())
+                .font(.text01)
+                .foregroundColor(.white)
+                 
+            
+            // 레오
+            // ContentView()
         }
     }
 }
