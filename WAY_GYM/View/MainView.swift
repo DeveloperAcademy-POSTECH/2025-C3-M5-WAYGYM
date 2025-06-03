@@ -182,7 +182,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             routeImage: imageURL,
             coordinates: coordinatesArray,
             capturedAreas: capturedAreas,
-            capturedAreaValue: 0.0 // 기본값 설정
+            capturedAreaValue: 0 // 기본값 설정
         )
         
         do {
