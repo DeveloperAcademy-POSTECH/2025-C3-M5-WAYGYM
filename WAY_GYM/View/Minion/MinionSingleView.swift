@@ -32,9 +32,9 @@ struct MinionSingleView: View {
                 HStack {
                     Spacer()
                     
-                    if let date = minionVM.acquisitionDate(for: minion, in: userStats.runRecords) {
-                               Text("획득 날짜: \(formatDate(date))")
-                           }
+//                    if let date = minionVM.acquisitionDate(for: minion, in: userStats.runRecords) {
+//                               Text("획득 날짜: \(formatDate(date))")
+//                           }
                 }
             }
             .border(Color.black, width: 2)
