@@ -6,6 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B1C18C892DEF31DD00CD382B /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B1C18C882DEF31DD00CD382B /* FirebaseAuth */; };
+		B1C18C8B2DEF31DD00CD382B /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = B1C18C8A2DEF31DD00CD382B /* FirebaseDatabase */; };
+		B1C18C8D2DEF31DD00CD382B /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = B1C18C8C2DEF31DD00CD382B /* FirebaseFirestore */; };
+		B1C18C8F2DEF31DD00CD382B /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B1C18C8E2DEF31DD00CD382B /* FirebaseFirestoreSwift */; };
+		B1C18C912DEF31DD00CD382B /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = B1C18C902DEF31DD00CD382B /* FirebaseStorage */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		B34B7AAC2DE54FDD00B14CAB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -42,6 +50,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B1C18C8B2DEF31DD00CD382B /* FirebaseDatabase in Frameworks */,
+				B1C18C892DEF31DD00CD382B /* FirebaseAuth in Frameworks */,
+				B1C18C8D2DEF31DD00CD382B /* FirebaseFirestore in Frameworks */,
+				B1C18C912DEF31DD00CD382B /* FirebaseStorage in Frameworks */,
+				B1C18C8F2DEF31DD00CD382B /* FirebaseFirestoreSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -100,6 +113,11 @@
 			);
 			name = WAY_GYM;
 			packageProductDependencies = (
+				B1C18C882DEF31DD00CD382B /* FirebaseAuth */,
+				B1C18C8A2DEF31DD00CD382B /* FirebaseDatabase */,
+				B1C18C8C2DEF31DD00CD382B /* FirebaseFirestore */,
+				B1C18C8E2DEF31DD00CD382B /* FirebaseFirestoreSwift */,
+				B1C18C902DEF31DD00CD382B /* FirebaseStorage */,
 			);
 			productName = WAY_GYM;
 			productReference = B34B7A9E2DE54FDB00B14CAB /* WAY_GYM.app */;
@@ -177,6 +195,9 @@
 			);
 			mainGroup = B34B7A952DE54FDB00B14CAB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B1C18C872DEF31DD00CD382B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B34B7A9F2DE54FDB00B14CAB /* Products */;
 			projectDirPath = "";
@@ -554,6 +575,45 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B1C18C872DEF31DD00CD382B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = exactVersion;
+				version = 10.29.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B1C18C882DEF31DD00CD382B /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B1C18C872DEF31DD00CD382B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		B1C18C8A2DEF31DD00CD382B /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B1C18C872DEF31DD00CD382B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabase;
+		};
+		B1C18C8C2DEF31DD00CD382B /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B1C18C872DEF31DD00CD382B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		B1C18C8E2DEF31DD00CD382B /* FirebaseFirestoreSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B1C18C872DEF31DD00CD382B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestoreSwift;
+		};
+		B1C18C902DEF31DD00CD382B /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B1C18C872DEF31DD00CD382B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B34B7A962DE54FDB00B14CAB /* Project object */;
 }
