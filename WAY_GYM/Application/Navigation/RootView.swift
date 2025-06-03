@@ -9,35 +9,44 @@ import SwiftUI
 
 struct RootView: View {
     @StateObject private var router = AppRouter()
-
+    
     var body: some View {
         NavigationStack {
-            Group {
-                switch router.currentScreen {
-                case .main:
-                    MainView().environmentObject(router)
-                case .running:
-                    RunningView().environmentObject(router)
-                    
-//                case .result(_):
-//                    RunResultModalView(capture: RunRecordModels.dummyData[5]) {
+            switch router.currentScreen {
+            case .main:
+                AnyView(MainView().environmentObject(router))
+            case .running:
+                AnyView(RunningView().environmentObject(router))
+//            case .result(_):
+//                AnyView(RunResultModalView(
+//                    capture: RunRecordModel.dummyData[5],
+//                    onComplete: {
 //                        router.currentScreen = .main
-//                    }
-                    
-                case .profile:
-                    ProfileView()
+//                    },
+//                    hasReward: true // 조건에 맞는 값 필요
+//                ))
+            case .profile:
+                AnyView( ProfileView()
                         .environmentObject(router)
                         .environmentObject(MinionViewModel(runRecordVM: RunRecordViewModel()))
                         .environmentObject(WeaponViewModel())
                         .environmentObject(RunRecordViewModel())
                         .font(.text01)
                         .foregroundColor(Color("gang_text_2"))
-
-                }
+                )
+            case .weaponReward(let weapon):
+                AnyView(WeaponRewardView(weapon: weapon)
+                    .environmentObject(router)
+                )
+            case .minionReward(let minion):
+                AnyView(MinionRewardView(minion: minion)
+                    .environmentObject(router)
+                )
             }
         }
     }
 }
+
 
 struct RootView_Previews: PreviewProvider {
     static var previews: some View {
