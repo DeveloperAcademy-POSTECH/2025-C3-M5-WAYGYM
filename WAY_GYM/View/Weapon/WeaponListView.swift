@@ -244,7 +244,7 @@ struct WeaponListView: View {
         WeaponListView(selectedWeapon: binding)
             .environmentObject(WeaponViewModel())
             .font(.text01)
-            .foregroundColor(Color("gang_text_2"))
+            .foregroundColor(Color.gang_text_2)
     }
 }
 

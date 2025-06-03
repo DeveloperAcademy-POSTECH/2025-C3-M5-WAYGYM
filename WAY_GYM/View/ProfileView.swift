@@ -25,9 +25,6 @@ struct ProfileView: View {
     var body: some View {
         NavigationView {
             ZStack {
-//                Color("gang_bg_profile")
-//                    .ignoresSafeArea()
-                
                 Color.gang_bg_profile
                     .ignoresSafeArea()
                 
@@ -52,7 +49,7 @@ struct ProfileView: View {
                                         Spacer()
                                         VStack {
                                             NavigationLink(destination: WeaponListView(selectedWeapon: $selectedWeapon)
-                                                .foregroundStyle(Color("gang_text_2"))
+                                                .foregroundStyle(Color.gang_text_2)
                                                 .environmentObject(WeaponViewModel())) {
                                                 ZStack {
                                                     Image("box")
@@ -126,7 +123,7 @@ struct ProfileView: View {
                             
                             ProfileMinionListView(recentMinions: recentMinions)
                                 .padding(.vertical, 4)
-                                .foregroundStyle(Color.black)
+                                .foregroundColor(Color.gang_text_2)
                         }
                         .padding(20)
                         .customBorder()
@@ -137,14 +134,15 @@ struct ProfileView: View {
                                     .font(.title01)
                                 Spacer()
                                 if hasRecentMinions {
-                                    NavigationLink(destination: RunningListView()) {
+                                    NavigationLink(destination: RunningListView()
+                                                  .foregroundColor(Color.gang_text_2)) {
                                         Text("모두 보기")
                                     }
                                 }
                             }
                             ProfileRunningView()
                                 .padding(.vertical, 4)
-                                .foregroundStyle(Color.black)
+                                .foregroundColor(Color.gang_text_2)
                         }
                         .padding(20)
                         .customBorder()
@@ -255,5 +253,5 @@ extension View {
         .environmentObject(WeaponViewModel())
         .environmentObject(AppRouter())
         .font(.text01)
-        .foregroundColor(Color("gang_text_2"))
+        .foregroundColor(Color.gang_text_2)
 }
