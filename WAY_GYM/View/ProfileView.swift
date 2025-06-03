@@ -51,7 +51,6 @@ struct ProfileView: View {
                                     HStack {
                                         Spacer()
                                         VStack {
-                                            
                                             NavigationLink(destination: WeaponListView(selectedWeapon: $selectedWeapon)
                                                 .foregroundStyle(Color.gang_text_2)
                                                 .environmentObject(WeaponViewModel())
@@ -76,7 +75,7 @@ struct ProfileView: View {
                                     Spacer()
                                 } // 무기 선택
                             } // 유저 아이콘 zstack
-                            .padding()
+                            .padding(3)
                             
                             Group {
                                 Text("한성인")
@@ -148,9 +147,11 @@ struct ProfileView: View {
                                     }
                                 }
                             }
+                            
                             ProfileRunningView()
                                 .padding(.vertical, 4)
                                 .foregroundColor(Color.gang_text_2)
+                                .font(.title01)
                         }
                         .padding(20)
                         .customBorder()
@@ -160,7 +161,6 @@ struct ProfileView: View {
                 
                 VStack {
                     Spacer()
-                    
                     // 홈 버튼
                     Button(action: {
                         router.currentScreen = .main
