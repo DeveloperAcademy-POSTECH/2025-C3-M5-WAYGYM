@@ -384,7 +384,11 @@ struct MapView: UIViewRepresentable {
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
         mapView.delegate = context.coordinator
-        mapView.showsUserLocation = false
+         mapView.showsUserLocation = false
+        
+        // 맵뷰를 다크모드로
+        mapView.mapType = .mutedStandard
+        mapView.overrideUserInterfaceStyle = .dark
         return mapView
     }
     
