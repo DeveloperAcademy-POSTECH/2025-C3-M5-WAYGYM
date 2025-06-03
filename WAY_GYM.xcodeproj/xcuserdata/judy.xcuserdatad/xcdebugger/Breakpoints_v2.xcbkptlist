@@ -3,6 +3,7 @@
    uuid = "B40953DA-7EDE-45C6-9491-5A43609EAF04"
    type = "1"
    version = "2.0">
+<<<<<<< Updated upstream
    <Breakpoints>
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
@@ -81,4 +82,6 @@
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
+=======
+>>>>>>> Stashed changes
 </Bucket>

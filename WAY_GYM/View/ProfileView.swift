@@ -13,6 +13,8 @@ struct ProfileView: View {
     @StateObject private var minionModel = MinionModel()
     @State private var selectedWeapon: WeaponDefinitionModel? = nil
     
+    @EnvironmentObject var router: AppRouter
+    
     var body: some View {
         let totalDistance = userStats.runRecords.map { $0.totalDistance }.reduce(0, +) / 1000
         let recentMinions = minionModel.allMinions
@@ -22,11 +24,11 @@ struct ProfileView: View {
         
         NavigationView {
                 ZStack {
-                    Color.gray
+                    Color("gang_bg_profile")
                         .ignoresSafeArea()
                     
                     ScrollView{
-                        VStack(spacing: 15) {
+                        VStack(spacing: 16) {
                                 // 유저 설명 vstack
                                 VStack {
                                     ZStack {
@@ -38,13 +40,15 @@ struct ProfileView: View {
                                         Image(selectedWeapon != nil ? "main_\(selectedWeapon!.id)" : "main_basic")
                                             .resizable()
                                             .aspectRatio(contentMode: .fit)
-                                            .frame(width: 130)
+                                            .frame(width: 200)
+                                            .padding(.bottom, -20)
                                         
                                         VStack {
                                             HStack {
                                                 Spacer()
                                                 VStack {
                                                     NavigationLink(destination: WeaponListView(selectedWeapon: $selectedWeapon)
+                                                        .foregroundStyle(Color("gang_text_2"))
                                                         .environmentObject(WeaponViewModel())) {
                                                             ZStack {
                                                                 Image("box")
@@ -64,20 +68,19 @@ struct ProfileView: View {
                                             }
                                             Spacer()
                                         } // 무기 선택
-                                        
                                     } // 유저 아이콘 zstack
+                                    .padding()
                                     
                                     Group {
                                         Text("한성인")
                                             .font(.title01)
                                             .padding(.bottom, 2)
-                                            .padding(.top, -0.5)
                                         
                                         Text("남구 연일읍 1대손파 형님")
                                     }
                                     .foregroundStyle(Color.white)
                                 } // 유저 설명 vstack
-                                .padding(.bottom, 13)
+                                .padding(.bottom, 15)
 
                                 HStack {
                                     VStack(alignment: .leading) {
@@ -148,6 +151,34 @@ struct ProfileView: View {
                         .padding(.horizontal, 25)
                     }
                     
+                    VStack {
+                        Spacer()
+                        
+                        // 홈 버튼
+                        Button(action: {
+                            router.currentScreen = .main
+                        }) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color.yellow)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 55)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Color.black, lineWidth: 3)
+                                    )
+                                    
+                                Text("구역 확장하러 가기")
+                                    .font(.title02)
+                                    .foregroundStyle(Color.black)
+                                    .padding(.vertical, 22)
+                            }
+                            .padding(.horizontal, 25)
+                        }
+                        .padding(.bottom, 5)
+                    }
+                    
+                    
                 }
         }
     }
@@ -158,7 +189,7 @@ struct ProfileView: View {
         .environmentObject(MinionViewModel())
         .environmentObject(WeaponViewModel())
         .font(.text01)
-        .foregroundColor(.white)
+        .foregroundColor(Color("gang_text_2"))
 }
 
 

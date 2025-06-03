@@ -12,7 +12,7 @@ struct MinionListView: View {
     
     var body: some View {
         ZStack {
-            Color.gray
+            Color("gang_bg_profile")
                 .ignoresSafeArea()
                 
             VStack {
@@ -171,5 +171,5 @@ struct MinionListView: View {
     MinionListView()
         .environmentObject(MinionViewModel())
         .font(.text01)
-        .foregroundColor(.white)
+        .foregroundColor(Color("gang_text_2"))
 }

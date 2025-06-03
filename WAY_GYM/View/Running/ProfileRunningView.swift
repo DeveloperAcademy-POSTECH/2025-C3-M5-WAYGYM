@@ -6,7 +6,7 @@ struct ProfileRunningView: View {
         let latestRuns = RunRecordModel.dummyData.suffix(3)
         
         ZStack {
-            Color.gray
+            Color("gang_bg_profile")
                 .ignoresSafeArea()
             
             ScrollView {

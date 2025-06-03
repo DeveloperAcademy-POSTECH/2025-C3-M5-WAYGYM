@@ -105,7 +105,7 @@ struct RunningListView: View {
     
     var body: some View {
         ZStack {
-            Color.gray
+            Color("gang_bg_profile")
                 .ignoresSafeArea()
 
             ScrollView {

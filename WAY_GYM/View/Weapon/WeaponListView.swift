@@ -11,95 +11,165 @@ struct WeaponListView: View {
     // @State private var selectedWeapon: WeaponDefinitionModel? = nil
     @Binding var selectedWeapon: WeaponDefinitionModel?
     @EnvironmentObject var weaponVM: WeaponViewModel
-
+    
     var body: some View {
         ZStack {
-            Color.gray
+            Color("gang_bg_profile")
                 .ignoresSafeArea()
             
             VStack {
                 CustomNavigationBar(title: "무기 창고")
-                 
+                
+                // 진한 박스 zstack
                 ZStack {
-                    Color.brown
+                    Color("gang_bg_primary_4")
                     
                     VStack {
+                        // 사용자 이미지
                         ZStack {
                             Image("Flash")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(width: 220)
+                                .frame(width: 200)
                             
                             Image((selectedWeapon == nil || selectedWeapon?.id == "0") ? "main_basic" : "main_\(selectedWeapon!.id)")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(width: 200)
-                        }
-                        
+                                .frame(width: 230)
+                                .padding(.bottom, -15)
+                        } // 사용자 이미지 zstack
+                        .padding(.vertical, 15)
                         
                         VStack {
                             if let weapon = selectedWeapon, weapon.id != "0" {
                                 Text(weapon.name)
                                     .padding(.vertical, 5)
-                                
+
                                 Text(weapon.description)
                                     .multilineTextAlignment(.center)
-                                
+
                                 HStack {
                                     Spacer()
                                     Text("\(Int(weapon.unlockNumber))m²")
-                                        
+
                                     if let date = weaponVM.acquisitionDate(for: weapon, in: userStats.runRecords) {
                                         Text("\(formatDate(date))")
                                     }
                                 }
                                 .font(.title02)
                                 .padding(.vertical, 1)
-                                
+
                             } else {
                                 Text("맨손")
                                     .padding(.vertical, 5)
-                                
+
                                 Text("무기? 필요 있나?\n내 주먹이 무기인데")
                                     .multilineTextAlignment(.center)
-                                
+
                                 HStack {
                                     Spacer()
-                                    Text("")
-                                    Text("")
+                                    Text("00")
+                                    Text("00.00.00")
                                 }
                                 .font(.title02)
+                                .foregroundStyle(Color("gang_bg_primary_4"))
                                 .padding(.vertical, 1)
-                                
+
                             }
                         }
                         .font(.title01)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 1)
                         .padding(16) // 박스 내부 여백
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
                                 .stroke(Color.black, lineWidth: 3)
                         )
-                        .padding(.top, -10)
                         .padding(.bottom, 20)
                         .padding(.horizontal, 14)
                         
+                        
                     }
-                }
+                } // 진한 박스 zstack
                 .frame(height: UIScreen.main.bounds.height * 0.5)
-                .overlay(
-                    Rectangle()
-                        .fill(Color.black)
-                        .frame(height: 3)
-                        .frame(maxHeight: .infinity, alignment: .bottom)
-                )
-                .padding(.bottom, 5)
-                .padding(.horizontal, -14)
+                
+                //                ZStack {
+                //                    Color("gang_bg_primary_4")
+                //
+                //                    VStack {
+                //                        ZStack {
+                //                            Image("Flash")
+                //                                .resizable()
+                //                                .aspectRatio(contentMode: .fit)
+                //                                .frame(width: 220)
+                //
+                //                            Image((selectedWeapon == nil || selectedWeapon?.id == "0") ? "main_basic" : "main_\(selectedWeapon!.id)")
+                //                                .resizable()
+                //                                .aspectRatio(contentMode: .fit)
+                //                                .frame(width: 200)
+                //                        }
+                //                        .padding(.vertical, 20)
+                //
+//                                        VStack {
+//                                            if let weapon = selectedWeapon, weapon.id != "0" {
+//                                                Text(weapon.name)
+//                                                    .padding(.vertical, 5)
+//                
+//                                                Text(weapon.description)
+//                                                    .multilineTextAlignment(.center)
+//                
+//                                                HStack {
+//                                                    Spacer()
+//                                                    Text("\(Int(weapon.unlockNumber))m²")
+//                
+//                                                    if let date = weaponVM.acquisitionDate(for: weapon, in: userStats.runRecords) {
+//                                                        Text("\(formatDate(date))")
+//                                                    }
+//                                                }
+//                                                .font(.title02)
+//                                                .padding(.vertical, 1)
+//                
+//                                            } else {
+//                                                Text("맨손")
+//                                                    .padding(.vertical, 5)
+//                
+//                                                Text("무기? 필요 있나?\n내 주먹이 무기인데")
+//                                                    .multilineTextAlignment(.center)
+//                
+//                                                HStack {
+//                                                    Spacer()
+//                                                    Text("")
+//                                                    Text("")
+//                                                }
+//                                                .font(.title02)
+//                                                .padding(.vertical, 1)
+//                
+//                                            }
+//                                        }
+//                                        .font(.title01)
+//                                        .frame(maxWidth: .infinity)
+//                                        .padding(16) // 박스 내부 여백
+//                                        .overlay(
+//                                            RoundedRectangle(cornerRadius: 16)
+//                                                .stroke(Color.black, lineWidth: 3)
+//                                        )
+//                                        .padding(.top, -10)
+//                                        .padding(.bottom, 20)
+//                                        .padding(.horizontal, 14)
+                //
+                //                    }
+                //                }
+                ////                .overlay(
+                ////                    Rectangle()
+                ////                        .fill(Color.black)
+                ////                        .frame(height: 3)
+                ////                        .frame(maxHeight: .infinity, alignment: .bottom)
+                ////                )
+                //                .padding(.bottom, 5)
+                //                .padding(.horizontal, -14)
                 
                 
-//                Text("나의 총 땅: \(Int(weaponVM.totalCaptureArea(from: userStats.runRecords)))m²")
-//                    .font(.subheadline)
+                //                Text("나의 총 땅: \(Int(weaponVM.totalCaptureArea(from: userStats.runRecords)))m²")
+                //                    .font(.subheadline)
                 
                 ScrollView {
                     let columns = [
@@ -164,11 +234,11 @@ struct WeaponListView: View {
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
+                .padding(.horizontal, 14)
                 .scrollIndicators(.hidden)
             }
-            .padding(.horizontal, 14)
         }
-            .navigationBarBackButtonHidden(true)
+        .navigationBarBackButtonHidden(true)
     }
 }
 
@@ -177,7 +247,7 @@ struct WeaponListView: View {
         WeaponListView(selectedWeapon: binding)
             .environmentObject(WeaponViewModel())
             .font(.text01)
-            .foregroundColor(.white)
+            .foregroundColor(Color("gang_text_2"))
     }
 }
 

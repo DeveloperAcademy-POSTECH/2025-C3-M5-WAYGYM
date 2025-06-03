@@ -12,7 +12,7 @@ struct CustomNavigationBar: View {
 
     var body: some View {
         ZStack {
-            Color.gray
+            Color("gang_bg_profile")
                 .ignoresSafeArea()
             
             HStack {
@@ -33,7 +33,7 @@ struct CustomNavigationBar: View {
                 Spacer()
             }
         }
-        .frame(width: .infinity)
+        .frame(maxWidth: .infinity)
         .frame(height: 50)
     }
 }
