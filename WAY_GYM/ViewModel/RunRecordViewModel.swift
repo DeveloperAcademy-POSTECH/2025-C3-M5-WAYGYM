@@ -94,4 +94,54 @@ class RunRecordViewModel: ObservableObject {
                 }
             }
     }
+    
+    // 무기 얻은 날짜 구하기
+    func fetchRunRecordsAndCalculateAcquisitionDate(for unlockNumber: Double, completion: @escaping (Date?) -> Void) {
+        db.collection("RunRecordModels")
+            .getDocuments { [weak self] snapshot, error in
+                guard let documents = snapshot?.documents else {
+                    print("⚠️ 런닝 기록 불러오기 실패: \(error?.localizedDescription ?? "")")
+                    completion(nil)
+                    return
+                }
+
+                let records: [(Date, Int)] = documents.compactMap { doc in
+                    let data = doc.data()
+
+                    guard let timestamp = data["start_time"] as? Timestamp else {
+                        print("⚠️ start_time 누락 또는 타입 오류")
+                        return nil
+                    }
+                    let startTime = timestamp.dateValue()
+
+                    if let value = data["capturedAreaValue"] as? Int {
+                        return (startTime, value)
+                    } else if let valueDouble = data["capturedAreaValue"] as? Double {
+                        return (startTime, Int(valueDouble))
+                    } else {
+                        print("⚠️ capturedAreaValue 누락 또는 타입 오류")
+                        return nil
+                    }
+                }
+                print("🔍 불러온 기록 개수: \(records.count)")
+
+                let sortedRecords = records.sorted { $0.0 < $1.0 }
+
+                var cumulative: Double = 0
+                var acquisitionDate: Date? = nil
+                for (startTime, areaValue) in sortedRecords {
+                    cumulative += Double(areaValue)
+                    print("누적 면적: \(cumulative), 현재 조건: \(unlockNumber)")
+                    if cumulative >= unlockNumber {
+                        acquisitionDate = startTime
+                        print("획득 날짜 발견: \(acquisitionDate!)")
+                        break
+                    }
+                }
+
+                DispatchQueue.main.async {
+                    completion(acquisitionDate)
+                }
+            }
+    }
 }

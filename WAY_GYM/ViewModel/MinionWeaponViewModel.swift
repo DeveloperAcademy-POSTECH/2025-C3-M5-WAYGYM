@@ -6,13 +6,18 @@
 //
 
 import Foundation
+import SwiftUI
 
 final class MinionViewModel: ObservableObject {
     @Published var allMinions: [MinionDefinitionModel] = []
-    @Published var ownedMinionIDs: Set<String> = []
+    @Published var runRecordVM: RunRecordViewModel
 
-    func acquisitionDate(for minion: MinionDefinitionModel, in runs: [RunRecordModels]) -> Date? {
-        let sorted = runs.sorted { $0.startTime < $1.startTime }
+    init(runRecordVM: RunRecordViewModel) {
+        self.runRecordVM = runRecordVM
+    }
+
+    func acquisitionDate(for minion: MinionDefinitionModel) -> Date? {
+        let sorted = runRecordVM.runRecords.sorted { $0.startTime < $1.startTime }
         var cumulative: Double = 0
 
         for record in sorted {
@@ -29,12 +34,14 @@ final class WeaponViewModel: ObservableObject {
     @Published var allWeapons: [WeaponDefinitionModel] = []
     @Published var selectedWeapon: WeaponDefinitionModel? = nil
     
-    func totalCaptureArea(from runs: [RunRecordModels]) -> Double {
-        runs.map { $0.capturedAreaValue }.reduce(0, +)
+    @StateObject private var runRecordVM = RunRecordViewModel()
+
+    func totalCaptureArea() -> Double {
+        Double(runRecordVM.runRecords.map { $0.capturedAreaValue }.reduce(0, +))
     }
 
-    func isWeaponUnlocked(_ weapon: WeaponDefinitionModel, for runs: [RunRecordModels]) -> Bool {
-        totalCaptureArea(from: runs) >= weapon.unlockNumber
+    func isUnlocked(_ weapon: WeaponDefinitionModel, with areaValue: Int) -> Bool {
+        return Double(areaValue) >= weapon.unlockNumber
     }
 
     func toggleSelection(of weapon: WeaponDefinitionModel) {
@@ -44,13 +51,13 @@ final class WeaponViewModel: ObservableObject {
             selectedWeapon = weapon
         }
     }
-    
-    func acquisitionDate(for weapon: WeaponDefinitionModel, in runs: [RunRecordModels]) -> Date? {
-        let sorted = runs.sorted { $0.startTime < $1.startTime }
+
+    func acquisitionDate(for weapon: WeaponDefinitionModel, from records: [RunRecordModels]) -> Date? {
+        let sorted = records.sorted { $0.startTime < $1.startTime }
         var cumulative: Double = 0
 
         for record in sorted {
-            cumulative += record.capturedAreaValue
+            cumulative += Double(record.capturedAreaValue)
             if cumulative >= weapon.unlockNumber {
                 return record.startTime
             }

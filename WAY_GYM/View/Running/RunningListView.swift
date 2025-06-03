@@ -27,13 +27,13 @@ struct MonthlySectionView: View {
                 let weapons = WeaponModel().allWeapons
                 let minions = MinionModel().allMinions
 
-                let weaponOnThisDate = weapons.first { weapon in
-                    weaponViewModel.acquisitionDate(for: weapon, in: allRecords) == record.startTime
-                }
+//                let weaponOnThisDate = weapons.first { weapon in
+//                    weaponViewModel.acquisitionDate(for: weapon, in: allRecords) == record.startTime
+//                }
 
-                let minionOnThisDate = minions.first { minion in
-                    minionViewModel.acquisitionDate(for: minion, in: allRecords) == record.startTime
-                }
+//                let minionOnThisDate = minions.first { minion in
+//                    minionViewModel.acquisitionDate(for: minion, in: allRecords) == record.startTime
+//                }
 
                 let dateText = formatDate(record.startTime)
                 let distanceText = String(format: "%.2fkm", record.distance / 1000)
@@ -66,19 +66,19 @@ struct MonthlySectionView: View {
                         .bold()
                     }
 
-                    if let weapon = weaponOnThisDate {
-                        Image(weapon.imageName)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 30)
-                    }
+//                    if let weapon = weaponOnThisDate {
+//                        Image(weapon.imageName)
+//                            .resizable()
+//                            .aspectRatio(contentMode: .fit)
+//                            .frame(width: 30)
+//                    }
 
-                    if let minion = minionOnThisDate {
-                        Image(minion.iconName)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 30)
-                    }
+//                    if let minion = minionOnThisDate {
+//                        Image(minion.iconName)
+//                            .resizable()
+//                            .aspectRatio(contentMode: .fit)
+//                            .frame(width: 30)
+//                    }
                 }
 
                 ZStack {
@@ -101,7 +101,7 @@ struct MonthlySectionView: View {
 
 struct RunningListView: View {
     @StateObject private var userVM = UserViewModel()
-    @StateObject private var minionViewModel = MinionViewModel()
+    @StateObject private var minionViewModel = MinionViewModel(runRecordVM: RunRecordViewModel())
     @StateObject private var weaponViewModel = WeaponViewModel()
 
     var groupedRunRecords: [String: [RunRecordModels]] {
@@ -126,20 +126,20 @@ struct RunningListView: View {
                 .ignoresSafeArea()
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    ForEach(groupedRunRecords.keys.sorted(by: >), id: \.self) { month in
-                        if let records = groupedRunRecords[month] {
-                            MonthlySectionView(
-                                month: month,
-                                records: records,
-                                allRecords: userVM.user.runRecords,
-                                minionViewModel: minionViewModel,
-                                weaponViewModel: weaponViewModel
-                            )
-                        }
-                    }
-                }
-                .padding(.horizontal, 30)
+//                VStack(alignment: .leading, spacing: 16) {
+//                    ForEach(groupedRunRecords.keys.sorted(by: >), id: \.self) { month in
+//                        if let records = groupedRunRecords[month] {
+//                            MonthlySectionView(
+//                                month: month,
+//                                records: records,
+//                                allRecords: userVM.user.runRecords,
+//                                minionViewModel: minionViewModel,
+//                                weaponViewModel: weaponViewModel
+//                            )
+//                        }
+//                    }
+//                }
+//                .padding(.horizontal, 30)
             }
         }
         .onAppear {

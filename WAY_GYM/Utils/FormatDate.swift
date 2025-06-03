@@ -24,11 +24,10 @@ func formatNumber(_ number: Double) -> String {
     return formatter.string(from: NSNumber(value: number)) ?? "0"
 }
 
-// 소수점 둘째까지 출력
 func formatDecimal(_ number: Double) -> String {
     let formatter = NumberFormatter()
-    formatter.numberStyle = .decimal
-    formatter.minimumFractionDigits = 2    // 소수점 최소 2자리
-    formatter.maximumFractionDigits = 2    // 소수점 최대 2자리
+    formatter.numberStyle = .decimal         // 쉼표 포함 숫자 스타일
+    formatter.minimumFractionDigits = 2     // 소수점 최소 2자리
+    formatter.maximumFractionDigits = 2     // 소수점 최대 2자리
     return formatter.string(from: NSNumber(value: number)) ?? "0.00"
 }

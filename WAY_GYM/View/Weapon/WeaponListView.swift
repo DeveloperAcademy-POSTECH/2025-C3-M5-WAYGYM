@@ -3,11 +3,13 @@ import SwiftUI
 // weapon = area, 1,000,000단위
 struct WeaponListView: View {
     @StateObject private var weaponModel = WeaponModel()
-    @State private var inputCaptureArea: String = ""
-    @State private var userStats = UserModel(id: UUID(), runRecords: [])
+    // @State private var userStats = UserModel(id: UUID(), runRecords: [])
     // @State private var selectedWeapon: WeaponDefinitionModel? = nil
     @Binding var selectedWeapon: WeaponDefinitionModel?
     @EnvironmentObject var weaponVM: WeaponViewModel
+    
+    @StateObject private var runRecordVM = RunRecordViewModel()
+    @State private var acquisitionDate: Date? = nil
     
     var body: some View {
         ZStack {
@@ -47,11 +49,12 @@ struct WeaponListView: View {
 
                                 HStack {
                                     Spacer()
-                                    Text("\(Int(weapon.unlockNumber))m²")
-
-                                    if let date = weaponVM.acquisitionDate(for: weapon, in: userStats.runRecords) {
-                                        Text("\(formatDate(date))")
+                                    
+                                    if let date = acquisitionDate {
+                                        Text("\(formatShortDate(date))")
                                     }
+                                    
+                                    Text("\(Int(weapon.unlockNumber))m²")
                                 }
                                 .font(.title02)
                                 .padding(.vertical, 1)
@@ -89,82 +92,6 @@ struct WeaponListView: View {
                 } // 진한 박스 zstack
                 .frame(height: UIScreen.main.bounds.height * 0.5)
                 
-                //                ZStack {
-                //                    Color("gang_bg_primary_4")
-                //
-                //                    VStack {
-                //                        ZStack {
-                //                            Image("Flash")
-                //                                .resizable()
-                //                                .aspectRatio(contentMode: .fit)
-                //                                .frame(width: 220)
-                //
-                //                            Image((selectedWeapon == nil || selectedWeapon?.id == "0") ? "main_basic" : "main_\(selectedWeapon!.id)")
-                //                                .resizable()
-                //                                .aspectRatio(contentMode: .fit)
-                //                                .frame(width: 200)
-                //                        }
-                //                        .padding(.vertical, 20)
-                //
-//                                        VStack {
-//                                            if let weapon = selectedWeapon, weapon.id != "0" {
-//                                                Text(weapon.name)
-//                                                    .padding(.vertical, 5)
-//                
-//                                                Text(weapon.description)
-//                                                    .multilineTextAlignment(.center)
-//                
-//                                                HStack {
-//                                                    Spacer()
-//                                                    Text("\(Int(weapon.unlockNumber))m²")
-//                
-//                                                    if let date = weaponVM.acquisitionDate(for: weapon, in: userStats.runRecords) {
-//                                                        Text("\(formatDate(date))")
-//                                                    }
-//                                                }
-//                                                .font(.title02)
-//                                                .padding(.vertical, 1)
-//                
-//                                            } else {
-//                                                Text("맨손")
-//                                                    .padding(.vertical, 5)
-//                
-//                                                Text("무기? 필요 있나?\n내 주먹이 무기인데")
-//                                                    .multilineTextAlignment(.center)
-//                
-//                                                HStack {
-//                                                    Spacer()
-//                                                    Text("")
-//                                                    Text("")
-//                                                }
-//                                                .font(.title02)
-//                                                .padding(.vertical, 1)
-//                
-//                                            }
-//                                        }
-//                                        .font(.title01)
-//                                        .frame(maxWidth: .infinity)
-//                                        .padding(16) // 박스 내부 여백
-//                                        .overlay(
-//                                            RoundedRectangle(cornerRadius: 16)
-//                                                .stroke(Color.black, lineWidth: 3)
-//                                        )
-//                                        .padding(.top, -10)
-//                                        .padding(.bottom, 20)
-//                                        .padding(.horizontal, 14)
-                //
-                //                    }
-                //                }
-                ////                .overlay(
-                ////                    Rectangle()
-                ////                        .fill(Color.black)
-                ////                        .frame(height: 3)
-                ////                        .frame(maxHeight: .infinity, alignment: .bottom)
-                ////                )
-                //                .padding(.bottom, 5)
-                //                .padding(.horizontal, -14)
-                
-                
                 //                Text("나의 총 땅: \(Int(weaponVM.totalCaptureArea(from: userStats.runRecords)))m²")
                 //                    .font(.subheadline)
                 
@@ -176,7 +103,8 @@ struct WeaponListView: View {
                     ]
                     LazyVGrid(columns: columns, spacing: 30) {
                         ForEach(weaponModel.allWeapons) { weapon in
-                            let isUnlocked = weaponVM.isWeaponUnlocked(weapon, for: userStats.runRecords)
+                            // let isUnlocked = Double(runRecordVM.totalCapturedAreaValue) >= weapon.unlockNumber
+                            let isUnlocked = weaponVM.isUnlocked(weapon, with: runRecordVM.totalCapturedAreaValue)
                             
                             if isUnlocked {
                                 Button(action: {
@@ -196,13 +124,6 @@ struct WeaponListView: View {
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fit)
                                                 .frame(width: 90)
-                                            
-                                            //                                            Text(weapon.name)
-                                            //                                                .font(.body)
-                                            //
-                                            //                                            Text("\(Int(weapon.unlockNumber))km²")
-                                            //                                                .font(.caption)
-                                            //                                                .foregroundColor(.gray)
                                         }
                                     }
                                     // .frame(width: 100, height: 120)
@@ -235,14 +156,43 @@ struct WeaponListView: View {
                 .scrollIndicators(.hidden)
             }
         }
+        .onAppear {
+            runRecordVM.fetchAndSumCapturedValue()
+        }
+        .onChange(of: selectedWeapon) { newWeapon in
+            if let weapon = newWeapon {
+                runRecordVM.fetchRunRecordsAndCalculateAcquisitionDate(for: weapon.unlockNumber) { date in
+                    print("선택 무기 변경, 획득 날짜: \(String(describing: date))")
+                    acquisitionDate = date
+                }
+            } else {
+                acquisitionDate = nil
+            }
+        }
         .navigationBarBackButtonHidden(true)
     }
+
+//    private var acquisitionDate: Date? {
+//        guard let weapon = selectedWeapon else { return nil }
+//        var cumulative: Double = 0
+//        for record in runRecordVM.runRecords {
+//            cumulative += Double(record.capturedAreaValue)
+//            if cumulative >= weapon.unlockNumber {
+//                return record.startTime
+//            }
+//        }
+//        return nil
+//    }
+    
 }
 
+let runRecordVM = RunRecordViewModel()
+let weaponVM = WeaponViewModel()
 #Preview {
     StatefulPreviewWrapper(nil as WeaponDefinitionModel?) { binding in
         WeaponListView(selectedWeapon: binding)
-            .environmentObject(WeaponViewModel())
+            .environmentObject(runRecordVM)
+            .environmentObject(weaponVM)
             .font(.text01)
             .foregroundColor(Color.gang_text_2)
     }

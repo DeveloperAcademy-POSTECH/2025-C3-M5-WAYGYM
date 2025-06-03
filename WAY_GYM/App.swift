@@ -28,17 +28,9 @@ struct WAY_GYMApp: App {
     @StateObject private var router = AppRouter()
     @StateObject private var locationManager = LocationManager()
     // @StateObject private var healthKitManager = HealthKitManager()
-    @StateObject private var minionVM = MinionViewModel()
-    @StateObject private var weaponVM = WeaponViewModel()
     
     var body: some Scene {
         WindowGroup {
-//            MainView()
-//                .environmentObject(router)
-//                .environmentObject(locationManager)
-//                // .environmentObject(healthKitManager)
-//                .environmentObject(minionVM)
-//                .environmentObject(weaponVM)
             RootView()
         }
     }
