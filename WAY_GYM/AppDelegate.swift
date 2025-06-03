@@ -7,15 +7,13 @@
 
 import UIKit
 import FirebaseAuth
-import FirebaseCore
 import FirebaseFirestore
 
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        FirebaseApp.configure()
-        
-        print("FirebaseApp.configure() 호출 완료")
+        // Firebase 초기화는 FirebaseAuth를 통해 자동으로 이루어집니다
+        print("Firebase 초기화 완료")
         
         //Firebase 연결 확인 예제 코드
         do {
