@@ -19,9 +19,13 @@ struct RootView: View {
                 case .running:
                     RunningView().environmentObject(router)
                 case .result(_):
-                    RunResultModalView(capture: RunRecordModel.dummyData[5]) {
-                        router.currentScreen = .main
-                    }
+                    RunResultModalView(
+                        capture: RunRecordModel.dummyData[5],
+                        onComplete: {
+                            router.currentScreen = .main
+                        },
+                        hasReward: true // 조건에 맞는 값 필요
+                    )
                 case .profile:
                     ProfileView().environmentObject(router)
                 }

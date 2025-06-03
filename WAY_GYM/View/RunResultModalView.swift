@@ -10,6 +10,7 @@ import SwiftUI
 struct RunResultModalView: View {
     let capture: RunRecordModel
     let onComplete: () -> Void
+    let hasReward: Bool // 보상 유무
 
     var body: some View {
         ZStack{
@@ -65,27 +66,42 @@ struct RunResultModalView: View {
                 .foregroundColor(.white)
                 
                 Spacer().frame(height: 0)
-                
-                Button(action: {
-                    onComplete()
-                }) {
-                    Text("땅따먹기 끝내기")
-                        .foregroundColor(.black)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.yellow)
-                        .cornerRadius(12)
-                        .padding(.horizontal)
-                        .font(.custom("NeoDunggeunmoPro-Regular", size: 22))
+                if hasReward{
+                    Button(action: {
+                        onComplete()
+                    }) {
+                        Text("보상 확인하기")
+                            .foregroundColor(.black)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.gang_yellow)
+                            .cornerRadius(12)
+                            .padding(.horizontal)
+                            .font(.custom("NeoDunggeunmoPro-Regular", size: 22))
+                    }
+                    .padding(.bottom)
+                } else {
+                    Button(action: {
+                        onComplete()
+                    }) {
+                        Text("구역 확장 끝내기")
+                            .foregroundColor(.black)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.gang_yellow)
+                            .cornerRadius(12)
+                            .padding(.horizontal)
+                            .font(.custom("NeoDunggeunmoPro-Regular", size: 22))
+                    }
+                    .padding(.bottom)
                 }
-                .padding(.bottom)
             }
             .padding()
             .background(Color("ModalBackground"))
             .cornerRadius(20)
             .overlay(
                 RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.yellow.opacity(0.8), lineWidth: 2)
+                    .stroke(Color.gang_yellow.opacity(0.8), lineWidth: 2)
             )
             .frame(maxWidth: 340, maxHeight: 660)
 
@@ -102,6 +118,6 @@ struct RunResultModalView: View {
 }
 
 #Preview {
-    RunResultModalView(capture: RunRecordModel.dummyData[5], onComplete: {})
+    RunResultModalView(capture: RunRecordModel.dummyData[5], onComplete: {}, hasReward: true)
 }
 
