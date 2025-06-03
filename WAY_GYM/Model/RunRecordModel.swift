@@ -26,7 +26,7 @@ struct RunRecordModels: Identifiable, Codable {
     let routeImage: String? // Firebase Storage 이미지 URL (선택적)
     let coordinates: [[Double]] // 경로 좌표 [[latitude, longitude]]
     let capturedAreas: [[CoordinatePair]] // 캡처된 도형 좌표
-    let capturedAreaValue: Double // 유저가 차지한 면적 (숫자 데이터)
+    let capturedAreaValue: Int // 유저가 차지한 면적 (숫자 데이터)
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -38,7 +38,7 @@ struct RunRecordModels: Identifiable, Codable {
         case routeImage = "route_image"
         case coordinates
         case capturedAreas = "captured_areas"
-        case capturedAreaValue = "captured_area_value"
+        case capturedAreaValue
     }
     
     init(from decoder: Decoder) throws {
@@ -52,7 +52,7 @@ struct RunRecordModels: Identifiable, Codable {
         routeImage = try container.decodeIfPresent(String.self, forKey: .routeImage)
         coordinates = try container.decode([[Double]].self, forKey: .coordinates)
         capturedAreas = try container.decode([[CoordinatePair]].self, forKey: .capturedAreas)
-        capturedAreaValue = try container.decode(Double.self, forKey: .capturedAreaValue)
+        capturedAreaValue = try container.decodeIfPresent(Int.self, forKey: .capturedAreaValue) ?? 0
     }
     
     init(id: String? = nil,
@@ -64,7 +64,7 @@ struct RunRecordModels: Identifiable, Codable {
          routeImage: String?,
          coordinates: [[Double]],
          capturedAreas: [[CoordinatePair]],
-         capturedAreaValue: Double) {
+         capturedAreaValue: Int) {
         self.id = id
         self.distance = distance
         self.stepCount = stepCount

@@ -112,7 +112,7 @@ struct RunningListView: View {
         }
     }
 
-    func montlyTotalArea(of records: [RunRecordModels]) -> Double {
+    func monthlyTotalArea(of records: [RunRecordModels]) -> Int {
         records.map { $0.capturedAreaValue }.reduce(0, +)
     }
 
