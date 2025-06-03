@@ -14,7 +14,7 @@ struct MonthlySectionView: View {
 
         VStack(alignment: .leading, spacing: 8) {
             Text(month)
-                .font(.title2)
+                .font(.title02)
                 .bold()
 
             HStack {
@@ -22,7 +22,8 @@ struct MonthlySectionView: View {
                 Text("\(String(format: "%.0f", areaSum))m²")
                 Text("\(String(format: "%.2f", distanceSum / 1000))km")
             }
-
+            .font(.text02)
+            
             ForEach(records.sorted(by: { $0.startTime > $1.startTime }), id: \.id) { record in
                 let weapons = WeaponModel().allWeapons
                 let minions = MinionModel().allMinions
