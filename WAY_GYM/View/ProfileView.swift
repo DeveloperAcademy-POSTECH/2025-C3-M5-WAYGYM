@@ -25,7 +25,10 @@ struct ProfileView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color("gang_bg_profile")
+//                Color("gang_bg_profile")
+//                    .ignoresSafeArea()
+                
+                Color.gang_bg_profile
                     .ignoresSafeArea()
                 
                 ScrollView {
