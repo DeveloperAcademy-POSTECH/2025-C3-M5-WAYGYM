@@ -53,7 +53,8 @@ struct MinionRewardView: View {
 #Preview {
     let model = MinionModel()
     return MinionRewardView(
-        minion: model.allMinions[1],
-    ).environmentObject(AppRouter())
+        minion: model.allMinions[1]
+    )
+    .environmentObject(AppRouter())
 }
 

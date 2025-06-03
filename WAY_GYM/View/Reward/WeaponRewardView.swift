@@ -55,7 +55,8 @@ struct WeaponRewardView: View {
 #Preview {
     let model = WeaponModel()
     return WeaponRewardView(
-        weapon: model.allWeapons[1],
-    ).environmentObject(AppRouter())
+        weapon: model.allWeapons[1]
+    )
+    .environmentObject(AppRouter())
 }
 
