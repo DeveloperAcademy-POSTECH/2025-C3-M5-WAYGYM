@@ -1,7 +1,11 @@
 {
   "images" : [
     {
+<<<<<<< HEAD
       "filename" : "성인씨 3.png",
+=======
+      "filename" : "성인씨.png",
+>>>>>>> develop
       "idiom" : "universal",
       "scale" : "1x"
     },
@@ -11,7 +15,11 @@
       "scale" : "2x"
     },
     {
+<<<<<<< HEAD
       "filename" : "성인씨.png",
+=======
+      "filename" : "성인씨 5.png",
+>>>>>>> develop
       "idiom" : "universal",
       "scale" : "3x"
     }
