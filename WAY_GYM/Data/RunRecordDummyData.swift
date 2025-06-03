@@ -6,7 +6,7 @@ extension RunRecordModel {
             id: UUID(),
             startTime: RunRecordModel.makeDate("2025.05.23 08:00"),
             endTime: RunRecordModel.makeDate("2025.05.23 08:17"),
-            totalDistance: 1263,
+            totalDistance: 1265, // 1265
             caloriesBurned: 100,
             steps: 1600,
             routeImage: "route_1.png",
@@ -32,7 +32,7 @@ extension RunRecordModel {
             id: UUID(),
             startTime: RunRecordModel.makeDate("2025.05.26 08:46"),
             endTime: RunRecordModel.makeDate("2025.05.26 09:10"),
-            totalDistance: 1546,
+            totalDistance: 1546, // 1546
             caloriesBurned: 130,
             steps: 2000,
             routeImage: "route_3.png",
@@ -49,7 +49,7 @@ extension RunRecordModel {
             id: UUID(),
             startTime: RunRecordModel.makeDate("2025.05.28 06:23"),
             endTime: RunRecordModel.makeDate("2025.05.28 06:28"),
-            totalDistance: 2275,
+            totalDistance: 2275,// 2275
             caloriesBurned: 180,
             steps: 3000,
             routeImage: "route_4.png",
@@ -83,7 +83,7 @@ extension RunRecordModel {
             id: UUID(),
             startTime: RunRecordModel.makeDate("2025.06.01 06:46"),
             endTime: RunRecordModel.makeDate("2025.06.01 07:24"),
-            totalDistance: 2347,
+            totalDistance: 2347, // 2347
             caloriesBurned: 170,
             steps: 2900,
             routeImage: "route_6.png",
@@ -128,7 +128,7 @@ extension RunRecordModel {
             id: UUID(),
             startTime: RunRecordModel.makeDate("2025.06.01 18:03"),
             endTime: RunRecordModel.makeDate("2025.06.01 18:54"),
-            totalDistance: 9329,
+            totalDistance: 4329, //4329
             caloriesBurned: 320,
             steps: 8200,
             routeImage: "route_5.png",

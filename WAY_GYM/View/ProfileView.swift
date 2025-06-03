@@ -10,101 +10,142 @@ struct ProfileView: View {
         runRecords: RunRecordModel.dummyData
     )
     
+    @StateObject private var minionModel = MinionModel()
     @State private var selectedWeapon: WeaponDefinitionModel? = nil
     
     var body: some View {
+        let totalDistance = userStats.runRecords.map { $0.totalDistance }.reduce(0, +) / 1000
+        let recentMinions = minionModel.allMinions
+            .filter { totalDistance >= $0.unlockNumber }
+            .suffix(3)
+        let hasRecentMinions = !recentMinions.isEmpty
+        
         NavigationView {
                 ZStack {
                     Color.gray
                         .ignoresSafeArea()
                     
                     ScrollView{
-                        VStack {
-                            ZStack {
-                                Color.black
-                                
+                        VStack(spacing: 15) {
+                                // 유저 설명 vstack
                                 VStack {
-                                    HStack {
-                                        Spacer()
-                                        VStack {
-                                            NavigationLink(destination: WeaponListView(selectedWeapon: $selectedWeapon)
-                                                .environmentObject(WeaponViewModel())) {
-                                                Rectangle()
-                                                    .foregroundStyle(Color.white)
-                                                    .frame(width: 50, height: 50)
-                                            }
-                                            Text("무기")
-                                                .foregroundStyle(Color.white)
-                                        }
+                                    ZStack {
+                                        Image("Flash")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 180)
                                         
-                                    }
-                                    Spacer()
-                                }
-                                .padding(20)
-                                
-                                VStack {
-                                    Image(selectedWeapon != nil ? "main_\(selectedWeapon!.id)" : "main_basic")
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .frame(width: 130)
-                                        .padding(.bottom, 15)
+                                        Image(selectedWeapon != nil ? "main_\(selectedWeapon!.id)" : "main_basic")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 130)
+                                        
+                                        VStack {
+                                            HStack {
+                                                Spacer()
+                                                VStack {
+                                                    NavigationLink(destination: WeaponListView(selectedWeapon: $selectedWeapon)
+                                                        .environmentObject(WeaponViewModel())) {
+                                                            ZStack {
+                                                                Image("box")
+                                                                    .resizable()
+                                                                    .frame(width: 52, height: 52)
+                                                                
+                                                                Image(selectedWeapon?.imageName ?? "weapon_0")
+                                                                    .resizable()
+                                                                    .aspectRatio(contentMode: .fit)
+                                                                    .frame(width: 40)
+                                                            }
+                                                    }
+                                                    Text("무기")
+                                                        .font(.title02)
+                                                }
+                                                
+                                            }
+                                            Spacer()
+                                        } // 무기 선택
+                                        
+                                    } // 유저 아이콘 zstack
                                     
                                     Group {
                                         Text("한성인")
-                                            .font(.title)
+                                            .font(.title01)
+                                            .padding(.bottom, 2)
+                                            .padding(.top, -0.5)
                                         
                                         Text("남구 연일읍 1대손파 형님")
                                     }
                                     .foregroundStyle(Color.white)
+                                } // 유저 설명 vstack
+                                .padding(.bottom, 13)
+
+                                HStack {
+                                    VStack(alignment: .leading) {
+                                        Text("총 차지한 영역")
+                                            .font(.text01)
+                                            .padding(.bottom, 8)
+                                        
+                                        Text(" \(formatNumber(userStats.runRecords.map { $0.capturedAreaValue }.reduce(0, +))) m²")                     .font(.title01)
+                                    }
+                                    .padding(20)
+                                    .customBorder()
+                                    
+                                    Spacer()
+                                    
+                                    VStack(alignment: .leading) {
+                                        Text("총 이동한 거리")
+                                            .font(.text01)
+                                            .padding(.bottom, 8)
+                                        
+                                        Text("\(formatNumber(userStats.runRecords.map { $0.totalDistance }.reduce(0, +) / 1000))km")
+                                            .font(.title01)
+                                    }
+                                    .padding(20)
+                                    .customBorder()
                                 }
-                            } // 프로필 zstack
-                            .clipShape(RoundedRectangle(cornerRadius: 40))
-                            .frame(width: 330, height: 330)
-                            .padding(.bottom, 20)
-                            
-                            Text("나의 총거리: \(String(format: "%.3f", userStats.runRecords.map { $0.totalDistance }.reduce(0, +) / 1000))km")
-                                .font(.subheadline)
-                            Text("나의 총 땅: \(String(format: "%.2f", userStats.runRecords.map { $0.capturedAreaValue }.reduce(0, +) / 1_000_000)) km²")
-                            
-                            VStack {
+                                
                                 VStack{
                                     HStack {
                                         Text("나의 똘마니")
-                                            .font(.headline)
+                                            .font(.title01)
                                         Spacer()
                                         NavigationLink(destination: MinionListView()
                                             .environmentObject(MinionViewModel())) {
-                                            Text("모두 보기")
-                                        }
+                                                Text("모두 보기")
+                                            }
+                                            .opacity(hasRecentMinions ? 1 : 0)
+                                            .disabled(!hasRecentMinions)
                                     }
                                     
-                                    HStack {
-                                        ProfileMinionListView()
-                                    }
-                                    .padding(.bottom, 20)
+                                    ProfileMinionListView(recentMinions: Array(recentMinions))
+                                        .padding(.vertical, 4)
+                                        .foregroundStyle(Color.black)
+                                    
                                 }
-                                .padding()
-                                .border(Color.black, width: 3)
-                                
+                                .padding(20)
+                                .customBorder()
                                 
                                 VStack(alignment: .leading) {
                                     HStack {
-                                        Text("나의 땅따먹기 기록")
-                                            .font(.headline)
+                                        Text("구역순찰 기록")
+                                            .font(.title01)
                                         Spacer()
-                                        NavigationLink(destination: RunningListView()) {
-                                            Text("모두 보기")
+                                        if hasRecentMinions {
+                                            NavigationLink(destination: RunningListView()) {
+                                                Text("모두 보기")
+                                            }
                                         }
                                     }
-                                        ProfileRunningView()
-                                       
+                                    ProfileRunningView()
+                                        .padding(.vertical, 4)
+                                        .foregroundStyle(Color.black)
+                                    
                                 }
-                                .padding()
-                                .border(Color.black, width: 3)
-                                
-                            }// 똘마니, 기록 vstack
-                            .padding(.horizontal, 30)
+                                .padding(20)
+                                .customBorder()
+                            
                         }
+                        .padding(.horizontal, 25)
                     }
                     
                 }
@@ -116,4 +157,38 @@ struct ProfileView: View {
     ProfileView()
         .environmentObject(MinionViewModel())
         .environmentObject(WeaponViewModel())
+        .font(.text01)
+        .foregroundColor(.white)
+}
+
+
+struct CustomBorderModifier: ViewModifier {
+    var cornerRadius: CGFloat = 16
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(
+                VStack(spacing: 0) {
+                    Rectangle()
+                        .fill(Color.black)
+                        .frame(height: 2)
+                    Spacer()
+                    Rectangle()
+                        .fill(Color.black)
+                        .frame(height: 4)
+                }
+                .padding(.horizontal, 2)
+            )
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .strokeBorder(Color.black, lineWidth: 2)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+    }
+}
+
+extension View {
+    func customBorder(cornerRadius: CGFloat = 16) -> some View {
+        self.modifier(CustomBorderModifier(cornerRadius: cornerRadius))
+    }
 }
