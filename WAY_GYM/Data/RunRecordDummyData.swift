@@ -1,11 +1,11 @@
 import Foundation
 
-extension RunRecordModel {
-    static let dummyData: [RunRecordModel] = [
-        RunRecordModel(
+extension RunRecordModelss {
+    static let dummyData: [RunRecordModelss] = [
+        RunRecordModels(
             id: UUID(),
-            startTime: RunRecordModel.makeDate("2025.05.23 08:00"),
-            endTime: RunRecordModel.makeDate("2025.05.23 08:17"),
+            startTime: RunRecordModels.makeDate("2025.05.23 08:00"),
+            endTime: RunRecordModels.makeDate("2025.05.23 08:17"),
             totalDistance: 1265, // 1265
             caloriesBurned: 100,
             steps: 1600,
@@ -18,20 +18,20 @@ extension RunRecordModel {
             ]],
             capturedAreaValue: 30000
         ),
-        RunRecordModel(
+        RunRecordModels(
             id: UUID(),
-            startTime: RunRecordModel.makeDate("2025.05.25 07:34"),
-            endTime: RunRecordModel.makeDate("2025.05.25 07:42"),
+            startTime: RunRecordModels.makeDate("2025.05.25 07:34"),
+            endTime: RunRecordModels.makeDate("2025.05.25 07:42"),
             totalDistance: 826,
             caloriesBurned: 70,
             steps: 1100,
             routeImage: "route_2",
             capturedAreas: []
         ),
-        RunRecordModel(
+        RunRecordModels(
             id: UUID(),
-            startTime: RunRecordModel.makeDate("2025.05.26 08:46"),
-            endTime: RunRecordModel.makeDate("2025.05.26 09:10"),
+            startTime: RunRecordModels.makeDate("2025.05.26 08:46"),
+            endTime: RunRecordModels.makeDate("2025.05.26 09:10"),
             totalDistance: 1546, // 1546
             caloriesBurned: 130,
             steps: 2000,
@@ -45,10 +45,10 @@ extension RunRecordModel {
             ]],
             capturedAreaValue: 37260
         ),
-        RunRecordModel(
+        RunRecordModels(
             id: UUID(),
-            startTime: RunRecordModel.makeDate("2025.05.28 06:23"),
-            endTime: RunRecordModel.makeDate("2025.05.28 06:28"),
+            startTime: RunRecordModels.makeDate("2025.05.28 06:23"),
+            endTime: RunRecordModels.makeDate("2025.05.28 06:28"),
             totalDistance: 2275,// 2275
             caloriesBurned: 180,
             steps: 3000,
@@ -69,20 +69,20 @@ extension RunRecordModel {
             ],
             capturedAreaValue: 82619
         ),
-        RunRecordModel(
+        RunRecordModels(
             id: UUID(),
-            startTime: RunRecordModel.makeDate("2025.05.28 07:40"),
-            endTime: RunRecordModel.makeDate("2025.05.28 07:54"),
+            startTime: RunRecordModels.makeDate("2025.05.28 07:40"),
+            endTime: RunRecordModels.makeDate("2025.05.28 07:54"),
             totalDistance: 1275,
             caloriesBurned: 90,
             steps: 1400,
             routeImage: "route_5",
             capturedAreas: []
         ),
-        RunRecordModel(
+        RunRecordModels(
             id: UUID(),
-            startTime: RunRecordModel.makeDate("2025.06.01 06:46"),
-            endTime: RunRecordModel.makeDate("2025.06.01 07:24"),
+            startTime: RunRecordModels.makeDate("2025.06.01 06:46"),
+            endTime: RunRecordModels.makeDate("2025.06.01 07:24"),
             totalDistance: 2347, // 2347
             caloriesBurned: 170,
             steps: 2900,
@@ -124,10 +124,10 @@ extension RunRecordModel {
             ],
             capturedAreaValue: 1292379
         ),
-        RunRecordModel(
+        RunRecordModels(
             id: UUID(),
-            startTime: RunRecordModel.makeDate("2025.06.01 18:03"),
-            endTime: RunRecordModel.makeDate("2025.06.01 18:54"),
+            startTime: RunRecordModels.makeDate("2025.06.01 18:03"),
+            endTime: RunRecordModels.makeDate("2025.06.01 18:54"),
             totalDistance: 4329, //4329
             caloriesBurned: 320,
             steps: 8200,

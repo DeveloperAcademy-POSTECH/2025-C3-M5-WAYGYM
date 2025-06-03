@@ -9,6 +9,6 @@ import SwiftUI
 
 struct RunningView: View {
     var body: some View {
-        
+        Text("hello")
     }
 }

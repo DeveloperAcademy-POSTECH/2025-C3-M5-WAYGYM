@@ -1,5 +1,8 @@
 import Foundation
 
+// 구 run record model에서 날짜 만들기
+
+
 // yyyy.mm.dd로 출력
 func formatDate(_ date: Date, format: String = "yyyy.MM.dd") -> String {
     let formatter = DateFormatter()
