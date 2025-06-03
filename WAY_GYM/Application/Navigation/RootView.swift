@@ -23,16 +23,13 @@ struct RootView: View {
                         router.currentScreen = .main
                     }
                 case .profile:
-<<<<<<< HEAD
                     ProfileView()
                         .environmentObject(router)
                         .environmentObject(MinionViewModel())
                         .environmentObject(WeaponViewModel())
                         .font(.text01)
                         .foregroundColor(Color("gang_text_2"))
-=======
-                    ProfileView().environmentObject(router)
->>>>>>> develop
+
                 }
             }
         }

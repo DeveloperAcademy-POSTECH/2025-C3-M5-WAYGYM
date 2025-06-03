@@ -2,11 +2,9 @@
   "colors" : [
     {
       "color" : {
-<<<<<<< HEAD
+
         "color-space" : "srgb",
-=======
-        "color-space" : "extended-srgb",
->>>>>>> develop
+
         "components" : {
           "alpha" : "1.000",
           "blue" : "0xF0",
@@ -24,11 +22,9 @@
         }
       ],
       "color" : {
-<<<<<<< HEAD
+
         "color-space" : "srgb",
-=======
-        "color-space" : "extended-srgb",
->>>>>>> develop
+
         "components" : {
           "alpha" : "1.000",
           "blue" : "0xF0",
