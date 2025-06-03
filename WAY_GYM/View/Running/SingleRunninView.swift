@@ -60,7 +60,6 @@ struct SingleRunninView: View {
                     .stroke(Color.gang_bg_secondary_2, lineWidth: 2)
             )
             .overlay(
-                // ✅ 카드 내부 오른쪽 상단에 '안녕' 삽입
                 Text("25.05.20 18:05")
                     .foregroundStyle(Color.text_secondary)
                     .font(.text01)
