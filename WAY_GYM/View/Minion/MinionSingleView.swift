@@ -6,14 +6,12 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct MinionSingleView: View {
     let minion: MinionDefinitionModel
-    @EnvironmentObject var minionVM: MinionViewModel
-    @State private var userStats = UserModel(
-        id: UUID(),
-        runRecords: RunRecordModel.dummyData
-    )
+    @StateObject private var minionVM = MinionViewModel()
+    @StateObject private var userVM = UserViewModel()
     
     var body: some View {
         VStack {
@@ -31,16 +29,13 @@ struct MinionSingleView: View {
                 Text(minion.description)
                 HStack {
                     Spacer()
-                    
-//                    if let date = minionVM.acquisitionDate(for: minion, in: userStats.runRecords) {
-//                               Text("획득 날짜: \(formatDate(date))")
-//                           }
+                    if let date = minionVM.acquisitionDate(for: minion, in: userVM.user.runRecords) {
+                        Text("획득 날짜: \(formatDate(date))")
+                    }
                 }
             }
             .border(Color.black, width: 2)
-            
         }
-        
     }
 }
 
@@ -52,5 +47,4 @@ struct MinionSingleView: View {
         iconName: "minion_1",
         unlockNumber: 5
     ))
-    .environmentObject(MinionViewModel())
 }

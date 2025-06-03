@@ -1,0 +1,45 @@
+import SwiftUI
+import FirebaseCore
+import FirebaseFirestore
+import UIKit
+import FirebaseAuth
+
+
+//class AppDelegate: NSObject, UIApplicationDelegate {
+//    func application(_ application: UIApplication,
+//                    didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+//        FirebaseApp.configure()
+//        return true
+//    }
+//}
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        FirebaseApp.configure()
+        print("Firebase 초기화 완료")
+        return true
+    }
+}
+
+@main
+struct WAY_GYMApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @StateObject private var router = AppRouter()
+    @StateObject private var locationManager = LocationManager()
+    // @StateObject private var healthKitManager = HealthKitManager()
+    @StateObject private var minionVM = MinionViewModel()
+    @StateObject private var weaponVM = WeaponViewModel()
+    
+    var body: some Scene {
+        WindowGroup {
+//            MainView()
+//                .environmentObject(router)
+//                .environmentObject(locationManager)
+//                // .environmentObject(healthKitManager)
+//                .environmentObject(minionVM)
+//                .environmentObject(weaponVM)
+            RootView()
+        }
+    }
+} 

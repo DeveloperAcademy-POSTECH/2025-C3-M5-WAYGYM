@@ -18,10 +18,10 @@ struct RootView: View {
                     MainView().environmentObject(router)
                 case .running:
                     RunningView().environmentObject(router)
-                case .result(_):
-                    RunResultModalView(capture: RunRecordModel.dummyData[5]) {
-                        router.currentScreen = .main
-                    }
+//                case .result(_):
+//                    RunResultModalView(capture: RunRecordModels.dummyData[5]) {
+//                        router.currentScreen = .main
+//                    }
                 case .profile:
                     ProfileView()
                         .environmentObject(router)

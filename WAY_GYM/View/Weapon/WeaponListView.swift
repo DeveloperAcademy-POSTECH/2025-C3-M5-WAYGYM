@@ -4,10 +4,7 @@ import SwiftUI
 struct WeaponListView: View {
     @StateObject private var weaponModel = WeaponModel()
     @State private var inputCaptureArea: String = ""
-    @State private var userStats = UserModel(
-        id: UUID(),
-        runRecords: RunRecordModel.dummyData
-    )
+    @State private var userStats = UserModel(id: UUID(), runRecords: [])
     // @State private var selectedWeapon: WeaponDefinitionModel? = nil
     @Binding var selectedWeapon: WeaponDefinitionModel?
     @EnvironmentObject var weaponVM: WeaponViewModel
