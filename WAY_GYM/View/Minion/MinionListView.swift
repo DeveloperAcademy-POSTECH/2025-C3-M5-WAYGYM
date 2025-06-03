@@ -1,14 +1,12 @@
 import SwiftUI
+import FirebaseFirestore
 
 // minion = distance, 5000단위
 struct MinionListView: View {
     @StateObject private var minionModel = MinionModel()
-    @State private var userStats = UserModel(
-        id: UUID(),
-        runRecords: RunRecordModel.dummyData
-    )
+    @StateObject private var userVM = UserViewModel()
+    @StateObject private var minionVM = MinionViewModel()
     @State private var selectedMinion: MinionDefinitionModel? = nil
-    @EnvironmentObject var minionVM: MinionViewModel
     
     var body: some View {
         ZStack {
@@ -54,7 +52,7 @@ struct MinionListView: View {
                                     HStack {
                                         Text(minion.name)
                                         Spacer()
-                                        if let date = minionVM.acquisitionDate(for: minion, in: userStats.runRecords) {
+                                        if let date = minionVM.acquisitionDate(for: minion, in: userVM.user.runRecords) {
                                             Text("\(formatShortDate(date))")
                                         }
                                     }
@@ -85,10 +83,6 @@ struct MinionListView: View {
                 .padding(.bottom, 5)
                 .padding(.horizontal, -14)
                 
-                
-//                Text("사용자의 총거리: \(String(format: "%.3f", userStats.runRecords.map { $0.totalDistance }.reduce(0, +) / 1000))km")
-//                    .font(.subheadline)
-                
                 ScrollView {
                     let columns = [
                         GridItem(.flexible()),
@@ -97,8 +91,7 @@ struct MinionListView: View {
                     ]
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(minionModel.allMinions) { minion in
-                            // let isUnlocked = true
-                            let isUnlocked = userStats.runRecords.map { $0.totalDistance }.reduce(0, +) >= minion.unlockNumber * 1000
+                            let isUnlocked = userVM.user.runRecords.map { $0.distance }.reduce(0, +) >= minion.unlockNumber * 1000
                             if isUnlocked {
                                 Button(action: {
                                     selectedMinion = minion
@@ -114,13 +107,13 @@ struct MinionListView: View {
                                                 .resizable()
                                                 .aspectRatio(contentMode: .fit)
                                                 .frame(width: 80)
-                                                // .shadow(color: isSelected ? Color.yellow : Color.black, radius: 4, x: 0, y: 0)
                                                 .shadow(color: selectedMinion?.id == minion.id ? Color.yellow : Color.black, radius: 4, x: 0, y: 0)
                                             
                                             Text(minion.name)
                                                 .foregroundStyle(Color.black)
                                             
-                                            Text(String(format: "%.0f km", minion.unlockNumber))                    .foregroundStyle(Color.black)
+                                            Text(String(format: "%.0f km", minion.unlockNumber))
+                                                .foregroundStyle(Color.black)
                                         }
                                     }
                                     .cornerRadius(8)
@@ -152,12 +145,12 @@ struct MinionListView: View {
                             }
                         }
                     }
-                        .padding(16)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color.black, lineWidth: 7)
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .padding(16)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.black, lineWidth: 7)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
                 .scrollIndicators(.hidden)
             }
@@ -169,7 +162,6 @@ struct MinionListView: View {
 
 #Preview {
     MinionListView()
-        .environmentObject(MinionViewModel())
         .font(.text01)
         .foregroundColor(Color("gang_text_2"))
 }

@@ -12,9 +12,9 @@ struct UserModel {
     
 //    var totalDistance: Double // Minion
 //    var totalCaptureArea: Double // Weapon
-    var runRecords: [RunRecordModel]
+    var runRecords: [RunRecordModels]
     
-    init(id: UUID, runRecords: [RunRecordModel]) {
+    init(id: UUID, runRecords: [RunRecordModels]) {
             self.id = id
             self.runRecords = runRecords
 //            self.totalDistance = runRecords.map { $0.totalDistance }.reduce(0, +)
