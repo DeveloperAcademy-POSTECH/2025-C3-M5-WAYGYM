@@ -88,7 +88,7 @@ struct ProfileView: View {
                                     .font(.text01)
                                     .padding(.bottom, 8)
                                 
-                                Text(" \(formatNumber(userVM.user.runRecords.map { $0.capturedAreaValue }.reduce(0, +))) m²")
+                                Text(" \(formatNumber(userVM.user.runRecords.map { Double($0.capturedAreaValue) }.reduce(0, +))) m²")
                                     .font(.title01)
                             }
                             .padding(20)

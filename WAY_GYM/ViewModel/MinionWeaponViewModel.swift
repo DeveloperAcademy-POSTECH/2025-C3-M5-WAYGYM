@@ -30,7 +30,7 @@ final class WeaponViewModel: ObservableObject {
     @Published var selectedWeapon: WeaponDefinitionModel? = nil
     
     func totalCaptureArea(from runs: [RunRecordModels]) -> Double {
-        runs.map { $0.capturedAreaValue }.reduce(0, +)
+        Double(runs.map { $0.capturedAreaValue }.reduce(0, +))
     }
 
     func isWeaponUnlocked(_ weapon: WeaponDefinitionModel, for runs: [RunRecordModels]) -> Bool {
@@ -50,7 +50,7 @@ final class WeaponViewModel: ObservableObject {
         var cumulative: Double = 0
 
         for record in sorted {
-            cumulative += record.capturedAreaValue
+            cumulative += Double(record.capturedAreaValue)
             if cumulative >= weapon.unlockNumber {
                 return record.startTime
             }
