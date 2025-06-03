@@ -127,8 +127,9 @@ struct ProfileView: View {
                                 .disabled(!hasRecentMinions)
                             }
                             
-                            ProfileMinionListView(recentMinions: recentMinions)
+                            RecentMinionsView()
                                 .padding(.vertical, 4)
+                                .font(.text01)
                                 .foregroundColor(Color.gang_text_2)
                         }
                         .padding(20)
