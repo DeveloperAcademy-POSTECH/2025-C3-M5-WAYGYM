@@ -23,9 +23,6 @@ struct RunRecordModel: Identifiable, Codable {
     var capturedAreas: [[CoordinatePair]] = [] // 유저가 차지한 면적(좌표 데이터)
     var capturedAreaValue: Double = 0 // 유저가 차지한 면적 (숫자 데이터)
     
-    var weaponIDs: [String] = [] // 런닝으로 얻은 무기 id 목록
-    var unlockedMinionIDs: [String] = [] // 런닝으로 얻은 똘마니 id 목록
-
     static func makeDate(_ dateString: String) -> Date {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy.MM.dd HH:mm"

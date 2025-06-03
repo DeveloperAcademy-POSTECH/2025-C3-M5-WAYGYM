@@ -34,7 +34,7 @@ final class WeaponViewModel: ObservableObject {
     }
 
     func isWeaponUnlocked(_ weapon: WeaponDefinitionModel, for runs: [RunRecordModel]) -> Bool {
-        totalCaptureArea(from: runs) >= weapon.unlockNumber * 1_000_000
+        totalCaptureArea(from: runs) >= weapon.unlockNumber
     }
 
     func toggleSelection(of weapon: WeaponDefinitionModel) {
@@ -44,4 +44,18 @@ final class WeaponViewModel: ObservableObject {
             selectedWeapon = weapon
         }
     }
+    
+    func acquisitionDate(for weapon: WeaponDefinitionModel, in runs: [RunRecordModel]) -> Date? {
+        let sorted = runs.sorted { $0.startTime < $1.startTime }
+        var cumulative: Double = 0
+
+        for record in sorted {
+            cumulative += record.capturedAreaValue
+            if cumulative >= weapon.unlockNumber {
+                return record.startTime
+            }
+        }
+        return nil
+    }
+    
 }
