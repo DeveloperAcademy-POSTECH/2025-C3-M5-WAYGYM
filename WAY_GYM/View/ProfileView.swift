@@ -120,8 +120,7 @@ struct ProfileView: View {
                                 Text("나의 똘마니")
                                     .font(.title01)
                                 Spacer()
-                                NavigationLink(destination: MinionListView()
-                                    .environmentObject(MinionViewModel(runRecordVM: RunRecordViewModel()))) {
+                                NavigationLink(destination: MinionListView()) {
                                     Text("모두 보기")
                                 }
                                 .opacity(hasRecentMinions ? 1 : 0)
@@ -260,7 +259,7 @@ extension View {
 
 #Preview {
     ProfileView()
-        .environmentObject(MinionViewModel(runRecordVM: RunRecordViewModel()))
+        .environmentObject(MinionViewModel())
         .environmentObject(WeaponViewModel())
         .environmentObject(AppRouter())
         .font(.text01)

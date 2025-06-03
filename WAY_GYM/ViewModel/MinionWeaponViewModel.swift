@@ -10,10 +10,10 @@ import SwiftUI
 
 final class MinionViewModel: ObservableObject {
     @Published var allMinions: [MinionDefinitionModel] = []
-    @Published var runRecordVM: RunRecordViewModel
-
-    init(runRecordVM: RunRecordViewModel) {
-        self.runRecordVM = runRecordVM
+    @Published var selectedMinion: MinionDefinitionModel? = nil
+    
+    func isUnlocked(_ minion: MinionDefinitionModel, with distanceValue: Int) -> Bool {
+        return Double(distanceValue) >= minion.unlockNumber * 1000
     }
 
     func acquisitionDate(for minion: MinionDefinitionModel) -> Date? {

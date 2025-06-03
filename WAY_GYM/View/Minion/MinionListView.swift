@@ -4,9 +4,12 @@ import FirebaseFirestore
 // minion = distance, 5000단위
 struct MinionListView: View {
     @StateObject private var minionModel = MinionModel()
-    @StateObject private var userVM = UserViewModel()
-    @StateObject private var minionVM = MinionViewModel(runRecordVM: RunRecordViewModel())
+    // @StateObject private var userVM = UserViewModel()
+    @StateObject private var minionVM = MinionViewModel()
     @State private var selectedMinion: MinionDefinitionModel? = nil
+    
+    @StateObject private var runRecordVM = RunRecordViewModel()
+    @State private var acquisitionDate: Date? = nil
     
     var body: some View {
         ZStack {
@@ -17,7 +20,7 @@ struct MinionListView: View {
                 CustomNavigationBar(title: "똘마니들")
                 
                 ZStack {
-                    Color.brown
+                    Color.gang_bg_primary_4
                     
                     VStack{
                         // 캐릭터
@@ -52,9 +55,9 @@ struct MinionListView: View {
                                     HStack {
                                         Text(minion.name)
                                         Spacer()
-//                                        if let date = minionVM.acquisitionDate(for: minion, in: userVM.user.runRecords) {
-//                                            Text("\(formatShortDate(date))")
-//                                        }
+                                        if let date = acquisitionDate {
+                                            Text("\(formatShortDate(date))")
+                                        }
                                     }
                                     .padding(.horizontal, 26)
                                     
@@ -91,7 +94,9 @@ struct MinionListView: View {
                     ]
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(minionModel.allMinions) { minion in
-                            let isUnlocked = userVM.user.runRecords.map { $0.distance }.reduce(0, +) >= minion.unlockNumber * 1000
+                            
+                            let isUnlocked = minionVM.isUnlocked(minion, with: Int(runRecordVM.totalDistance))
+                            
                             if isUnlocked {
                                 Button(action: {
                                     selectedMinion = minion
@@ -155,6 +160,18 @@ struct MinionListView: View {
                 .scrollIndicators(.hidden)
             }
             .padding(.horizontal, 14)
+        }
+        .onAppear {
+            runRecordVM.fetchAndSumDistances()
+        }
+        .onChange(of: selectedMinion) { newMinion in
+            if let minion = newMinion {
+                runRecordVM.fetchRunRecordsAndCalculateMinionAcquisitionDate(for: minion.unlockNumber) { date in
+                    acquisitionDate = date
+                }
+            } else {
+                acquisitionDate = nil
+            }
         }
         .navigationBarBackButtonHidden(true)
     }

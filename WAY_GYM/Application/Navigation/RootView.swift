@@ -28,7 +28,7 @@ struct RootView: View {
             case .profile:
                 AnyView( ProfileView()
                         .environmentObject(router)
-                        .environmentObject(MinionViewModel(runRecordVM: RunRecordViewModel()))
+                        .environmentObject(MinionViewModel())
                         .environmentObject(WeaponViewModel())
                         .environmentObject(RunRecordViewModel())
                         .font(.text01)

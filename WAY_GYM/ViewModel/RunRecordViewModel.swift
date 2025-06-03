@@ -96,7 +96,7 @@ class RunRecordViewModel: ObservableObject {
     }
     
     // 무기 얻은 날짜 구하기
-    func fetchRunRecordsAndCalculateAcquisitionDate(for unlockNumber: Double, completion: @escaping (Date?) -> Void) {
+    func fetchRunRecordsAndCalculateWeaponAcquisitionDate(for unlockNumber: Double, completion: @escaping (Date?) -> Void) {
         db.collection("RunRecordModels")
             .getDocuments { [weak self] snapshot, error in
                 guard let documents = snapshot?.documents else {
@@ -135,6 +135,58 @@ class RunRecordViewModel: ObservableObject {
                     if cumulative >= unlockNumber {
                         acquisitionDate = startTime
                         print("획득 날짜 발견: \(acquisitionDate!)")
+                        break
+                    }
+                }
+
+                DispatchQueue.main.async {
+                    completion(acquisitionDate)
+                }
+            }
+    }
+    
+    // 미니언 얻은 날짜 구하기
+    func fetchRunRecordsAndCalculateMinionAcquisitionDate(for unlockNumber: Double, completion: @escaping (Date?) -> Void) {
+        db.collection("RunRecordModels")
+            .getDocuments { [weak self] snapshot, error in
+                guard let documents = snapshot?.documents else {
+                    print("⚠️ 런닝 기록 불러오기 실패: \(error?.localizedDescription ?? "")")
+                    completion(nil)
+                    return
+                }
+
+                let records: [(Date, Double)] = documents.compactMap { doc in
+                    let data = doc.data()
+
+                    guard let timestamp = data["start_time"] as? Timestamp else {
+                        print("⚠️ start_time 누락 또는 타입 오류")
+                        return nil
+                    }
+                    let startTime = timestamp.dateValue()
+
+                    if let value = data["distance"] as? Double {
+                        return (startTime, value)
+                    } else if let valueInt = data["distance"] as? Int {
+                        return (startTime, Double(valueInt))
+                    } else {
+                        print("⚠️ distance 누락 또는 타입 오류")
+                        return nil
+                    }
+                }
+
+                let unlockNumberInMeters = unlockNumber * 1000
+                let sortedRecords = records.sorted { $0.0 < $1.0 }
+//                for (index, record) in sortedRecords.enumerated() {
+//                    print("👉 [\(index)] 날짜: \(record.0), 거리: \(record.1)")
+//                }
+
+                var cumulative: Double = 0
+                var acquisitionDate: Date? = nil
+                for (startTime, distanceValue) in sortedRecords {
+                    cumulative += distanceValue
+                    
+                    if cumulative >= unlockNumberInMeters {
+                        acquisitionDate = startTime
                         break
                     }
                 }
