@@ -7,6 +7,8 @@ import FirebaseFirestoreSwift
 import FirebaseStorage
 import Photos
 
+
+
 // MARK: - 데이터 모델
 struct RunRecordModels: Identifiable, Codable {
     @DocumentID var id: String? // Firestore 문서 ID
