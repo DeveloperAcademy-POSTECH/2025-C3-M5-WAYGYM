@@ -4,10 +4,7 @@ import SwiftUI
 struct WeaponListView: View {
     @StateObject private var weaponModel = WeaponModel()
     @State private var inputCaptureArea: String = ""
-    @State private var userStats = UserModel(
-        id: UUID(),
-        runRecords: RunRecordModel.dummyData
-    )
+    @State private var userStats = UserModel(id: UUID(), runRecords: [])
     // @State private var selectedWeapon: WeaponDefinitionModel? = nil
     @Binding var selectedWeapon: WeaponDefinitionModel?
     @EnvironmentObject var weaponVM: WeaponViewModel
@@ -247,7 +244,7 @@ struct WeaponListView: View {
         WeaponListView(selectedWeapon: binding)
             .environmentObject(WeaponViewModel())
             .font(.text01)
-            .foregroundColor(Color("gang_text_2"))
+            .foregroundColor(Color.gang_text_2)
     }
 }
 

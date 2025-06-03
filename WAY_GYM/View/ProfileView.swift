@@ -1,198 +1,221 @@
 import SwiftUI
+import FirebaseFirestore
+import FirebaseFirestoreSwift
 
 struct ProfileView: View {
-    @StateObject private var userVM = UserViewModel(user: UserModel(
-        id: UUID(),
-        runRecords: RunRecordModel.dummyData
-    ))
-    @State private var userStats = UserModel(
-        id: UUID(),
-        runRecords: RunRecordModel.dummyData
-    )
-    
+    @StateObject private var userVM = UserViewModel()
     @StateObject private var minionModel = MinionModel()
     @State private var selectedWeapon: WeaponDefinitionModel? = nil
-    
     @EnvironmentObject var router: AppRouter
     
-    var body: some View {
-        let totalDistance = userStats.runRecords.map { $0.totalDistance }.reduce(0, +) / 1000
-        let recentMinions = minionModel.allMinions
+    private var totalDistance: Double {
+        userVM.user.runRecords.map { $0.distance }.reduce(0, +) / 1000
+    }
+    
+    private var recentMinions: [MinionDefinitionModel] {
+        minionModel.allMinions
             .filter { totalDistance >= $0.unlockNumber }
             .suffix(3)
-        let hasRecentMinions = !recentMinions.isEmpty
-        
+    }
+    
+    private var hasRecentMinions: Bool {
+        !recentMinions.isEmpty
+    }
+    
+    var body: some View {
         NavigationView {
-                ZStack {
-                    Color("gang_bg_profile")
-                        .ignoresSafeArea()
-                    
-                    ScrollView{
-                        VStack(spacing: 16) {
-                                // 유저 설명 vstack
+            ZStack {
+                Color.gang_bg_profile
+                    .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: 16) {
+                        // 유저 설명 vstack
+                        VStack {
+                            ZStack {
+                                Image("Flash")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 180)
+                                
+                                Image(selectedWeapon != nil ? "main_\(selectedWeapon!.id)" : "main_basic")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 200)
+                                    .padding(.bottom, -20)
+                                
                                 VStack {
-                                    ZStack {
-                                        Image("Flash")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 180)
-                                        
-                                        Image(selectedWeapon != nil ? "main_\(selectedWeapon!.id)" : "main_basic")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 200)
-                                            .padding(.bottom, -20)
-                                        
+                                    HStack {
+                                        Spacer()
                                         VStack {
-                                            HStack {
-                                                Spacer()
-                                                VStack {
-                                                    NavigationLink(destination: WeaponListView(selectedWeapon: $selectedWeapon)
-                                                        .foregroundStyle(Color("gang_text_2"))
-                                                        .environmentObject(WeaponViewModel())) {
-                                                            ZStack {
-                                                                Image("box")
-                                                                    .resizable()
-                                                                    .frame(width: 52, height: 52)
-                                                                
-                                                                Image(selectedWeapon?.imageName ?? "weapon_0")
-                                                                    .resizable()
-                                                                    .aspectRatio(contentMode: .fit)
-                                                                    .frame(width: 40)
-                                                            }
-                                                    }
-                                                    Text("무기")
-                                                        .font(.title02)
+                                            NavigationLink(destination: WeaponListView(selectedWeapon: $selectedWeapon)
+                                                .foregroundStyle(Color.gang_text_2)
+                                                .environmentObject(WeaponViewModel())) {
+                                                ZStack {
+                                                    Image("box")
+                                                        .resizable()
+                                                        .frame(width: 52, height: 52)
+                                                    
+                                                    Image(selectedWeapon?.imageName ?? "weapon_0")
+                                                        .resizable()
+                                                        .aspectRatio(contentMode: .fit)
+                                                        .frame(width: 40)
                                                 }
-                                                
                                             }
-                                            Spacer()
-                                        } // 무기 선택
-                                    } // 유저 아이콘 zstack
-                                    .padding()
-                                    
-                                    Group {
-                                        Text("한성인")
-                                            .font(.title01)
-                                            .padding(.bottom, 2)
-                                        
-                                        Text("남구 연일읍 1대손파 형님")
-                                    }
-                                    .foregroundStyle(Color.white)
-                                } // 유저 설명 vstack
-                                .padding(.bottom, 15)
-
-                                HStack {
-                                    VStack(alignment: .leading) {
-                                        Text("총 차지한 영역")
-                                            .font(.text01)
-                                            .padding(.bottom, 8)
-                                        
-                                        Text(" \(formatNumber(userStats.runRecords.map { $0.capturedAreaValue }.reduce(0, +))) m²")                     .font(.title01)
-                                    }
-                                    .padding(20)
-                                    .customBorder()
-                                    
-                                    Spacer()
-                                    
-                                    VStack(alignment: .leading) {
-                                        Text("총 이동한 거리")
-                                            .font(.text01)
-                                            .padding(.bottom, 8)
-                                        
-                                        Text("\(formatNumber(userStats.runRecords.map { $0.totalDistance }.reduce(0, +) / 1000))km")
-                                            .font(.title01)
-                                    }
-                                    .padding(20)
-                                    .customBorder()
-                                }
-                                
-                                VStack{
-                                    HStack {
-                                        Text("나의 똘마니")
-                                            .font(.title01)
-                                        Spacer()
-                                        NavigationLink(destination: MinionListView()
-                                            .environmentObject(MinionViewModel())) {
-                                                Text("모두 보기")
-                                            }
-                                            .opacity(hasRecentMinions ? 1 : 0)
-                                            .disabled(!hasRecentMinions)
-                                    }
-                                    
-                                    ProfileMinionListView(recentMinions: Array(recentMinions))
-                                        .padding(.vertical, 4)
-                                        .foregroundStyle(Color.black)
-                                    
-                                }
-                                .padding(20)
-                                .customBorder()
-                                
-                                VStack(alignment: .leading) {
-                                    HStack {
-                                        Text("구역순찰 기록")
-                                            .font(.title01)
-                                        Spacer()
-                                        if hasRecentMinions {
-                                            NavigationLink(destination: RunningListView()) {
-                                                Text("모두 보기")
-                                            }
+                                            Text("무기")
+                                                .font(.title02)
                                         }
                                     }
-                                    ProfileRunningView()
-                                        .padding(.vertical, 4)
-                                        .foregroundStyle(Color.black)
-                                    
-                                }
-                                .padding(20)
-                                .customBorder()
+                                    Spacer()
+                                } // 무기 선택
+                            } // 유저 아이콘 zstack
+                            .padding()
                             
+                            Group {
+                                Text("한성인")
+                                    .font(.title01)
+                                    .padding(.bottom, 2)
+                                
+                                Text("남구 연일읍 1대손파 형님")
+                            }
+                            .foregroundStyle(Color.white)
+                        } // 유저 설명 vstack
+                        .padding(.bottom, 15)
+
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text("총 차지한 영역")
+                                    .font(.text01)
+                                    .padding(.bottom, 8)
+                                
+                                Text(" \(formatNumber(userVM.user.runRecords.map { $0.capturedAreaValue }.reduce(0, +))) m²")
+                                    .font(.title01)
+                            }
+                            .padding(20)
+                            .customBorder()
+                            
+                            Spacer()
+                            
+                            VStack(alignment: .leading) {
+                                Text("총 이동한 거리")
+                                    .font(.text01)
+                                    .padding(.bottom, 8)
+                                
+                                Text("\(formatNumber(totalDistance))km")
+                                    .font(.title01)
+                            }
+                            .padding(20)
+                            .customBorder()
+                        }
+                        
+                        VStack {
+                            HStack {
+                                Text("나의 똘마니")
+                                    .font(.title01)
+                                Spacer()
+                                NavigationLink(destination: MinionListView()
+                                    .environmentObject(MinionViewModel())) {
+                                    Text("모두 보기")
+                                }
+                                .opacity(hasRecentMinions ? 1 : 0)
+                                .disabled(!hasRecentMinions)
+                            }
+                            
+                            ProfileMinionListView(recentMinions: recentMinions)
+                                .padding(.vertical, 4)
+                                .foregroundColor(Color.gang_text_2)
+                        }
+                        .padding(20)
+                        .customBorder()
+                        
+                        VStack(alignment: .leading) {
+                            HStack {
+                                Text("구역순찰 기록")
+                                    .font(.title01)
+                                Spacer()
+                                if hasRecentMinions {
+                                    NavigationLink(destination: RunningListView()
+                                                  .foregroundColor(Color.gang_text_2)) {
+                                        Text("모두 보기")
+                                    }
+                                }
+                            }
+                            ProfileRunningView()
+                                .padding(.vertical, 4)
+                                .foregroundColor(Color.gang_text_2)
+                        }
+                        .padding(20)
+                        .customBorder()
+                    }
+                    .padding(.horizontal, 25)
+                }
+                
+                VStack {
+                    Spacer()
+                    
+                    // 홈 버튼
+                    Button(action: {
+                        router.currentScreen = .main
+                    }) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.yellow)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 55)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.black, lineWidth: 3)
+                                )
+                            
+                            Text("구역 확장하러 가기")
+                                .font(.title02)
+                                .foregroundStyle(Color.black)
+                                .padding(.vertical, 22)
                         }
                         .padding(.horizontal, 25)
                     }
-                    
-                    VStack {
-                        Spacer()
-                        
-                        // 홈 버튼
-                        Button(action: {
-                            router.currentScreen = .main
-                        }) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.yellow)
-                                    .frame(maxWidth: .infinity)
-                                    .frame(height: 55)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(Color.black, lineWidth: 3)
-                                    )
-                                    
-                                Text("구역 확장하러 가기")
-                                    .font(.title02)
-                                    .foregroundStyle(Color.black)
-                                    .padding(.vertical, 22)
-                            }
-                            .padding(.horizontal, 25)
-                        }
-                        .padding(.bottom, 5)
-                    }
-                    
-                    
+                    .padding(.bottom, 5)
                 }
+            }
         }
+    }
+    
+    private func formatNumber(_ number: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 1
+        return formatter.string(from: NSNumber(value: number)) ?? "0"
     }
 }
 
-#Preview {
-    ProfileView()
-        .environmentObject(MinionViewModel())
-        .environmentObject(WeaponViewModel())
-        .font(.text01)
-        .foregroundColor(Color("gang_text_2"))
+// MARK: - UserViewModel
+class UserViewModel: ObservableObject {
+    @Published var user: UserModel
+    private let db = Firestore.firestore()
+    
+    init() {
+        self.user = UserModel(id: UUID(), runRecords: [])
+        fetchRunRecordsFromFirestore()
+    }
+    
+    func fetchRunRecordsFromFirestore() {
+        db.collection("RunRecordModels")
+            .order(by: "start_time", descending: true)
+            .addSnapshotListener { snapshot, error in
+                guard let documents = snapshot?.documents else {
+                    print("Firestore에서 데이터 가져오기 실패: \(error?.localizedDescription ?? "No documents")")
+                    return
+                }
+                
+                let dataList = documents.compactMap { try? $0.data(as: RunRecordModels.self) }
+                DispatchQueue.main.async {
+                    self.user.runRecords = dataList
+                }
+            }
+    }
 }
 
-
+// MARK: - Custom Border Modifier
 struct CustomBorderModifier: ViewModifier {
     var cornerRadius: CGFloat = 16
 
@@ -222,4 +245,13 @@ extension View {
     func customBorder(cornerRadius: CGFloat = 16) -> some View {
         self.modifier(CustomBorderModifier(cornerRadius: cornerRadius))
     }
+}
+
+#Preview {
+    ProfileView()
+        .environmentObject(MinionViewModel())
+        .environmentObject(WeaponViewModel())
+        .environmentObject(AppRouter())
+        .font(.text01)
+        .foregroundColor(Color.gang_text_2)
 }

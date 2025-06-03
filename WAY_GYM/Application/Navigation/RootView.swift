@@ -17,14 +17,14 @@ struct RootView: View {
                 AnyView(MainView().environmentObject(router))
             case .running:
                 AnyView(RunningView().environmentObject(router))
-            case .result(_):
-                AnyView(RunResultModalView(
-                    capture: RunRecordModel.dummyData[5],
-                    onComplete: {
-                        router.currentScreen = .main
-                    },
-                    hasReward: true // 조건에 맞는 값 필요
-                ))
+//            case .result(_):
+//                AnyView(RunResultModalView(
+//                    capture: RunRecordModel.dummyData[5],
+//                    onComplete: {
+//                        router.currentScreen = .main
+//                    },
+//                    hasReward: true // 조건에 맞는 값 필요
+//                ))
             case .profile:
                 AnyView(ProfileView()
                     .environmentObject(router)

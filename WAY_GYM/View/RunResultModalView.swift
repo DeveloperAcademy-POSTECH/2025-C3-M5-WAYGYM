@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct RunResultModalView: View {
-    let capture: RunRecordModel
+    let capture: RunRecordModels
     let onComplete: () -> Void
     let hasReward: Bool // 보상 유무
 
@@ -56,7 +56,7 @@ struct RunResultModalView: View {
                     }
                     VStack(spacing: 8) {
                         Text("거리")
-                        Text(String(format: "%.1f km", capture.totalDistance / 1000))
+                        Text(String(format: "%.1f km", capture.distance / 1000))
                     }
                     VStack(spacing: 8) {
                         Text("칼로리")
@@ -102,7 +102,7 @@ struct RunResultModalView: View {
             .cornerRadius(20)
             .overlay(
                 RoundedRectangle(cornerRadius: 20)
-                    .stroke(Color.gang_yellow.opacity(0.8), lineWidth: 2)
+                    .stroke(Color.yellow.opacity(0.8), lineWidth: 2)
             )
             .frame(maxWidth: 340, maxHeight: 660)
 
@@ -118,7 +118,5 @@ struct RunResultModalView: View {
     
 }
 
-#Preview {
-    RunResultModalView(capture: RunRecordModel.dummyData[5], onComplete: {}, hasReward: true)
-}
+
 

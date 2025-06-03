@@ -1,11 +1,9 @@
 import SwiftUI
+import FirebaseFirestore
 
 struct ProfileMinionListView: View {
     let recentMinions: [MinionDefinitionModel]
-    @State private var userStats = UserModel(
-        id: UUID(),
-        runRecords: RunRecordModel.dummyData
-    )
+    @StateObject private var userVM = UserViewModel()
     @StateObject private var minionModel = MinionModel()
     
     var body: some View {
