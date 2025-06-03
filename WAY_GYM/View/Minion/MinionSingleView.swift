@@ -10,7 +10,7 @@ import FirebaseFirestore
 
 struct MinionSingleView: View {
     let minion: MinionDefinitionModel
-    @StateObject private var minionVM = MinionViewModel(runRecordVM: RunRecordViewModel())
+    @StateObject private var minionVM = MinionViewModel()
     @StateObject private var userVM = UserViewModel()
     
     var body: some View {

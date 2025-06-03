@@ -101,7 +101,7 @@ struct MonthlySectionView: View {
 
 struct RunningListView: View {
     @StateObject private var userVM = UserViewModel()
-    @StateObject private var minionViewModel = MinionViewModel(runRecordVM: RunRecordViewModel())
+    @StateObject private var minionViewModel = MinionViewModel()
     @StateObject private var weaponViewModel = WeaponViewModel()
 
     var groupedRunRecords: [String: [RunRecordModels]] {

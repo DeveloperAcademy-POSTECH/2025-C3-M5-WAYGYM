@@ -13,7 +13,7 @@ struct WeaponListView: View {
     
     var body: some View {
         ZStack {
-            Color("gang_bg_profile")
+            Color.gang_bg_profile
                 .ignoresSafeArea()
             
             VStack {
@@ -21,7 +21,7 @@ struct WeaponListView: View {
                 
                 // 진한 박스 zstack
                 ZStack {
-                    Color("gang_bg_primary_4")
+                    Color.gang_bg_primary_4
                     
                     VStack {
                         // 사용자 이미지
@@ -161,7 +161,7 @@ struct WeaponListView: View {
         }
         .onChange(of: selectedWeapon) { newWeapon in
             if let weapon = newWeapon {
-                runRecordVM.fetchRunRecordsAndCalculateAcquisitionDate(for: weapon.unlockNumber) { date in
+                runRecordVM.fetchRunRecordsAndCalculateWeaponAcquisitionDate(for: weapon.unlockNumber) { date in
                     print("선택 무기 변경, 획득 날짜: \(String(describing: date))")
                     acquisitionDate = date
                 }
