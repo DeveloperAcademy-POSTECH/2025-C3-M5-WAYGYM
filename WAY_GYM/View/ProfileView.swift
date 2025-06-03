@@ -54,8 +54,8 @@ struct ProfileView: View {
                                             
                                             NavigationLink(destination: WeaponListView(selectedWeapon: $selectedWeapon)
                                                 .foregroundStyle(Color.gang_text_2)
-                                                .environmentObject(WeaponViewModel())  // WeaponViewModel은 @EnvironmentObject로 runRecordVM 사용 중
-                                                .environmentObject(runRecordVM))       // runRecordVM 환경 객체 주입
+                                                .environmentObject(WeaponViewModel())
+                                                .environmentObject(runRecordVM))
                                             
                                             {
                                                 ZStack {
@@ -127,10 +127,11 @@ struct ProfileView: View {
                                 .disabled(!hasRecentMinions)
                             }
                             
-                            RecentMinionsView()
+                            ProfileMinionView()
                                 .padding(.vertical, 4)
                                 .font(.text01)
                                 .foregroundColor(Color.gang_text_2)
+                            
                         }
                         .padding(20)
                         .customBorder()

@@ -9,42 +9,91 @@ import SwiftUI
 import FirebaseFirestore
 
 struct MinionSingleView: View {
-    let minion: MinionDefinitionModel
-    @StateObject private var minionVM = MinionViewModel()
-    @StateObject private var userVM = UserViewModel()
+    @ObservedObject var minionModel: MinionModel
+    let minionIndex: Int
+    
+    @Environment(\.dismiss) var dismiss
+    @State private var acquisitionDate: Date? = nil
+    @StateObject private var runRecordVM = RunRecordViewModel()
     
     var body: some View {
-        VStack {
-            Image(minion.iconName)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 150)
+        ZStack {
+            Color.gang_bg_primary_4
+                .ignoresSafeArea()
             
             VStack {
                 HStack {
-                    Text(minion.name)
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .foregroundStyle(Color.gang_text_2)
+                            .font(.system(size: 30))
+                    }
                     Spacer()
-                    Text(String(format: "%.0f km", minion.unlockNumber))
                 }
-                Text(minion.description)
-                HStack {
-                    Spacer()
-//                    if let date = minionVM.acquisitionDate(for: minion, in: userVM.user.runRecords) {
-//                        Text("획득 날짜: \(formatDate(date))")
-//                    }
-                }
+                Spacer()
             }
-            .border(Color.black, width: 2)
+            .padding(25)
+            
+            VStack {
+                ZStack {
+                    Image("Flash")
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 180)
+                    
+                    Image(minionModel.allMinions[minionIndex].iconName)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 200)
+                        .padding(.bottom, -20)
+                }
+                .padding(.bottom, 20)
+                
+                
+                VStack(spacing: 16) {
+                    HStack {
+                        Text(minionModel.allMinions[minionIndex].name)
+                        Spacer()
+                        Text(String(format: "%.0f km", minionModel.allMinions[minionIndex].unlockNumber))
+                    }
+                    .padding(.horizontal, 10)
+                    
+                    Text(minionModel.allMinions[minionIndex].description)
+                    
+                    HStack {
+                        Spacer()
+                        
+                        if let date = acquisitionDate {
+                            Text("\(formatShortDate(date))")
+                                .font(.text01)
+                        }
+                    }
+                }
+                .padding(20)
+                .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.gang_bg_secondary_2, lineWidth: 3)
+                    )
+                .padding(.horizontal, 24)
+            }
         }
+        .onAppear {
+            let unlockNumber = minionModel.allMinions[minionIndex].unlockNumber
+            runRecordVM.fetchRunRecordsAndCalculateMinionAcquisitionDate(for: unlockNumber) { date in
+                acquisitionDate = date
+            }
+        }
+        .navigationBarBackButtonHidden(true)
     }
 }
 
 #Preview {
-    MinionSingleView(minion: MinionDefinitionModel(
-        id: "minion_1",
-        name: "똘똘이",
-        description: "5km 달성 시",
-        iconName: "minion_1",
-        unlockNumber: 5
-    ))
+    MinionSingleView(
+        minionModel: MinionModel(),
+        minionIndex: 0
+    )
+    .foregroundStyle(Color.gang_text_2)
+    .font(.title01)
 }
