@@ -10,7 +10,7 @@ import FirebaseFirestore
 
 struct MinionSingleView: View {
     let minion: MinionDefinitionModel
-    @StateObject private var minionVM = MinionViewModel()
+    @StateObject private var minionVM = MinionViewModel(runRecordVM: RunRecordViewModel())
     @StateObject private var userVM = UserViewModel()
     
     var body: some View {
@@ -29,9 +29,9 @@ struct MinionSingleView: View {
                 Text(minion.description)
                 HStack {
                     Spacer()
-                    if let date = minionVM.acquisitionDate(for: minion, in: userVM.user.runRecords) {
-                        Text("획득 날짜: \(formatDate(date))")
-                    }
+//                    if let date = minionVM.acquisitionDate(for: minion, in: userVM.user.runRecords) {
+//                        Text("획득 날짜: \(formatDate(date))")
+//                    }
                 }
             }
             .border(Color.black, width: 2)

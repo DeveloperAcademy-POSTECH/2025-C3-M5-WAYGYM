@@ -5,7 +5,7 @@ import FirebaseFirestore
 struct MinionListView: View {
     @StateObject private var minionModel = MinionModel()
     @StateObject private var userVM = UserViewModel()
-    @StateObject private var minionVM = MinionViewModel()
+    @StateObject private var minionVM = MinionViewModel(runRecordVM: RunRecordViewModel())
     @State private var selectedMinion: MinionDefinitionModel? = nil
     
     var body: some View {
@@ -52,9 +52,9 @@ struct MinionListView: View {
                                     HStack {
                                         Text(minion.name)
                                         Spacer()
-                                        if let date = minionVM.acquisitionDate(for: minion, in: userVM.user.runRecords) {
-                                            Text("\(formatShortDate(date))")
-                                        }
+//                                        if let date = minionVM.acquisitionDate(for: minion, in: userVM.user.runRecords) {
+//                                            Text("\(formatShortDate(date))")
+//                                        }
                                     }
                                     .padding(.horizontal, 26)
                                     

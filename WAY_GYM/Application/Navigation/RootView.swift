@@ -26,12 +26,13 @@ struct RootView: View {
 //                    hasReward: true // 조건에 맞는 값 필요
 //                ))
             case .profile:
-                AnyView(ProfileView()
-                    .environmentObject(router)
-                    .environmentObject(MinionViewModel())
-                    .environmentObject(WeaponViewModel())
-                    .font(.text01)
-                    .foregroundColor(Color("gang_text_2"))
+                AnyView( ProfileView()
+                        .environmentObject(router)
+                        .environmentObject(MinionViewModel(runRecordVM: RunRecordViewModel()))
+                        .environmentObject(WeaponViewModel())
+                        .environmentObject(RunRecordViewModel())
+                        .font(.text01)
+                        .foregroundColor(Color("gang_text_2"))
                 )
             case .weaponReward(let weapon):
                 AnyView(WeaponRewardView(weapon: weapon)

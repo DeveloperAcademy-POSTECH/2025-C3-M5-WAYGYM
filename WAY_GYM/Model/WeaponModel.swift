@@ -1,7 +1,7 @@
 import Foundation
 
 // weapon = area
-struct WeaponDefinitionModel: Identifiable, Codable {
+struct WeaponDefinitionModel: Identifiable, Codable, Equatable {
     let id: String
     let name: String
     let description: String

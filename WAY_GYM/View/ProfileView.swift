@@ -4,9 +4,12 @@ import FirebaseFirestoreSwift
 
 struct ProfileView: View {
     @StateObject private var userVM = UserViewModel()
+    
     @StateObject private var minionModel = MinionModel()
     @State private var selectedWeapon: WeaponDefinitionModel? = nil
+    
     @EnvironmentObject var router: AppRouter
+    @StateObject private var runRecordVM = RunRecordViewModel()
     
     private var totalDistance: Double {
         userVM.user.runRecords.map { $0.distance }.reduce(0, +) / 1000
@@ -48,9 +51,13 @@ struct ProfileView: View {
                                     HStack {
                                         Spacer()
                                         VStack {
+                                            
                                             NavigationLink(destination: WeaponListView(selectedWeapon: $selectedWeapon)
                                                 .foregroundStyle(Color.gang_text_2)
-                                                .environmentObject(WeaponViewModel())) {
+                                                .environmentObject(WeaponViewModel())  // WeaponViewModel은 @EnvironmentObject로 runRecordVM 사용 중
+                                                .environmentObject(runRecordVM))       // runRecordVM 환경 객체 주입
+                                            
+                                            {
                                                 ZStack {
                                                     Image("box")
                                                         .resizable()
@@ -88,7 +95,7 @@ struct ProfileView: View {
                                     .font(.text01)
                                     .padding(.bottom, 8)
                                 
-                                Text(" \(formatNumber(userVM.user.runRecords.map { Double($0.capturedAreaValue) }.reduce(0, +))) m²")
+                                Text("\(runRecordVM.totalCapturedAreaValue)m²")
                                     .font(.title01)
                             }
                             .padding(20)
@@ -101,7 +108,7 @@ struct ProfileView: View {
                                     .font(.text01)
                                     .padding(.bottom, 8)
                                 
-                                Text("\(formatNumber(totalDistance))km")
+                                Text("\(runRecordVM.totalDistance, specifier: "%.2f") m")
                                     .font(.title01)
                             }
                             .padding(20)
@@ -114,7 +121,7 @@ struct ProfileView: View {
                                     .font(.title01)
                                 Spacer()
                                 NavigationLink(destination: MinionListView()
-                                    .environmentObject(MinionViewModel())) {
+                                    .environmentObject(MinionViewModel(runRecordVM: RunRecordViewModel()))) {
                                     Text("모두 보기")
                                 }
                                 .opacity(hasRecentMinions ? 1 : 0)
@@ -177,6 +184,10 @@ struct ProfileView: View {
                     .padding(.bottom, 5)
                 }
             }
+        }
+        .onAppear {
+            runRecordVM.fetchAndSumDistances()
+            runRecordVM.fetchAndSumCapturedValue()
         }
     }
     
@@ -249,7 +260,7 @@ extension View {
 
 #Preview {
     ProfileView()
-        .environmentObject(MinionViewModel())
+        .environmentObject(MinionViewModel(runRecordVM: RunRecordViewModel()))
         .environmentObject(WeaponViewModel())
         .environmentObject(AppRouter())
         .font(.text01)
