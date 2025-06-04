@@ -47,7 +47,7 @@ struct WeaponListView: View {
                                 Text(weapon.description)
                                     .multilineTextAlignment(.center)
 
-                                HStack {
+                                HStack(spacing: 16) {
                                     Spacer()
                                     
                                     if let date = acquisitionDate {

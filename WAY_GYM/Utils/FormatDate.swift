@@ -20,7 +20,14 @@ func formatShortDate(_ date: Date) -> String {
 func formatNumber(_ number: Double) -> String {
     let formatter = NumberFormatter()
     formatter.numberStyle = .decimal // 쉼표 (0,000,000 형태)
-    formatter.maximumFractionDigits = 0
+    formatter.maximumFractionDigits = 0 // 소수점 없음, 정수 형태
+    return formatter.string(from: NSNumber(value: number)) ?? "0"
+}
+
+func formatToDecimal1(_ number: Double) -> String {
+    let formatter = NumberFormatter()
+    formatter.numberStyle = .decimal // 쉼표
+    formatter.maximumFractionDigits = 1 // 소수점 최대 한자리. 정수면 소수점 없음
     return formatter.string(from: NSNumber(value: number)) ?? "0"
 }
 

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SingleRunninView: View {
+struct SmallSingleRunningView: View {
     var body: some View {
         ZStack {
             Color.gang_bg_primary_5
@@ -72,7 +72,7 @@ struct SingleRunninView: View {
 }
 
 #Preview {
-    SingleRunninView()
+    SmallSingleRunningView()
         .foregroundColor(Color.gang_text_2)
         .font(.title01)
 }
