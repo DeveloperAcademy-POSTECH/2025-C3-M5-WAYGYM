@@ -19,7 +19,7 @@ class RunRecordViewModel: ObservableObject {
     
     // 서버에서 런닝 기록 가져오기
     func fetchRunRecordsFromFirestore() {
-        db.collection("RunRecordsModels")
+        db.collection("RunRecordModels")
             .getDocuments { [weak self] snapshot, error in
                 if let error = error {
                     print("⚠️ 런닝 기록 불러오기 실패: \(error.localizedDescription)")
