@@ -196,4 +196,60 @@ class RunRecordViewModel: ObservableObject {
                 }
             }
     }
+    
+    func fetchLatestCapturedAreaValue(completion: @escaping (Double?) -> Void) {
+        db.collection("RunRecordModels")
+            .order(by: "start_time", descending: true)
+            .limit(to: 1)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("❌ 최신 기록 불러오기 실패: \(error.localizedDescription)")
+                    completion(nil)
+                    return
+                }
+
+                guard let document = snapshot?.documents.first else {
+                    print("❌ 기록 없음")
+                    completion(nil)
+                    return
+                }
+
+                let data = document.data()
+                if let value = data["capturedAreaValue"] as? Double {
+                    completion(value)
+                } else if let valueInt = data["capturedAreaValue"] as? Int {
+                    completion(Double(valueInt))
+                } else {
+                    print("❌ capturedAreaValue 타입 불일치")
+                    completion(nil)
+                }
+            }
+    }
+    
+    func fetchLatestRouteImageOnly(completion: @escaping (String?) -> Void) {
+        db.collection("RunRecordModels")
+            .order(by: "start_time", descending: true)
+            .limit(to: 1)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("❌ routeImage 가져오기 실패: \(error.localizedDescription)")
+                    completion(nil)
+                    return
+                }
+
+                guard let doc = snapshot?.documents.first else {
+                    print("❌ 문서 없음")
+                    completion(nil)
+                    return
+                }
+
+                if let urlString = doc.data()["route_image"] as? String {
+                    print("✅ routeImage 가져옴: \(urlString)")
+                    completion(urlString)
+                } else {
+                    print("❌ route_image 필드 없음")
+                    completion(nil)
+                }
+            }
+    }
 }
