@@ -1,6 +1,6 @@
 //
 //  AppScreen.swift
-//  WAY_GYM
+//  WAY_GYMㅊ
 //
 //  Created by soyeonsoo on 6/2/25.
 //

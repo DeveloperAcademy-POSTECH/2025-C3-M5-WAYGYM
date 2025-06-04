@@ -31,7 +31,9 @@ struct WAY_GYMApp: App {
     
     var body: some Scene {
         WindowGroup {
-            RootView()
+            // RootView()
+            RunResultTestView()
+                .environmentObject(router)
         }
     }
 } 
