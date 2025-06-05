@@ -32,8 +32,15 @@ struct WAY_GYMApp: App {
     var body: some Scene {
         WindowGroup {
             // RootView()
-            RunResultTestView()
-                .environmentObject(router)
+//            RunResultTestView()
+//                .environmentObject(router)
+            RunResultModalView(
+                onComplete: {
+                    print("구역 확장 결과 모달 버튼 클릭")
+                },
+                // hasReward: true
+            )
+            .environmentObject(RunRecordViewModel())
         }
     }
 } 

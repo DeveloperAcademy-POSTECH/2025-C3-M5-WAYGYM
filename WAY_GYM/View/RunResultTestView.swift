@@ -28,7 +28,9 @@ struct RunResultTestView: View {
                 }
             }
             .sheet(isPresented: $showResultModal) {
-                RunResultModalView()
+                RunResultModalView(
+                    onComplete: {}
+                )
                     .environmentObject(weaponVM)
                     .environmentObject(router)
             }
