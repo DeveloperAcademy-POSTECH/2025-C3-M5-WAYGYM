@@ -15,6 +15,10 @@ class RunRecordViewModel: ObservableObject {
     @Published var totalDistance: Double = 0.0
     @Published var totalCapturedAreaValue: Int = 0
     
+    @Published var distance: Double?
+    @Published var duration: TimeInterval?
+    @Published var calories: Double?
+    
     private var db = Firestore.firestore()
     
     // 서버에서 런닝 기록 가져오기
@@ -226,6 +230,9 @@ class RunRecordViewModel: ObservableObject {
             }
     }
     
+// RunResultModalView를 위한 함수들
+    
+    // 경로 이미지 fetch
     func fetchLatestRouteImageOnly(completion: @escaping (String?) -> Void) {
         db.collection("RunRecordModels")
             .order(by: "start_time", descending: true)
@@ -243,12 +250,46 @@ class RunRecordViewModel: ObservableObject {
                     return
                 }
 
-                if let urlString = doc.data()["route_image"] as? String {
+                if let urlString = doc.data()["routeImage"] as? String {
                     print("✅ routeImage 가져옴: \(urlString)")
                     completion(urlString)
                 } else {
-                    print("❌ route_image 필드 없음")
+                    print("❌ routeImage 필드 없음")
                     completion(nil)
+                }
+            }
+    }
+    
+    // 최신 거리, 시간(여기서 계산), 칼로리(여기서 계산) 가져오기
+    func fetchLatestDistanceDurationCalories(completion: @escaping (_ distance: Double, _ duration: TimeInterval, _ calories: Double) -> Void) {
+        db.collection("RunRecordModels")
+            .order(by: "start_time", descending: true)
+            .limit(to: 1)
+            .getDocuments { [weak self] snapshot, error in
+                guard let document = snapshot?.documents.first else {
+                    print("❌ 문서 없음 또는 오류: \(error?.localizedDescription ?? "")")
+                    return
+                }
+
+                let data = document.data()
+
+                guard let distance = data["distance"] as? Double,
+                      let startTimestamp = data["start_time"] as? Timestamp,
+                      let endTimestamp = data["end_time"] as? Timestamp else {
+                    print("❌ 필요한 필드 누락 또는 타입 오류")
+                    return
+                }
+
+                let start = startTimestamp.dateValue()
+                let end = endTimestamp.dateValue()
+                let duration = end.timeIntervalSince(start)
+                let calories = duration / 60 * 7.4
+
+                DispatchQueue.main.async {
+                    self?.distance = distance
+                    self?.duration = duration
+                    self?.calories = calories
+                    completion(distance, duration, calories)
                 }
             }
     }
