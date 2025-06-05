@@ -4,13 +4,13 @@ import FirebaseFirestoreSwift
 import CoreLocation
 
 // MARK: - 좌표 쌍 구조체
-struct CoordinatePair: Codable {
+struct CoordinatePair: Codable, Equatable {
     let latitude: Double
     let longitude: Double
 }
 
 // MARK: - 데이터 모델
-struct RunRecordModels: Identifiable, Codable {
+struct RunRecordModels: Identifiable, Codable, Equatable {
     @DocumentID var id: String? // Firestore 문서 ID
     let distance: Double // 이동 거리 (미터)
     let stepCount: Double // 걸음 수

@@ -266,6 +266,7 @@ extension View {
         .environmentObject(MinionViewModel())
         .environmentObject(WeaponViewModel())
         .environmentObject(AppRouter())
+        .environmentObject(RunRecordViewModel())
         .font(.text01)
         .foregroundColor(Color.gang_text_2)
 }
