@@ -4,15 +4,11 @@
 //
 //  Created by soyeonsoo on 6/3/25.
 //
-
-
-
 import SwiftUI
 
 struct WeaponRewardView: View {
     let weapon: WeaponDefinitionModel
     @EnvironmentObject var router: AppRouter
-
 
     var body: some View {
         ZStack {
@@ -59,4 +55,3 @@ struct WeaponRewardView: View {
     )
     .environmentObject(AppRouter())
 }
-
