@@ -6,7 +6,7 @@ struct ProfileView: View {
     // @StateObject private var userVM = UserViewModel()
     
     @StateObject private var minionModel = MinionModel()
-    @State private var selectedWeapon: WeaponDefinitionModel? = nil
+    @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     
     @EnvironmentObject var router: AppRouter
     @StateObject private var runRecordVM = RunRecordViewModel()
@@ -32,7 +32,7 @@ struct ProfileView: View {
                                         .aspectRatio(contentMode: .fit)
                                         .frame(width: 180)
                                     
-                                    Image(selectedWeapon != nil ? "main_\(selectedWeapon!.id)" : "main_basic")
+                                    Image("main_\(selectedWeaponId)")
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                         .frame(width: 200)
@@ -42,7 +42,7 @@ struct ProfileView: View {
                                         HStack {
                                             Spacer()
                                             VStack {
-                                                NavigationLink(destination: WeaponListView(selectedWeapon: $selectedWeapon)
+                                                NavigationLink(destination: WeaponListView()
                                                     .foregroundStyle(Color.gang_text_2)
                                                     .environmentObject(WeaponViewModel())
                                                     .environmentObject(runRecordVM))
@@ -53,7 +53,7 @@ struct ProfileView: View {
                                                             .resizable()
                                                             .frame(width: 52, height: 52)
                                                         
-                                                        Image(selectedWeapon?.imageName ?? "weapon_0")
+                                                        Image( "weapon_\(selectedWeaponId)")
                                                             .resizable()
                                                             .aspectRatio(contentMode: .fit)
                                                             .frame(width: 40)
@@ -124,7 +124,11 @@ struct ProfileView: View {
                                     .disabled(!hasUnlockedMinions)
                                 }
                                 
-                                ProfileMinionView()
+                                ProfileMinionView(
+                                    minionModel: minionModel,
+                                    minionVM: MinionViewModel(),
+                                    runRecordVM: runRecordVM
+                                )
                                     .padding(.vertical, 4)
                                     .font(.text01)
                                     .foregroundColor(Color.gang_text_2)

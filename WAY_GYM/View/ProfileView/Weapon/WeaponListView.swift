@@ -3,9 +3,12 @@ import SwiftUI
 // weapon = area, 1,000,000단위
 struct WeaponListView: View {
     @StateObject private var weaponModel = WeaponModel()
-    // @State private var userStats = UserModel(id: UUID(), runRecords: [])
-    // @State private var selectedWeapon: WeaponDefinitionModel? = nil
-    @Binding var selectedWeapon: WeaponDefinitionModel?
+    
+    @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
+    var selectedWeapon: WeaponDefinitionModel? {
+        weaponModel.allWeapons.first(where: { $0.id == selectedWeaponId })
+    }
+    
     @EnvironmentObject var weaponVM: WeaponViewModel
     
     @StateObject private var runRecordVM = RunRecordViewModel()
@@ -31,7 +34,7 @@ struct WeaponListView: View {
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 200)
                             
-                            Image((selectedWeapon == nil || selectedWeapon?.id == "0") ? "main_basic" : "main_\(selectedWeapon!.id)")
+                            Image("main_\(selectedWeaponId)")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 230)
@@ -108,10 +111,10 @@ struct WeaponListView: View {
                             
                             if isUnlocked {
                                 Button(action: {
-                                    if selectedWeapon?.id == weapon.id {
-                                        selectedWeapon = nil
+                                    if selectedWeaponId == weapon.id {
+                                        selectedWeaponId = "0"
                                     } else {
-                                        selectedWeapon = weapon
+                                        selectedWeaponId = weapon.id
                                     }
                                 }) {
                                     ZStack {
@@ -188,9 +191,10 @@ struct WeaponListView: View {
 
 let runRecordVM = RunRecordViewModel()
 let weaponVM = WeaponViewModel()
+
 #Preview {
     StatefulPreviewWrapper(nil as WeaponDefinitionModel?) { binding in
-        WeaponListView(selectedWeapon: binding)
+        WeaponListView()
             .environmentObject(runRecordVM)
             .environmentObject(weaponVM)
             .font(.text01)

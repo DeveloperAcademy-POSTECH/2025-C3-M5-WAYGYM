@@ -2,9 +2,9 @@ import SwiftUI
 import FirebaseFirestore
 
 struct ProfileMinionView: View {
-    @StateObject private var minionModel = MinionModel()
-    @StateObject private var minionVM = MinionViewModel()
-    @StateObject private var runRecordVM = RunRecordViewModel()
+    @StateObject var minionModel = MinionModel()
+    @StateObject var minionVM = MinionViewModel()
+    @StateObject var runRecordVM = RunRecordViewModel()
     
     @State private var recentMinions: [(minion: MinionDefinitionModel, acquisitionDate: Date)] = []
     
