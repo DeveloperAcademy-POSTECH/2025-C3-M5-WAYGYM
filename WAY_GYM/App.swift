@@ -31,7 +31,7 @@ struct WAY_GYMApp: App {
     
     var body: some Scene {
         WindowGroup {
-            RootView()
+            // RootView()
             
 //            RunResultTestView()
 //                .environmentObject(router)
@@ -44,13 +44,13 @@ struct WAY_GYMApp: App {
 //            )
 //            .environmentObject(RunRecordViewModel())
             
-//            ProfileView()
-//                .environmentObject(router)
-//                .environmentObject(MinionViewModel())
-//                .environmentObject(WeaponViewModel())
-//                .environmentObject(RunRecordViewModel())
-//                .font(.text01)
-//                .foregroundColor(Color("gang_text_2"))
+            ProfileView()
+                .environmentObject(router)
+                .environmentObject(MinionViewModel())
+                .environmentObject(WeaponViewModel())
+                .environmentObject(RunRecordViewModel())
+                .font(.text01)
+                .foregroundColor(Color("gang_text_2"))
         }
     }
 } 

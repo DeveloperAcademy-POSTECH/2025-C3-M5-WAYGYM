@@ -4,12 +4,11 @@ import FirebaseFirestore
 struct ProfileMinionView: View {
     @StateObject var minionModel = MinionModel()
     @StateObject var minionVM = MinionViewModel()
-    @StateObject var runRecordVM = RunRecordViewModel()
+    @ObservedObject var runRecordVM = RunRecordViewModel()
     
     @State private var recentMinions: [(minion: MinionDefinitionModel, acquisitionDate: Date)] = []
     
     var body: some View {
-        NavigationStack {
             HStack {
                     if recentMinions.isEmpty {
                         VStack(alignment: .center) {
@@ -40,12 +39,11 @@ struct ProfileMinionView: View {
                     }
                 
             }
+            .frame(height:.infinity)
             .onAppear {
                 loadRecentMinions()
             }
         }
-        
-    }
         
         private func loadRecentMinions() {
             runRecordVM.fetchAndSumDistances()
