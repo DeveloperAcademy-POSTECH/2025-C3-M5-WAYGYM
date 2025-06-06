@@ -14,7 +14,8 @@ struct RunResultModalView: View {
     @State private var hasReward: Bool = false
 
     @StateObject private var weaponVM = WeaponViewModel()
-
+    @StateObject private var minionVM = MinionViewModel()
+    
     @EnvironmentObject var router: AppRouter
 
     let onComplete: () -> Void
@@ -123,31 +124,29 @@ struct RunResultModalView: View {
                 .frame(maxWidth: 340, maxHeight: 660)
                 
             }
-            
-            
             .onAppear {
                 runRecordVM.fetchLatestRouteImageOnly { urlString in
                     if let urlString = urlString,
-                        let url = URL(string: urlString)
+                       let url = URL(string: urlString)
                     {
                         self.routeImageURL = url
                     }
                 }
-
+                
                 runRecordVM.fetchLatestDistanceDurationCalories { _, _, _ in
                     print("✅ 거리, 시간, 칼로리 최신값 로드 완료")
                 }
-
+                
                 runRecordVM.fetchLatestCapturedAreaValue { value in
                     if let value = value {
                         runRecordVM.totalCapturedAreaValue = Int(value)
                     }
                 }
-
+                
                 runRecordVM.fetchRunRecordsFromFirestore()
-
+                
                 weaponVM.checkWeaponUnlockOnStop { unlocked in
-                    // .last: 일단 해금된 무기가 여러 개 있더라도 마지막 것만 받아옴
+                    //:: .last: 일단 해금된 무기가 여러 개 있더라도 마지막 것만 받아옴
                     if let unlockedWeapon = unlocked.last {
                         DispatchQueue.main.async {
                             weaponVM.currentRewardWeapon = unlockedWeapon
@@ -156,8 +155,22 @@ struct RunResultModalView: View {
                     }
                     print("🔓 해금된 무기: \(unlocked.map { $0.id })")
                 }
-              
+                
+                minionVM.checkMinionUnlockOnStop { unlocked in
+                    //:: .last: 일단 해금된 똘마니가 여러 개 있더라도 마지막 것만 받아옴
+                    if let latestUnlocked = unlocked.last {
+                        DispatchQueue.main.async {
+                            // 이후 보상 화면 연결 등을 위해 상태로 저장
+                            print("🔓 해금된 미니언: \(latestUnlocked.id)")
+                            hasReward = true
+                            // 필요 시 minionVM.selectedMinion = latestUnlocked 등 추가 가능
+                        }
+                    } else {
+                        print("🔒 이번 런닝으로 해금된 미니언 없음")
+                    }
+                }
             }
+            
             .onChange(of: runRecordVM.runRecords) { records in
                 print("🔥 데이터 로드됨: \(records.count)개")
                 // 데이터가 로드되면 가장 최근 기록을 현재 기록으로 설정
