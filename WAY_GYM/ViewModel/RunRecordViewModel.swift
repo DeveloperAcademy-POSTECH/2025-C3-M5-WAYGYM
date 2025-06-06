@@ -53,7 +53,6 @@ class RunRecordViewModel: ObservableObject {
                 // distance만 직접 추출
                 let distances = documents.compactMap { doc -> Double? in
                     if let value = doc.data()["distance"] as? Double {
-                        print("✅ distance 값: \(value)")
                         return value
                     } else {
                         print("⚠️ distance 없음 또는 타입 불일치")
@@ -79,7 +78,6 @@ class RunRecordViewModel: ObservableObject {
 
                 let areas = documents.compactMap { doc -> Int? in
                     if let value = doc.data()["capturedAreaValue"] as? Int {
-                        print("✅ 총 area 값: \(value)")
                         return value
                     } else if let valueDouble = doc.data()["capturedAreaValue"] as? Double {
                         // 혹시 Double로 저장된 경우 Int로 변환
