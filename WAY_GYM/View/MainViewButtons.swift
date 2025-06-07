@@ -107,7 +107,6 @@ struct ResultModalTestView: View {
                                     .padding(.leading, 20)
                                     .foregroundStyle(.white)
                                 } else {
-                                    // 빈 공간 유지용, 안 보이게 처리
                                     VStack {
                                         Text(" ")
                                         Text(" ")
