@@ -32,13 +32,13 @@ struct WeaponListView: View {
                             Image("Flash")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(width: 200)
                             
                             Image("main_\(selectedWeaponId)")
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 230)
                                 .padding(.bottom, -15)
+                                .padding(.leading, -7)
                         } // 사용자 이미지 zstack
                         .padding(.vertical, 15)
                         

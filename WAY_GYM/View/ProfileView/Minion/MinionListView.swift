@@ -34,7 +34,7 @@ struct MinionListView: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 150)
-                                    .padding(.bottom, -45)
+                                    .padding(.bottom, -30)
                             } else {
                                 Image("questionMark")
                                     .resizable()
