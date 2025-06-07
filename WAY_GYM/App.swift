@@ -31,14 +31,26 @@ struct WAY_GYMApp: App {
     
     var body: some Scene {
         WindowGroup {
-            RunResultModalView(
-                onComplete: {
-                    print("구역 확장 결과 모달 버튼 클릭")
-                },
-                hasReward: true
-            )
-            .environmentObject(RunRecordViewModel())
-//            RootView()
+            RootView()
+            
+//            RunResultTestView()
+//                .environmentObject(router)
+            
+//            RunResultModalView(
+//                onComplete: {
+//                    print("구역 확장 결과 모달 버튼 클릭")
+//                }
+//                // hasReward: true
+//            )
+//            .environmentObject(RunRecordViewModel())
+            
+//            ProfileView()
+//                .environmentObject(router)
+//                .environmentObject(MinionViewModel())
+//                .environmentObject(WeaponViewModel())
+//                .environmentObject(RunRecordViewModel())
+//                .font(.text01)
+//                .foregroundColor(Color("gang_text_2"))
         }
     }
 } 

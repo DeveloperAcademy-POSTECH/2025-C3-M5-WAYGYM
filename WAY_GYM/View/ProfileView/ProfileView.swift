@@ -3,17 +3,12 @@ import FirebaseFirestore
 import FirebaseFirestoreSwift
 
 struct ProfileView: View {
-    // @StateObject private var userVM = UserViewModel()
-    
     @StateObject private var minionModel = MinionModel()
-    @State private var selectedWeapon: WeaponDefinitionModel? = nil
+    @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     
     @EnvironmentObject var router: AppRouter
-    @StateObject private var runRecordVM = RunRecordViewModel()
     
-    //    private var totalDistance: Double {
-    //        userVM.user.runRecords.map { $0.distance }.reduce(0, +) / 1000
-    //    }
+    @StateObject private var runRecordVM = RunRecordViewModel()
     
     var body: some View {
         NavigationView {
@@ -30,9 +25,9 @@ struct ProfileView: View {
                                     Image("Flash")
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
-                                        .frame(width: 180)
+                                        .frame(width: 220)
                                     
-                                    Image(selectedWeapon != nil ? "main_\(selectedWeapon!.id)" : "main_basic")
+                                    Image("main_\(selectedWeaponId)")
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
                                         .frame(width: 200)
@@ -42,7 +37,7 @@ struct ProfileView: View {
                                         HStack {
                                             Spacer()
                                             VStack {
-                                                NavigationLink(destination: WeaponListView(selectedWeapon: $selectedWeapon)
+                                                NavigationLink(destination: WeaponListView()
                                                     .foregroundStyle(Color.gang_text_2)
                                                     .environmentObject(WeaponViewModel())
                                                     .environmentObject(runRecordVM))
@@ -53,7 +48,7 @@ struct ProfileView: View {
                                                             .resizable()
                                                             .frame(width: 52, height: 52)
                                                         
-                                                        Image(selectedWeapon?.imageName ?? "weapon_0")
+                                                        Image( "weapon_\(selectedWeaponId)")
                                                             .resizable()
                                                             .aspectRatio(contentMode: .fit)
                                                             .frame(width: 40)
@@ -78,6 +73,8 @@ struct ProfileView: View {
                                 .foregroundStyle(Color.white)
                             } // 유저 설명 vstack
                             .padding(.bottom, 20)
+                            
+                            
                             
                             HStack {
                                 VStack(alignment: .leading) {
@@ -128,7 +125,7 @@ struct ProfileView: View {
                                     .padding(.vertical, 4)
                                     .font(.text01)
                                     .foregroundColor(Color.gang_text_2)
-                                
+                                    
                             }
                             .padding(20)
                             .customBorder()

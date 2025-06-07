@@ -84,7 +84,14 @@ final class MinionModel: ObservableObject {
                 description: "1타1킬 전담 처리반,\n그가 움직이면 소리부터 사라진다",
                 iconName: "minion_9",
                 unlockNumber: unlockDistance(for: 9)
-            )
+            ),
+            MinionDefinitionModel(
+                id: "minion_10",
+                name: "주디제이",
+                description: "남자 아니고 여캐임\n그녀의 쾌활함에 모두가 놀란다",
+                iconName: "minion_10",
+                unlockNumber: unlockDistance(for: 10)
+                )
         ]
     }
 }
