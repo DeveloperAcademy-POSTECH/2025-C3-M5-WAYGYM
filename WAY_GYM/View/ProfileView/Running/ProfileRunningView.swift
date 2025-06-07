@@ -1,78 +1,120 @@
+//
+//  Practicew.swift
+//  WAY_GYM
+//
+//  Created by 이주현 on 6/8/25.
+//
+
 import SwiftUI
-import FirebaseFirestore
 
 struct ProfileRunningView: View {
-    @StateObject private var userVM = UserViewModel()
-    
+    @EnvironmentObject private var runRecordVM: RunRecordViewModel
+    @State private var topSummaries: [RunSummary] = []
+
     var body: some View {
-        ZStack {
-            Color("gang_bg_profile")
-                .ignoresSafeArea()
-            
-            ScrollView {
-                VStack(alignment: .center, spacing: 16) {
-                    if userVM.user.runRecords.isEmpty {
-                        VStack(alignment: .center) {
-                            Text("이런...!\n내 구역이 없잖아?!")
-                            Text("\n구역확장을 해야겠어...!")
-                        }
+        ScrollView {
+            VStack(spacing: 16) {
+                if topSummaries.isEmpty {
+                    VStack(alignment: .center) {
+                        Text("이런...!\n내 구역이 없잖아?!")
+                        Text("\n구역확장을 해야겠어...!")
+                    }
                         .padding(5)
                         .font(.text01)
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
-                        
-                    } else {
-                        ForEach(Array(userVM.user.runRecords.prefix(3)), id: \.id) { record in
-                            let dateText = formatDate(record.startTime)
-                            let distanceText = String(format: "%.2fkm", record.distance / 1000)
-                            let durationMin = record.endTime != nil ? Int(record.endTime!.timeIntervalSince(record.startTime) / 60) : 0
-
-                            ZStack {
-                                Color.white
-                                HStack {
-                                    if let routeImage = record.routeImage {
-                                        AsyncImage(url: URL(string: routeImage)) { image in
+                } else {
+                    ForEach(topSummaries.prefix(3)) { summary in
+                        VStack(alignment: .center, spacing: 16) {
+                            HStack {
+                                if let url = summary.routeImageURL {
+                                    AsyncImage(url: url) { phase in
+                                        switch phase {
+                                        case .empty:
+                                            Image(systemName: "photo")
+                                                .frame(width: 96, height: 96)
+                                        case .success(let image):
                                             image
                                                 .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .frame(width: 100)
-                                        } placeholder: {
-                                            ProgressView()
-                                                .frame(width: 100, height: 100)
+                                                .frame(width: 96, height: 96)
+                                                .cornerRadius(16)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 16)
+                                                        .stroke(Color.gray, lineWidth: 1)
+                                                )
+                                                .padding(.trailing, 16)
+                                        case .failure:
+                                            Image(systemName: "photo")
+                                                .resizable()
+                                                .frame(width: 96, height: 96)
+                                                .border(Color.black, width: 1)
+                                                .padding(.trailing, 16)
+                                        @unknown default:
+                                            EmptyView()
                                         }
-                                    } else {
-                                        Image("route_1")
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 100)
                                     }
-
-                                    VStack(alignment: .leading) {
-                                        Text(dateText)
-                                        HStack {
-                                            Text(distanceText)
-                                            Text("\(durationMin)min")
-                                        }
-                                        .bold()
-                                    }
+                                } else {
+                                    Image(systemName: "photo")
+                                        .resizable()
+                                        .background(Color.gray.opacity(0.3))
+                                        .frame(width: 96, height: 96)
+                                        .border(Color.black, width: 1)
+                                        .padding(.trailing, 16)
                                 }
+
+                                Text("\(Int(summary.capturedArea))m²")
+                                Spacer()
                             }
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                            .frame(height: 150)
+
+                            HStack(spacing: 30) {
+                                InfoItem(
+                                    title: "소요시간",
+                                    content: "\(Int(summary.duration) / 60):\(String(format: "%02d", Int(summary.duration) % 60))"
+                                )
+                                InfoItem(
+                                    title: "거리",
+                                    content: "\(String(format: "%.2f", summary.distance / 1000))km"
+                                )
+                                InfoItem(
+                                    title: "칼로리",
+                                    content: "\(Int(summary.calories))kcal"
+                                )
+                            }
                         }
+                        .foregroundColor(.text_primary)
+                        .padding(20)
+                        .frame(maxWidth: .infinity, alignment: .top)
+                        .background(Color.white)
+                        .cornerRadius(16)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color.gang_bg_secondary_2, lineWidth: 2)
+                        )
+                        .overlay(
+                            Text(summary.startTime.formattedDate())
+                                .font(.text01)
+                                .foregroundColor(.text_secondary)
+                                .padding(20),
+                            alignment: .topTrailing
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
                     }
                 }
             }
         }
-    }
-
-    func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy.MM.dd"
-        return formatter.string(from: date)
+       
+        .onAppear {
+            runRecordVM.fetchAllRunSummaries { allSummaries in
+                // 최신순으로 정렬 후 상위 3개만 저장
+                self.topSummaries = allSummaries.sorted(by: { $0.startTime > $1.startTime }).prefix(3).map { $0 }
+            }
+        }
     }
 }
 
 #Preview {
     ProfileRunningView()
+        .environmentObject(RunRecordViewModel())
+        .foregroundColor(Color.gang_text_2)
+        .font(.title01)
 }

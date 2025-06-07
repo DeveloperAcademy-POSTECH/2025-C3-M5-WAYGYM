@@ -51,6 +51,11 @@ struct WAY_GYMApp: App {
                 .environmentObject(RunRecordViewModel())
                 .font(.text01)
                 .foregroundColor(Color("gang_text_2"))
+            
+//            RunningListView()
+//                .environmentObject(RunRecordViewModel())
+//                .foregroundColor(Color.gang_text_2)
+//                .font(.title01)
         }
     }
 } 

@@ -35,7 +35,7 @@ struct RunRecordModels: Identifiable, Codable, Equatable {
         case caloriesBurned = "calories_burned"
         case startTime = "start_time"
         case endTime = "end_time"
-        case routeImage = "route_image"
+        case routeImage
         case coordinates
         case capturedAreas = "captured_areas"
         case capturedAreaValue
@@ -90,6 +90,16 @@ struct RunRecordModels: Identifiable, Codable, Equatable {
     }
 }
 
+// running list view에서 필요한 항목만 가져오기 위해 정의
+struct RunSummary: Identifiable {
+    let id = UUID()
+    let routeImageURL: URL?
+    let distance: Double
+    let duration: TimeInterval
+    let calories: Double
+    let capturedArea: Double
+    let startTime: Date
+}
 
 //struct CoordinatePair: Codable {
 //    var latitude: Double
