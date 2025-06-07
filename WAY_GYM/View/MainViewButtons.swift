@@ -104,7 +104,7 @@ struct ResultModalTestView: View {
                                         Text("진행 시간")
                                             .font(.title02)
                                     }
-                                    .padding(.leading, 24)
+                                    .padding(.leading, 20)
                                     .foregroundStyle(.white)
                                 } else {
                                     // 빈 공간 유지용, 안 보이게 처리
@@ -115,8 +115,7 @@ struct ResultModalTestView: View {
                                     .opacity(0)
                                 }
                             }
-                            .frame(width: 80)
-                            .padding(.leading, 24)
+                            .padding(.leading, 20)
 
                             Spacer()
 
@@ -148,7 +147,7 @@ struct ResultModalTestView: View {
                                             }
                                         }
                                 )
-                                .padding(.trailing, 18)
+                                .padding(.trailing, 14)
 
                             Spacer()
 
