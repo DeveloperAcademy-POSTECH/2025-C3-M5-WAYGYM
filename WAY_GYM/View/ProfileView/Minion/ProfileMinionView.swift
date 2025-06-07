@@ -39,7 +39,7 @@ struct ProfileMinionView: View {
                     }
                 
             }
-            .frame(height:.infinity)
+            .frame(height: .infinity)
             .onAppear {
                 loadRecentMinions()
             }
@@ -49,6 +49,8 @@ struct ProfileMinionView: View {
             runRecordVM.fetchAndSumDistances()
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                print("🟠 전체 미니언 수: \(minionModel.allMinions.count)")
+                print("📏 총 거리: \(runRecordVM.totalDistance)")
                 let unlockedMinions = minionModel.allMinions.filter { minion in
                     minionVM.isUnlocked(minion, with: Int(runRecordVM.totalDistance))
                 }
@@ -68,10 +70,9 @@ struct ProfileMinionView: View {
                 }
                 
                 group.notify(queue: .main) {
-                    // 획득 날짜 기준으로 최신순 정렬하고 최근 3개만 선택
                     self.recentMinions = minionsWithDates
-                        .sorted { $0.minion.id < $1.minion.id }
-                        .prefix(3)
+                        .sorted { Int($0.minion.id) ?? 0 < Int($1.minion.id) ?? 0 }
+                        .suffix(3)
                         .map { $0 }
                     
                 }

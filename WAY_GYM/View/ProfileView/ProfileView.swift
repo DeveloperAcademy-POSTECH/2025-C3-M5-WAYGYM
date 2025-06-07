@@ -25,7 +25,7 @@ struct ProfileView: View {
                                     Image("Flash")
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
-                                        .frame(width: 180)
+                                        .frame(width: 220)
                                     
                                     Image("main_\(selectedWeaponId)")
                                         .resizable()

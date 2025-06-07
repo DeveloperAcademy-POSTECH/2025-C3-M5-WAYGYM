@@ -41,7 +41,7 @@ struct MinionSingleView: View {
                     Image("Flash")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 180)
+                        .frame(width: 220)
                     
                     Image(minionModel.allMinions[minionIndex].iconName)
                         .resizable()
