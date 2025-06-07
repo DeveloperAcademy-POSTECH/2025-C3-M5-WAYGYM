@@ -3,17 +3,12 @@ import FirebaseFirestore
 import FirebaseFirestoreSwift
 
 struct ProfileView: View {
-    // @StateObject private var userVM = UserViewModel()
-    
     @StateObject private var minionModel = MinionModel()
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     
     @EnvironmentObject var router: AppRouter
-    @StateObject private var runRecordVM = RunRecordViewModel()
     
-    //    private var totalDistance: Double {
-    //        userVM.user.runRecords.map { $0.distance }.reduce(0, +) / 1000
-    //    }
+    @StateObject private var runRecordVM = RunRecordViewModel()
     
     var body: some View {
         NavigationView {
@@ -79,6 +74,8 @@ struct ProfileView: View {
                             } // 유저 설명 vstack
                             .padding(.bottom, 20)
                             
+                            
+                            
                             HStack {
                                 VStack(alignment: .leading) {
                                     Text("총 차지한 영역")
@@ -124,15 +121,11 @@ struct ProfileView: View {
                                     .disabled(!hasUnlockedMinions)
                                 }
                                 
-                                ProfileMinionView(
-                                    minionModel: minionModel,
-                                    minionVM: MinionViewModel(),
-                                    runRecordVM: runRecordVM
-                                )
+                                ProfileMinionView()
                                     .padding(.vertical, 4)
                                     .font(.text01)
                                     .foregroundColor(Color.gang_text_2)
-                                
+                                    
                             }
                             .padding(20)
                             .customBorder()
