@@ -37,6 +37,11 @@ struct ProfileRunningView: View {
                                             case .empty:
                                                 Image(systemName: "photo")
                                                     .frame(width: 96, height: 96)
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 16)
+                                                            .stroke(Color.gray, lineWidth: 1)
+                                                    )
+                                                    .padding(.trailing, 16)
                                             case .success(let image):
                                                 image
                                                     .resizable()
@@ -51,7 +56,10 @@ struct ProfileRunningView: View {
                                                 Image(systemName: "photo")
                                                     .resizable()
                                                     .frame(width: 96, height: 96)
-                                                    .border(Color.black, width: 1)
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 16)
+                                                            .stroke(Color.gray, lineWidth: 1)
+                                                    )
                                                     .padding(.trailing, 16)
                                             @unknown default:
                                                 EmptyView()
