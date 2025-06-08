@@ -88,7 +88,7 @@ final class MinionModel: ObservableObject {
             MinionDefinitionModel(
                 id: "minion_10",
                 name: "주디제이",
-                description: "남자 아니고 여캐임\n그녀의 쾌활함에 모두가 놀란다",
+                description: "그녀의 쾌활함에\n모두가 고개를 조아린다",
                 iconName: "minion_10",
                 unlockNumber: unlockDistance(for: 10)
                 )
