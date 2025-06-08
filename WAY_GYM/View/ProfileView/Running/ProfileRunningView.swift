@@ -24,7 +24,7 @@ struct ProfileRunningView: View {
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
                 } else {
-                    ForEach(topSummaries.prefix(3)) { summary in
+                    ForEach(topSummaries.prefix(5)) { summary in
                         NavigationLink(destination: BigSingleRunningView(summary: summary)
                             .foregroundColor(Color.gang_text_2)
                             .font(.title01)
@@ -111,8 +111,7 @@ struct ProfileRunningView: View {
        
         .onAppear {
             runRecordVM.fetchAllRunSummaries { allSummaries in
-                // 최신순으로 정렬 후 상위 3개만 저장
-                self.topSummaries = allSummaries.sorted(by: { $0.startTime > $1.startTime }).prefix(3).map { $0 }
+                self.topSummaries = allSummaries.sorted(by: { $0.startTime > $1.startTime }).prefix(5).map { $0 }
             }
         }
     }
