@@ -22,14 +22,14 @@ struct ProfileMinionView: View {
                     } else {
                         HStack(spacing: 16) {
                             ForEach(Array(recentMinions.enumerated()), id: \.element.minion.id) { index, minionData in
-                                NavigationLink {
-                                    MinionSingleView(minionModel: minionModel, minionIndex: index)
-                                        .foregroundStyle(Color.gang_text_2)
-                                        .font(.title01)
-                                } label: {
-                                    MinionCard(
-                                        minion: minionData.minion
-                                    )
+                                if let trueIndex = minionModel.allMinions.firstIndex(where: { $0.id == minionData.minion.id }) {
+                                                                  NavigationLink {
+                                                                      MinionSingleView(minionModel: minionModel, minionIndex: trueIndex)
+                                                                          .foregroundStyle(Color.gang_text_2)
+                                                                          .font(.title01)
+                                                                  } label: {
+                                                                      MinionCard(minion: minionData.minion)
+                                                                  }
                                 }
                             }
                             if recentMinions.count < 3 {

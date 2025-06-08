@@ -136,7 +136,9 @@ struct ProfileView: View {
                                         .font(.title01)
                                     Spacer()
                                     NavigationLink(destination: RunningListView()
-                                        .foregroundColor(Color.gang_text_2)) {
+                                        .environmentObject(runRecordVM)
+                                        .foregroundColor(Color.gang_text_2)
+                                        .font(.title01)) {
                                         Text("모두 보기")
                                             .foregroundStyle(Color.gang_highlight_3)
                                     }

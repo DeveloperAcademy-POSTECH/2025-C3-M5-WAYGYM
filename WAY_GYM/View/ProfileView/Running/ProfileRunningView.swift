@@ -25,79 +25,85 @@ struct ProfileRunningView: View {
                         .multilineTextAlignment(.center)
                 } else {
                     ForEach(topSummaries.prefix(3)) { summary in
-                        VStack(alignment: .center, spacing: 16) {
-                            HStack {
-                                if let url = summary.routeImageURL {
-                                    AsyncImage(url: url) { phase in
-                                        switch phase {
-                                        case .empty:
-                                            Image(systemName: "photo")
-                                                .frame(width: 96, height: 96)
-                                        case .success(let image):
-                                            image
-                                                .resizable()
-                                                .frame(width: 96, height: 96)
-                                                .cornerRadius(16)
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 16)
-                                                        .stroke(Color.gray, lineWidth: 1)
-                                                )
-                                                .padding(.trailing, 16)
-                                        case .failure:
-                                            Image(systemName: "photo")
-                                                .resizable()
-                                                .frame(width: 96, height: 96)
-                                                .border(Color.black, width: 1)
-                                                .padding(.trailing, 16)
-                                        @unknown default:
-                                            EmptyView()
+                        NavigationLink(destination: BigSingleRunningView(summary: summary)
+                            .foregroundColor(Color.gang_text_2)
+                            .font(.title01)
+                        ) {
+                            VStack(alignment: .center, spacing: 16) {
+                                HStack {
+                                    if let url = summary.routeImageURL {
+                                        AsyncImage(url: url) { phase in
+                                            switch phase {
+                                            case .empty:
+                                                Image(systemName: "photo")
+                                                    .frame(width: 96, height: 96)
+                                            case .success(let image):
+                                                image
+                                                    .resizable()
+                                                    .frame(width: 96, height: 96)
+                                                    .cornerRadius(16)
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 16)
+                                                            .stroke(Color.gray, lineWidth: 1)
+                                                    )
+                                                    .padding(.trailing, 16)
+                                            case .failure:
+                                                Image(systemName: "photo")
+                                                    .resizable()
+                                                    .frame(width: 96, height: 96)
+                                                    .border(Color.black, width: 1)
+                                                    .padding(.trailing, 16)
+                                            @unknown default:
+                                                EmptyView()
+                                            }
                                         }
+                                    } else {
+                                        Image(systemName: "photo")
+                                            .resizable()
+                                            .background(Color.gray.opacity(0.3))
+                                            .frame(width: 96, height: 96)
+                                            .border(Color.black, width: 1)
+                                            .padding(.trailing, 16)
                                     }
-                                } else {
-                                    Image(systemName: "photo")
-                                        .resizable()
-                                        .background(Color.gray.opacity(0.3))
-                                        .frame(width: 96, height: 96)
-                                        .border(Color.black, width: 1)
-                                        .padding(.trailing, 16)
+
+                                    Text("\(Int(summary.capturedArea))m²")
+                                    Spacer()
                                 }
 
-                                Text("\(Int(summary.capturedArea))m²")
-                                Spacer()
+                                HStack(spacing: 30) {
+                                    InfoItem(
+                                        title: "소요시간",
+                                        content: "\(Int(summary.duration) / 60):\(String(format: "%02d", Int(summary.duration) % 60))"
+                                    )
+                                    InfoItem(
+                                        title: "거리",
+                                        content: "\(String(format: "%.2f", summary.distance / 1000))km"
+                                    )
+                                    InfoItem(
+                                        title: "칼로리",
+                                        content: "\(Int(summary.calories))kcal"
+                                    )
+                                }
                             }
-
-                            HStack(spacing: 30) {
-                                InfoItem(
-                                    title: "소요시간",
-                                    content: "\(Int(summary.duration) / 60):\(String(format: "%02d", Int(summary.duration) % 60))"
-                                )
-                                InfoItem(
-                                    title: "거리",
-                                    content: "\(String(format: "%.2f", summary.distance / 1000))km"
-                                )
-                                InfoItem(
-                                    title: "칼로리",
-                                    content: "\(Int(summary.calories))kcal"
-                                )
-                            }
+                            .foregroundColor(.text_primary)
+                            .padding(20)
+                            .frame(maxWidth: .infinity, alignment: .top)
+                            .background(Color.white)
+                            .cornerRadius(16)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color.gang_bg_secondary_2, lineWidth: 2)
+                            )
+                            .overlay(
+                                Text(summary.startTime.formattedDate())
+                                    .font(.text01)
+                                    .foregroundColor(.text_secondary)
+                                    .padding(20),
+                                alignment: .topTrailing
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
                         }
-                        .foregroundColor(.text_primary)
-                        .padding(20)
-                        .frame(maxWidth: .infinity, alignment: .top)
-                        .background(Color.white)
-                        .cornerRadius(16)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color.gang_bg_secondary_2, lineWidth: 2)
-                        )
-                        .overlay(
-                            Text(summary.startTime.formattedDate())
-                                .font(.text01)
-                                .foregroundColor(.text_secondary)
-                                .padding(20),
-                            alignment: .topTrailing
-                        )
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                        
                     }
                 }
             }

@@ -99,6 +99,8 @@ struct RunSummary: Identifiable {
     let calories: Double
     let capturedArea: Double
     let startTime: Date
+    
+    // var coordinates: [CLLocationCoordinate2D]
 }
 
 //struct CoordinatePair: Codable {
