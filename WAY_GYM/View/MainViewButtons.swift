@@ -120,12 +120,9 @@ struct ResultModalTestView: View {
                                     }
                                     .padding(.leading, 20)
                                     .foregroundStyle(.white)
+                                    .frame(width: 105)
                                 } else {
-                                    VStack {
-                                        Text(" ")
-                                        Text(" ")
-                                    }
-                                    .opacity(0)
+                                    Color.clear.frame(width: 105) // 빈 공간 유지, 정지 버튼 고정되도록
                                 }
                             }
                             .padding(.leading, 20)
