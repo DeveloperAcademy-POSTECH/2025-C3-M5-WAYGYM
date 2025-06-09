@@ -19,7 +19,7 @@ struct RunResultTestView: View {
                 .ignoresSafeArea()
             Button {
                 showResultModal = true
-                router.currentScreen = .main
+                // router.currentScreen = .main
             } label: {
                 Text("테스트 런닝 종료")
                     .font(.title)

@@ -10,6 +10,7 @@ import SwiftUI
 
 struct MinionRewardView: View {
     let minion: MinionDefinitionModel
+    let onDismiss: () -> Void
     @EnvironmentObject var router: AppRouter
 
     var body: some View {
@@ -33,7 +34,7 @@ struct MinionRewardView: View {
                     .foregroundColor(.yellow)
 
                 Button(action: {
-                    router.currentScreen = .main
+                    onDismiss()
                 }) {
                     Text("돌아가기")
                         .font(.custom("NeoDunggeunmoPro-Regular", size: 20))
@@ -49,12 +50,12 @@ struct MinionRewardView: View {
         }
     }
 }
-
-#Preview {
-    let model = MinionModel()
-    return MinionRewardView(
-        minion: model.allMinions[1]
-    )
-    .environmentObject(AppRouter())
-}
+//
+//#Preview {
+//    let model = MinionModel()
+//    return MinionRewardView(
+//        minion: model.allMinions[1]
+//    )
+//    .environmentObject(AppRouter())
+//}
 

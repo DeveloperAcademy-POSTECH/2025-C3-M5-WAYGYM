@@ -27,8 +27,9 @@ struct RunResultModalView: View {
 
     @State private var routeImageURL: URL?
     
-    @State private var showWeaponReward = false
+    @State private var showMinionReward = false
     @State private var selectedWeapon: WeaponDefinitionModel?
+    @State private var selectedMinion: MinionDefinitionModel?
     
     var body: some View {
 //        NavigationStack {
@@ -101,9 +102,9 @@ struct RunResultModalView: View {
                     Spacer().frame(height: 0)
 
                     Button(action: {
-                        if let selected = weaponVM.currentRewardWeapon {
-                            selectedWeapon = selected
-                            showWeaponReward = true
+                        if let selected = minionVM.currentRewardMinion {
+                            selectedMinion = selected
+                            showMinionReward = true
                         } else {
                             router.currentScreen = .main
                         }
@@ -130,13 +131,13 @@ struct RunResultModalView: View {
                 
             }
             .overlay {
-                if showWeaponReward, let weapon = selectedWeapon {
+                if showMinionReward, let minion = selectedMinion {
                     ZStack {
                         Color.gang_black_opacity
                             .ignoresSafeArea()
                         
-                        WeaponRewardView(weapon: weapon, onDismiss: {
-                            showWeaponReward = false
+                        MinionRewardView(minion: minion, onDismiss: {
+                            showMinionReward = false
                             onComplete()
                         })
                         .environmentObject(router)
@@ -179,12 +180,11 @@ struct RunResultModalView: View {
                 
                 minionVM.checkMinionUnlockOnStop { unlocked in
                     //:: .last: 일단 해금된 똘마니가 여러 개 있더라도 마지막 것만 받아옴
-                    if let latestUnlocked = unlocked.last {
+                    if let unlockedMinion = unlocked.last {
                         DispatchQueue.main.async {
-                            // 이후 보상 화면 연결 등을 위해 상태로 저장
-                            print("🔓 해금된 미니언: \(latestUnlocked.id)")
+                            print("🔓 해금된 미니언: \(unlockedMinion.id)")
+                            minionVM.currentRewardMinion = unlockedMinion
                             hasReward = true
-                            // 필요 시 minionVM.selectedMinion = latestUnlocked 등 추가 가능
                         }
                     } else {
                         print("🔒 이번 런닝으로 해금된 미니언 없음")
