@@ -19,17 +19,21 @@ struct RunResultModalView: View {
     @EnvironmentObject var router: AppRouter
 
     let onComplete: () -> Void
+    /// Called when a reward is selected and the button is pressed, passing the selected weapon.
+    var onRewardSelected: ((WeaponDefinitionModel) -> Void)?
     // let hasReward: Bool  // 보상 유무
     @EnvironmentObject private var runRecordVM: RunRecordViewModel
     @State private var currentRecord: RunRecordModels?
 
     @State private var routeImageURL: URL?
-
+    
+    @State private var showWeaponReward = false
+    @State private var selectedWeapon: WeaponDefinitionModel?
+    
     var body: some View {
-        NavigationStack {
+//        NavigationStack {
             ZStack {
-                Color.black.opacity(0.7)
-                    .ignoresSafeArea()
+                Color.clear
                 
                 VStack(spacing: 20) {
                     Text("이번엔 여기까지...")
@@ -97,8 +101,9 @@ struct RunResultModalView: View {
                     Spacer().frame(height: 0)
 
                     Button(action: {
-                        if hasReward, let selected = weaponVM.currentRewardWeapon {
-                            router.currentScreen = .weaponReward(selected)
+                        if let selected = weaponVM.currentRewardWeapon {
+                            selectedWeapon = selected
+                            showWeaponReward = true
                         } else {
                             router.currentScreen = .main
                         }
@@ -124,6 +129,22 @@ struct RunResultModalView: View {
                 .frame(maxWidth: 340, maxHeight: 660)
                 
             }
+            .overlay {
+                if showWeaponReward, let weapon = selectedWeapon {
+                    ZStack {
+                        Color.gang_black_opacity
+                            .ignoresSafeArea()
+                        
+                        WeaponRewardView(weapon: weapon, onDismiss: {
+                            showWeaponReward = false
+                            onComplete()
+                        })
+                        .environmentObject(router)
+                    }
+                    
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .onAppear {
                 runRecordVM.fetchLatestRouteImageOnly { urlString in
                     if let urlString = urlString,
@@ -170,7 +191,6 @@ struct RunResultModalView: View {
                     }
                 }
             }
-            
             .onChange(of: runRecordVM.runRecords) { records in
                 print("🔥 데이터 로드됨: \(records.count)개")
                 // 데이터가 로드되면 가장 최근 기록을 현재 기록으로 설정
@@ -184,7 +204,7 @@ struct RunResultModalView: View {
             }
         }
     }
-}
+// }
 
 private func formatDuration(from start: Date, to end: Date) -> String {
     let interval = end.timeIntervalSince(start)
@@ -204,8 +224,11 @@ private func formatDuration(_ duration: TimeInterval) -> String {
     RunResultModalView(
         onComplete: {
             print("구역 확장 결과 모달 버튼 클릭")
+        },
+        onRewardSelected: { weapon in
+            // Preview callback for reward selection
+            print("Reward selected: \(weapon.id)")
         }
-        //hasReward: true
     )
     .environmentObject(RunRecordViewModel())
 }
