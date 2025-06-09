@@ -68,11 +68,18 @@ final class WeaponModel: ObservableObject {
             ),
             WeaponDefinitionModel(
                 id: "6",
-                name: "천사의 숨결",
+                name: "천사의 숨결(가스총)",
                 description: "눈물과 콧물로 상대 의욕을\n말리는 비열한 필살기",
                 imageName: "weapon_6",
                 unlockNumber: unlockArea(for: 6)
-            )
+            ),
+            WeaponDefinitionModel(
+                id: "7",
+                name: "찌익파리 9000",
+                description: "말 보다 빠른 채찍 한방.\n가볍지만 확실한 의사전달.",
+                imageName: "weapon_7",
+                unlockNumber: unlockArea(for: 7)
+            ),
         ]
     }
 }
