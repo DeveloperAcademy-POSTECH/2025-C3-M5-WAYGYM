@@ -27,9 +27,8 @@ struct RunResultModalView: View {
 
     @State private var routeImageURL: URL?
     
-    @State private var showMinionReward = false
-    @State private var selectedWeapon: WeaponDefinitionModel?
-    @State private var selectedMinion: MinionDefinitionModel?
+    @State private var rewardQueue: [RewardItem] = []
+    @State private var showRewardQueue: Bool = false
     
     var body: some View {
 //        NavigationStack {
@@ -102,9 +101,8 @@ struct RunResultModalView: View {
                     Spacer().frame(height: 0)
 
                     Button(action: {
-                        if let selected = minionVM.currentRewardMinion {
-                            selectedMinion = selected
-                            showMinionReward = true
+                        if !rewardQueue.isEmpty {
+                            showRewardQueue = true
                         } else {
                             router.currentScreen = .main
                         }
@@ -131,22 +129,17 @@ struct RunResultModalView: View {
                 
             }
             .overlay {
-                if showMinionReward, let minion = selectedMinion {
-                    ZStack {
-                        Color.gang_black_opacity
-                            .ignoresSafeArea()
-                        
-                        MinionRewardView(minion: minion, onDismiss: {
-                            showMinionReward = false
-                            onComplete()
-                        })
-                        .environmentObject(router)
-                    }
-                    
+                if showRewardQueue {
+                    RewardQueueView(rewards: rewardQueue, onComplete: {
+                        showRewardQueue = false
+                        onComplete()
+                    })
+                    .environmentObject(router)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .onAppear {
+                // 사진 가져오기
                 runRecordVM.fetchLatestRouteImageOnly { urlString in
                     if let urlString = urlString,
                        let url = URL(string: urlString)
@@ -155,39 +148,40 @@ struct RunResultModalView: View {
                     }
                 }
                 
+                
+                // 거리 시간 칼로리 가져오기
                 runRecordVM.fetchLatestDistanceDurationCalories { _, _, _ in
                     print("✅ 거리, 시간, 칼로리 최신값 로드 완료")
                 }
                 
+                // 면적 가져오기
                 runRecordVM.fetchLatestCapturedAreaValue { value in
                     if let value = value {
                         runRecordVM.totalCapturedAreaValue = Int(value)
                     }
                 }
                 
+                // 서버에서 데이터 가져오기 (??)
                 runRecordVM.fetchRunRecordsFromFirestore()
                 
-                weaponVM.checkWeaponUnlockOnStop { unlocked in
-                    //:: .last: 일단 해금된 무기가 여러 개 있더라도 마지막 것만 받아옴
-                    if let unlockedWeapon = unlocked.last {
-                        DispatchQueue.main.async {
-                            weaponVM.currentRewardWeapon = unlockedWeapon
-                            hasReward = true
-                        }
-                    }
-                    print("🔓 해금된 무기: \(unlocked.map { $0.id })")
-                }
+                var collectedRewards: [RewardItem] = []
                 
-                minionVM.checkMinionUnlockOnStop { unlocked in
-                    //:: .last: 일단 해금된 똘마니가 여러 개 있더라도 마지막 것만 받아옴
-                    if let unlockedMinion = unlocked.last {
-                        DispatchQueue.main.async {
-                            print("🔓 해금된 미니언: \(unlockedMinion.id)")
-                            minionVM.currentRewardMinion = unlockedMinion
+                // 해금된 무기 찾기
+                weaponVM.checkWeaponUnlockOnStop { unlocked in
+                    let weaponRewards = unlocked.map { RewardItem.weapon($0) }
+                    collectedRewards.append(contentsOf: weaponRewards)
+                    print("해금된 무기: \(unlocked.map {$0.id})")
+                    
+                    // 해금된 똘마니 찾기
+                    minionVM.checkMinionUnlockOnStop { unlockedMinions in
+                        let minionRewards = unlockedMinions.map { RewardItem.minion($0)}
+                        print("해금된 미니언: \(unlockedMinions.map {$0.id})")
+                        collectedRewards.insert(contentsOf: minionRewards, at: 0) // minions first
+                        
+                        if !collectedRewards.isEmpty {
+                            rewardQueue = collectedRewards
                             hasReward = true
                         }
-                    } else {
-                        print("🔒 이번 런닝으로 해금된 미니언 없음")
                     }
                 }
             }

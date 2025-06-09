@@ -9,11 +9,13 @@ import SwiftUI
 struct WeaponRewardView: View {
     let weapon: WeaponDefinitionModel
     let onDismiss: () -> Void
+    let isLast: Bool
     @EnvironmentObject var router: AppRouter
 
     var body: some View {
         ZStack {
-            Color.clear
+            Color.black.opacity(0.8)
+                .ignoresSafeArea()
 
             VStack(spacing: 20) {
                 Text("NEW")
@@ -33,7 +35,7 @@ struct WeaponRewardView: View {
                 Button(action: {
                     onDismiss()
                 }) {
-                    Text("돌아가기")
+                    Text(isLast ? "돌아가기" : "다음")
                         .font(.custom("NeoDunggeunmoPro-Regular", size: 20))
                         .foregroundColor(.black)
                         .padding()
@@ -52,7 +54,8 @@ struct WeaponRewardView: View {
     let model = WeaponModel()
     return WeaponRewardView(
         weapon: model.allWeapons[1],
-        onDismiss: {}
+        onDismiss: {},
+        isLast: true
     )
     .environmentObject(AppRouter())
 }
