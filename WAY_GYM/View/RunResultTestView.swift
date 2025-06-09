@@ -17,9 +17,9 @@ struct RunResultTestView: View {
         ZStack {
             Image("SampleMap")
                 .ignoresSafeArea()
+            
             Button {
                 showResultModal = true
-                // router.currentScreen = .main
             } label: {
                 Text("테스트 런닝 종료")
                     .font(.title)

@@ -164,8 +164,8 @@ struct RunResultModalView: View {
                 // 서버에서 데이터 가져오기 (??)
                 runRecordVM.fetchRunRecordsFromFirestore()
                 
+                // 해금된 무기/똘마니 하나의 리워드 배열로 넣기
                 var collectedRewards: [RewardItem] = []
-                
                 // 해금된 무기 찾기
                 weaponVM.checkWeaponUnlockOnStop { unlocked in
                     let weaponRewards = unlocked.map { RewardItem.weapon($0) }
@@ -176,8 +176,11 @@ struct RunResultModalView: View {
                     minionVM.checkMinionUnlockOnStop { unlockedMinions in
                         let minionRewards = unlockedMinions.map { RewardItem.minion($0)}
                         print("해금된 미니언: \(unlockedMinions.map {$0.id})")
-                        collectedRewards.insert(contentsOf: minionRewards, at: 0) // minions first
                         
+                        // 해금된 똘마니/무기 배열에 넣을때, 미니언부터 앞으로 넣음
+                        collectedRewards.insert(contentsOf: minionRewards, at: 0)
+                        
+                        // 리워드가 있다면 배열로 저장하고, 버튼이 '보상 확인하기'로 바뀜
                         if !collectedRewards.isEmpty {
                             rewardQueue = collectedRewards
                             hasReward = true
