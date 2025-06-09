@@ -102,8 +102,9 @@ struct RunSummary: Identifiable {
     let routeImageURL: URL?
     let distance: Double
     let duration: TimeInterval
-    // let calories: Double
+    let calories: Double
     let capturedArea: Double
     let startTime: Date
+    let coordinates: [CoordinatePair]
+    let capturedAreas: [CoordinatePairWithGroup]
     }
-

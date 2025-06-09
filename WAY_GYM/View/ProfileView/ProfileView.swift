@@ -135,21 +135,21 @@ struct ProfileView: View {
                                     Text("구역순찰 기록")
                                         .font(.title01)
                                     Spacer()
-//                                    NavigationLink(destination: RunningListView()
-//                                        .environmentObject(runRecordVM)
-//                                        .foregroundColor(Color.gang_text_2)
-//                                        .font(.title01)) {
-//                                        Text("모두 보기")
-//                                            .foregroundStyle(Color.gang_highlight_3)
-//                                    }
-//                                    .opacity(hasRunRecords ? 1 : 0)
-//                                    .disabled(!hasRunRecords)
+                                    NavigationLink(destination: RunningListView()
+                                        .environmentObject(runRecordVM)
+                                        .foregroundColor(Color.gang_text_2)
+                                        .font(.title01)) {
+                                        Text("모두 보기")
+                                            .foregroundStyle(Color.gang_highlight_3)
+                                    }
+                                    .opacity(hasRunRecords ? 1 : 0)
+                                    .disabled(!hasRunRecords)
                                 }
                                 
-//                                ProfileRunningView()
-//                                    .padding(.vertical, 4)
-//                                    .foregroundColor(Color.gang_text_2)
-//                                    .font(.title01)
+                                ProfileRunningView()
+                                    .padding(.vertical, 4)
+                                    .foregroundColor(Color.gang_text_2)
+                                    .font(.title01)
                             }
                             .padding(20)
                             .customBorder()

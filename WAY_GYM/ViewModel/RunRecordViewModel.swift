@@ -8,6 +8,8 @@ import Foundation
 import FirebaseFirestore
 import FirebaseFirestoreSwift
 import Combine
+import SwiftUI
+import MapKit
 
 class RunRecordViewModel: ObservableObject {
     @Published var runRecords: [RunRecordModels] = []
@@ -41,6 +43,28 @@ class RunRecordViewModel: ObservableObject {
                 print("✅ runRecords 개수: \(self?.runRecords.count ?? 0)")
             }
     }
+
+// MARK: - 지도 오버레이 생성
+func makePolylines(from coordinates: [CoordinatePair]) -> [MKPolyline] {
+    guard coordinates.count >= 2 else { return [] }
+
+    let locationCoords = coordinates.map {
+        CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+    }
+    let polyline = MKPolyline(coordinates: locationCoords, count: locationCoords.count)
+    return [polyline]
+}
+
+func makePolygons(from areas: [CoordinatePairWithGroup]) -> [MKPolygon] {
+    let grouped = Dictionary(grouping: areas, by: { $0.groupId })
+
+    return grouped.values.compactMap { group in
+        let coords = group.map {
+            CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+        }
+        return MKPolygon(coordinates: coords, count: coords.count)
+    }
+}
     
     // 서버에서 달린 거리의 합 가져오기
     func fetchAndSumDistances() {
@@ -344,14 +368,37 @@ class RunRecordViewModel: ObservableObject {
                         }
                         return nil
                     }()
+                    
+                    let coordinatesData = data["coordinates"] as? [Any] ?? []
+                    let coordinates: [CoordinatePair] = coordinatesData.compactMap {
+                        if let coordDict = $0 as? [String: Any],
+                           let lat = coordDict["latitude"] as? Double,
+                           let lon = coordDict["longitude"] as? Double {
+                            return CoordinatePair(latitude: lat, longitude: lon)
+                        }
+                        return nil
+                    }
+
+                    let capturedAreasData = data["captured_areas"] as? [Any] ?? []
+                    let capturedAreas: [CoordinatePairWithGroup] = capturedAreasData.compactMap {
+                        if let dict = $0 as? [String: Any],
+                           let lat = dict["latitude"] as? Double,
+                           let lon = dict["longitude"] as? Double,
+                           let groupId = dict["groupId"] as? Int {
+                            return CoordinatePairWithGroup(latitude: lat, longitude: lon, groupId: groupId)
+                        }
+                        return nil
+                    }
 
                     return RunSummary(
                         routeImageURL: routeImageURL,
                         distance: distance,
                         duration: duration,
-                        // calories: calories,
+                        calories: calories,
                         capturedArea: area,
-                        startTime: start
+                        startTime: start,
+                        coordinates: coordinates,
+                        capturedAreas: capturedAreas
                     )
                 }
 
