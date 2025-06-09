@@ -413,6 +413,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "WAY-GYM-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "나와바리 GO";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "걸음 수와 칼로리 데이터를 읽기 위해 HealthKit 접근이 필요합니다.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "HealthKit 데이터를 사용하기 위해 권한이 필요합니다.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = please;
@@ -451,6 +452,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "WAY-GYM-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "나와바리 GO";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "걸음 수와 칼로리 데이터를 읽기 위해 HealthKit 접근이 필요합니다.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "HealthKit 데이터를 사용하기 위해 권한이 필요합니다.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = please;
