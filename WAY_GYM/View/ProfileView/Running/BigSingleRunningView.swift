@@ -23,44 +23,8 @@ struct BigSingleRunningView: View {
     
     var body: some View {
         ZStack {
-            Map(coordinateRegion: $region, interactionModes: [])
-                   .overlay {
-                       MapOverlay(overlays: overlays)
-                   }
-            .ignoresSafeArea()
-            .onAppear {
-                let polys = viewModel.makePolygons(from: summary.capturedAreas)
-                let lines = viewModel.makePolylines(from: summary.coordinates)
-                overlays = polys + lines
-
-                let coords = summary.coordinates.map {
-                    CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
-                }
-
-                if coords.count >= 2 {
-                    let lats = coords.map { $0.latitude }
-                    let lons = coords.map { $0.longitude }
-
-                    let minLat = lats.min() ?? 0
-                    let maxLat = lats.max() ?? 0
-                    let minLon = lons.min() ?? 0
-                    let maxLon = lons.max() ?? 0
-
-                    let centerLat = (minLat + maxLat) / 2
-                    let centerLon = (minLon + maxLon) / 2
-
-                    let spanLat = (maxLat - minLat) * 1.5
-                    let spanLon = (maxLon - minLon) * 1.5
-
-                    region = MKCoordinateRegion(
-                        center: CLLocationCoordinate2D(latitude: centerLat, longitude: centerLon),
-                        span: MKCoordinateSpan(
-                            latitudeDelta: max(spanLat, 0.005),
-                            longitudeDelta: max(spanLon, 0.005)
-                        )
-                    )
-                }
-            }
+            MapOverlay(overlays: overlays, region: region)
+                    .ignoresSafeArea()
             
             VStack {
                 Spacer()
@@ -121,6 +85,36 @@ struct BigSingleRunningView: View {
                 Spacer()
             }
         }
+        .onAppear {
+            let coords = summary.coordinates.map {
+                CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+            }
+
+            let polys = viewModel.makePolygons(from: summary.capturedAreas)
+            let lines = viewModel.makePolylines(from: summary.coordinates)
+            self.overlays = polys + lines
+
+            if coords.count >= 2 {
+                let lats = coords.map { $0.latitude }
+                let lons = coords.map { $0.longitude }
+
+                let minLat = lats.min() ?? 0
+                let maxLat = lats.max() ?? 0
+                let minLon = lons.min() ?? 0
+                let maxLon = lons.max() ?? 0
+
+                let centerLat = (minLat + maxLat) / 2
+                let centerLon = (minLon + maxLon) / 2
+
+                let spanLat = max((maxLat - minLat) * 0.5, 0.003)
+                let spanLon = max((maxLon - minLon) * 0.5, 0.003)
+
+                self.region = MKCoordinateRegion(
+                    center: CLLocationCoordinate2D(latitude: centerLat, longitude: centerLon),
+                    span: MKCoordinateSpan(latitudeDelta: spanLat, longitudeDelta: spanLon)
+                )
+            }
+        }
         .navigationBarBackButtonHidden(true)
     }
     
@@ -141,15 +135,18 @@ struct BigSingleRunningView: View {
     
     struct MapOverlay: UIViewRepresentable {
         let overlays: [MKOverlay]
+        let region: MKCoordinateRegion
 
         func makeUIView(context: Context) -> MKMapView {
             let mapView = MKMapView()
             mapView.delegate = context.coordinator
-            mapView.isUserInteractionEnabled = false
+            mapView.isUserInteractionEnabled = true
+            mapView.setRegion(region, animated: false)
             return mapView
         }
 
         func updateUIView(_ uiView: MKMapView, context: Context) {
+            uiView.setRegion(region, animated: false)
             uiView.removeOverlays(uiView.overlays)
             uiView.addOverlays(overlays)
         }
@@ -162,14 +159,12 @@ struct BigSingleRunningView: View {
             func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
                 if let polygon = overlay as? MKPolygon {
                     let renderer = MKPolygonRenderer(polygon: polygon)
-                    renderer.fillColor = UIColor.green.withAlphaComponent(0.3)
-                    renderer.strokeColor = UIColor.green
-                    renderer.lineWidth = 2
+                    renderer.fillColor = UIColor.gang_area
                     return renderer
                 } else if let polyline = overlay as? MKPolyline {
                     let renderer = MKPolylineRenderer(polyline: polyline)
-                    renderer.strokeColor = UIColor.blue
-                    renderer.lineWidth = 2
+                    renderer.strokeColor = UIColor.successColor
+                    renderer.lineWidth = 3
                     return renderer
                 }
                 return MKOverlayRenderer()
