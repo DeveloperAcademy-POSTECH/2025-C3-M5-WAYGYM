@@ -416,6 +416,7 @@
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "걸음 수와 칼로리 데이터를 읽기 위해 HealthKit 접근이 필요합니다.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "HealthKit 데이터를 사용하기 위해 권한이 필요합니다.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = please;
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "앱에서 사진을 업로드하거나 저장하기 위해 사진 라이브러리에 접근합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -454,6 +455,7 @@
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "걸음 수와 칼로리 데이터를 읽기 위해 HealthKit 접근이 필요합니다.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "HealthKit 데이터를 사용하기 위해 권한이 필요합니다.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = please;
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "앱에서 사진을 업로드하거나 저장하기 위해 사진 라이브러리에 접근합니다.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
