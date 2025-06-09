@@ -14,8 +14,48 @@ struct ResultModalTestView: View {
     
     var body: some View {
         NavigationStack {
+            
             ZStack(alignment: .topTrailing) {
                 Color.gray.ignoresSafeArea()
+                
+                // 정지 버튼
+                VStack{
+                    Spacer()
+                    HStack{
+                        Circle()
+                            .fill(isHolding ? Color.yellow : Color.white)
+                            .frame(width: 86, height: 86)
+                            .overlay(
+                                Text("◼️")
+                                    .font(.system(size: 46))
+                                    .foregroundColor(.black)
+                            )
+                            .frame(maxWidth: .infinity, alignment: .center) // ⭐ 여기
+                        
+                            .simultaneousGesture(
+                                DragGesture(minimumDistance: 0)
+                                    .onChanged { _ in
+                                        if !isHolding {
+                                            isHolding = true
+                                            showTipBox = true
+                                            startFilling()
+                                        }
+                                    }
+                                    .onEnded { _ in
+                                        isHolding = false
+                                        holdProgress = 0.0
+                                        
+                                        if holdProgress >= 1.0 {
+                                            showResult = true
+                                        } else {
+                                            holdProgress = 0.0
+                                        }
+                                    }
+                            )
+                    }
+                }
+                 .zIndex(2)
+
 
                 VStack {
                     VStack(spacing: 14) {
@@ -75,7 +115,6 @@ struct ResultModalTestView: View {
                                     .padding(.top, 2)
                                     .padding(.leading, 3)
                             )
-                    
                     }
 
                     Spacer()
@@ -105,7 +144,7 @@ struct ResultModalTestView: View {
                                     }
                                 }
                             }
-                            .padding(.top, 30)
+                            .padding(.vertical, 55)
                             .cornerRadius(12)
                             .transition(.move(edge: .bottom).combined(with: .opacity))
                         }
@@ -119,68 +158,19 @@ struct ResultModalTestView: View {
                                             .font(.title02)
                                     }
                                     .padding(.leading, 20)
+                                    .padding(.bottom, 20)
+
                                     .foregroundStyle(.white)
-                                    .frame(width: 105)
-                                } else {
-                                    Color.clear.frame(width: 105) // 빈 공간 유지, 정지 버튼 고정되도록
                                 }
                             }
                             .padding(.leading, 20)
 
-                            Spacer()
+                             Spacer()
 
-                            Circle()
-                                .fill(isHolding ? Color.yellow : Color.white)
-                                .frame(width: 86, height: 86)
-                                .overlay(
-                                    Text("◼️")
-                                        .font(.system(size: 38))
-                                        .foregroundColor(.black)
-                                )
-                                .simultaneousGesture(
-                                    DragGesture(minimumDistance: 0)
-                                        .onChanged { _ in
-                                            if !isHolding {
-                                                isHolding = true
-                                                showTipBox = true
-                                                startFilling()
-                                            }
-                                        }
-                                        .onEnded { _ in
-                                            isHolding = false
-                                            holdProgress = 0.0
-
-                                            if holdProgress >= 1.0 {
-                                                showResult = true
-                                            } else {
-                                                holdProgress = 0.0
-                                            }
-                                        }
-                                )
-                                .padding(.trailing, 28)
-
-                            Spacer()
-
-                            Button(action: {
-                                withAnimation {
-                                    showDetailInfo.toggle()
-                                }
-                            }) {
-                                Circle()
-                                    .fill(Color.modalBackground)
-                                    .frame(width: 44, height: 44)
-                                    .overlay(
-                                        Image(systemName: showDetailInfo ? "chevron.down" : "chevron.up")
-                                            .foregroundColor(.white)
-                                            .font(.system(size: 20, weight: .bold))
-                                    )
-                            }
-                            .padding()
-                            .padding(.trailing, 12)
                         }
-                        .padding(.top, 24)
+                        .padding(.top, 50)
                     }
-                    .background(Color.secondary)
+                    .background(Color.secondary.opacity(0.8))
                 }
 
                 if showTipBox {
@@ -216,9 +206,34 @@ struct ResultModalTestView: View {
                     .frame(maxWidth: .infinity)
                     .alignmentGuide(.top) { _ in 0 }
                     .ignoresSafeArea()
-                    .zIndex(1)
                 }
+                // 토글 버튼 - 화면 오른쪽 하단 고정
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            withAnimation {
+                                showDetailInfo.toggle()
+                            }
+                        }) {
+                            Circle()
+                                .fill(Color.modalBackground)
+                                .frame(width: 44, height: 44)
+                                .overlay(
+                                    Image(systemName: showDetailInfo ? "chevron.down" : "chevron.up")
+                                        .foregroundColor(.white)
+                                        .font(.system(size: 20, weight: .bold))
+                                )
+                        }
+                        .padding(.trailing, 30)
+                        .padding(.bottom, 20)
+                    }
+                }
+                .zIndex(2)
             }
+            
+            
         }
     }
 
@@ -244,7 +259,9 @@ struct ResultModalTestView: View {
         }
     }
 }
+   
 
 #Preview {
     ResultModalTestView()
 }
+
