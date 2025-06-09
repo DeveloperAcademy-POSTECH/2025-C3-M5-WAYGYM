@@ -19,8 +19,8 @@ struct CoordinatePairWithGroup: Codable, Equatable {
 struct RunRecordModels: Identifiable, Codable, Equatable {
     @DocumentID var id: String? // Firestore 문서 ID
     let distance: Double // 이동 거리 (미터)
-    let stepCount: Double // 걸음 수
-    let caloriesBurned: Double // 소모 칼로리 (kcal)
+    // let stepCount: Double // 걸음 수
+    // let caloriesBurned: Double // 소모 칼로리 (kcal)
     
     let startTime: Date // 시작 시간
     let endTime: Date? // 종료 시간 (선택적)
@@ -37,8 +37,8 @@ struct RunRecordModels: Identifiable, Codable, Equatable {
     enum CodingKeys: String, CodingKey {
         case id
         case distance
-        case stepCount = "step_count"
-        case caloriesBurned = "calories_burned"
+        // case stepCount = "step_count"
+        // case caloriesBurned = "calories_burned"
         case startTime = "start_time"
         case endTime = "end_time"
         case routeImage
@@ -51,8 +51,8 @@ struct RunRecordModels: Identifiable, Codable, Equatable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decodeIfPresent(String.self, forKey: .id)
         distance = try container.decode(Double.self, forKey: .distance)
-        stepCount = try container.decode(Double.self, forKey: .stepCount)
-        caloriesBurned = try container.decode(Double.self, forKey: .caloriesBurned)
+        // stepCount = try container.decode(Double.self, forKey: .stepCount)
+        // caloriesBurned = try container.decode(Double.self, forKey: .caloriesBurned)
         startTime = try container.decode(Date.self, forKey: .startTime)
         endTime = try container.decodeIfPresent(Date.self, forKey: .endTime)
         routeImage = try container.decodeIfPresent(String.self, forKey: .routeImage)
@@ -63,8 +63,8 @@ struct RunRecordModels: Identifiable, Codable, Equatable {
     
     init(id: String? = nil,
          distance: Double,
-         stepCount: Double,
-         caloriesBurned: Double,
+//         stepCount: Double,
+//         caloriesBurned: Double,
          startTime: Date,
          endTime: Date?,
          routeImage: String?,
@@ -73,8 +73,8 @@ struct RunRecordModels: Identifiable, Codable, Equatable {
          capturedAreaValue: Int) {
         self.id = id
         self.distance = distance
-        self.stepCount = stepCount
-        self.caloriesBurned = caloriesBurned
+        // self.stepCount = stepCount
+        // self.caloriesBurned = caloriesBurned
         self.startTime = startTime
         self.endTime = endTime
         self.routeImage = routeImage
@@ -102,7 +102,7 @@ struct RunSummary: Identifiable {
     let routeImageURL: URL?
     let distance: Double
     let duration: TimeInterval
-    let calories: Double
+    // let calories: Double
     let capturedArea: Double
     let startTime: Date
     }

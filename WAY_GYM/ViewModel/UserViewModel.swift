@@ -33,8 +33,8 @@ class UserViewModel: ObservableObject {
                     return RunRecordModels(
                         id: doc.documentID,
                         distance: distance,
-                        stepCount: 0,
-                        caloriesBurned: 0,
+                        // stepCount: 0,
+                        // caloriesBurned: 0,
                         startTime: start,
                         endTime: end,
                         routeImage: routeImage,

@@ -30,8 +30,8 @@ struct BigSingleRunningView: View {
                         Spacer()
                         
                         VStack() {
-                            Text(summary.startTime.formattedYMD())
-                            Text("\(summary.startTime.formattedHM()) (\(summary.startTime.koreanWeekday()))")
+                            // Text(summary.startTime.formattedYMD())
+                            // Text("\(summary.startTime.formattedHM()) (\(summary.startTime.koreanWeekday()))")
                         }
                             .font(.text01)
                             .padding(.trailing, 16)
@@ -45,7 +45,7 @@ struct BigSingleRunningView: View {
                         Spacer()
                         customLabel(value: String(format: "%.2f", summary.distance / 1000), title: "거리(km)")
                         Spacer()
-                        customLabel(value: String(Int(summary.calories)), title: "칼로리")
+                        // customLabel(value: String(Int(summary.calories)), title: "칼로리")
                     }
                 }
                 .multilineTextAlignment(.center)

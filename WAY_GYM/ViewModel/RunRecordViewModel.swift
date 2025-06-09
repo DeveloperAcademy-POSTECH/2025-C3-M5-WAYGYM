@@ -17,7 +17,7 @@ class RunRecordViewModel: ObservableObject {
     
     @Published var distance: Double?
     @Published var duration: TimeInterval?
-    @Published var calories: Double?
+     @Published var calories: Double?
     
     private var db = Firestore.firestore()
     
@@ -312,13 +312,11 @@ class RunRecordViewModel: ObservableObject {
 
                 print("🔥 서버에서 받은 문서 개수: \(documents.count)")
 
-                let summaries: [RunSummary] = documents.compactMap { doc in
+                let summaries: [RunSummary] = documents.compactMap { doc -> RunSummary? in
                     let data = doc.data()
                     print("데이터 확인:", data)
 
-                    // distance는 0이 기본값이어서 옵셔널 처리 안함
                     let distance = data["distance"] as? Double ?? 0
-
                     let startTimestamp = data["start_time"] as? Timestamp
                     let endTimestamp = data["end_time"] as? Timestamp
 
@@ -351,7 +349,7 @@ class RunRecordViewModel: ObservableObject {
                         routeImageURL: routeImageURL,
                         distance: distance,
                         duration: duration,
-                        calories: calories,
+                        // calories: calories,
                         capturedArea: area,
                         startTime: start
                     )

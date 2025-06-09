@@ -77,8 +77,8 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     @Published var currentLocation: CLLocationCoordinate2D?
     @Published var runRecord: RunRecordModels?
     @Published var runRecordList: [RunRecordModels] = []
-    @Published var stepCount: Double = 0
-    @Published var caloriesBurned: Double = 0
+    // @Published var stepCount: Double = 0
+    // @Published var caloriesBurned: Double = 0
     @Published var capturedAreas: [CoordinatePairWithGroup] = []
     
     private let clManager = CLLocationManager()
@@ -160,7 +160,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
 //    }
     
     // Firestore에 데이터 저장 및 업데이트
-    private func updateRunRecord(stepCount: Double, calories: Double, imageURL: String? = nil) {
+    private func updateRunRecord(imageURL: String? = nil) {
         let endTime = isSimulating ? nil : Date()
         
         let coordinatesArray = coordinates.map { [$0.latitude, $0.longitude] }
@@ -176,8 +176,8 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         let newData = RunRecordModels(
             id: nil,
             distance: calculateTotalDistance(),
-            stepCount: stepCount,
-            caloriesBurned: calories,
+            // stepCount: stepCount,
+            // caloriesBurned: calories,
             startTime: startTime ?? Date(),
             endTime: endTime,
             routeImage: imageURL,
@@ -238,7 +238,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         options.scale = UIScreen.main.scale
         
         let snapshotter = MKMapSnapshotter(options: options)
-        snapshotter.start { snapshot, error in
+        snapshotter.start(with: .main) { snapshot, error in
             guard let snapshot = snapshot, error == nil else {
                 print("스냅샷 생성 실패: \(error?.localizedDescription ?? "Unknown error")")
                 return
@@ -290,8 +290,8 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
                 self.saveToPhotoLibrary(image: image)
                 self.uploadImageToFirebase(image: image) { url in
                     self.updateRunRecord(
-                        stepCount: self.stepCount,
-                        calories: self.caloriesBurned,
+                        // stepCount: self.stepCount,
+                        // calories: self.caloriesBurned,
                         imageURL: url?.absoluteString
                     )
                 }
@@ -361,7 +361,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         currentLocation = newCoordinate
         if isSimulating {
             updateCoordinates(newCoordinate: newCoordinate)
-            updateRunRecord(stepCount: stepCount, calories: caloriesBurned)
+            // updateRunRecord(stepCount: stepCount, calories: caloriesBurned)
         }
         updateRegion(coordinate: newCoordinate)
     }
@@ -386,7 +386,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             if let lastLocation = self.clManager.location {
                 if self.isSimulating {
                     self.updateCoordinates(newCoordinate: lastLocation.coordinate)
-                    self.updateRunRecord(stepCount: self.stepCount, calories: self.caloriesBurned)
+                     // self.updateRunRecord()
                 }
                 self.currentLocation = lastLocation.coordinate
                 self.updateRegion(coordinate: lastLocation.coordinate)
@@ -399,7 +399,8 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         isSimulating = false
         simulationTimer?.invalidate()
         clManager.stopUpdatingLocation()
-        updateRunRecord(stepCount: stepCount, calories: caloriesBurned)
+        // updateRunRecord(stepCount: stepCount, calories: caloriesBurned)
+        self.updateRunRecord()
     }
     
     // 현재 위치로 지도 이동
@@ -792,8 +793,8 @@ struct ResultView: View {
                         .cornerRadius(10)
                     
                     Text(String(format: "이동 거리: %.3f m", data.distance))
-                    Text(String(format: "걸음 수: %.0f 걸음", data.stepCount))
-                    Text(String(format: "소모 칼로리: %.1f kcal", data.caloriesBurned))
+                    // Text(String(format: "걸음 수: %.0f 걸음", data.stepCount))
+                    // Text(String(format: "소모 칼로리: %.1f kcal", data.caloriesBurned))
                     Text("시작 시간: \(data.startTime, formatter: dateFormatter)")
                     Text("종료 시간: \(data.endTime.map { dateFormatter.string(from: $0) } ?? "진행 중")")
                     Text(String(format: "진행 시간: %.1f 분", data.duration))
