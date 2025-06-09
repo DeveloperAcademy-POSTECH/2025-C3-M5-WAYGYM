@@ -34,14 +34,16 @@ struct RootView: View {
                         .font(.text01)
                         .foregroundColor(Color("gang_text_2"))
                 )
-            case .weaponReward(let weapon):
-                AnyView(WeaponRewardView(weapon: weapon)
-                    .environmentObject(router)
-                )
-            case .minionReward(let minion):
-                AnyView(MinionRewardView(minion: minion)
-                    .environmentObject(router)
-                )
+//            case .weaponReward(let weapon):
+//                AnyView(
+//                    WeaponRewardView(weapon: weapon)
+//                        .environmentObject(router)
+//                )
+//                
+//            case .minionReward(let minion):
+//                AnyView(MinionRewardView(minion: minion)
+//                    .environmentObject(router)
+//                )
             }
         }
     }

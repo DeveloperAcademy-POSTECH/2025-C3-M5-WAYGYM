@@ -12,7 +12,6 @@ enum AppScreen {
     case running
 //    case result(RunRecordModel)
     case profile
-    case weaponReward(WeaponDefinitionModel)
-    case minionReward(MinionDefinitionModel)
+
 
 }

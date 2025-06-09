@@ -13,6 +13,7 @@ import FirebaseFirestoreSwift
 final class MinionViewModel: ObservableObject {
     @Published var allMinions: [MinionDefinitionModel] = []
     @Published var selectedMinion: MinionDefinitionModel? = nil
+    @Published var currentRewardMinion: MinionDefinitionModel? = nil
     
     private var minionModel = MinionModel()
        init() {

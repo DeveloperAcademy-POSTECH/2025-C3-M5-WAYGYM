@@ -19,17 +19,21 @@ struct RunResultModalView: View {
     @EnvironmentObject var router: AppRouter
 
     let onComplete: () -> Void
+    /// Called when a reward is selected and the button is pressed, passing the selected weapon.
+    var onRewardSelected: ((WeaponDefinitionModel) -> Void)?
     // let hasReward: Bool  // 보상 유무
     @EnvironmentObject private var runRecordVM: RunRecordViewModel
     @State private var currentRecord: RunRecordModels?
 
     @State private var routeImageURL: URL?
-
+    
+    @State private var rewardQueue: [RewardItem] = []
+    @State private var showRewardQueue: Bool = false
+    
     var body: some View {
-        NavigationStack {
+//        NavigationStack {
             ZStack {
-                Color.black.opacity(0.7)
-                    .ignoresSafeArea()
+                Color.clear
                 
                 VStack(spacing: 20) {
                     Text("이번엔 여기까지...")
@@ -97,8 +101,8 @@ struct RunResultModalView: View {
                     Spacer().frame(height: 0)
 
                     Button(action: {
-                        if hasReward, let selected = weaponVM.currentRewardWeapon {
-                            router.currentScreen = .weaponReward(selected)
+                        if !rewardQueue.isEmpty {
+                            showRewardQueue = true
                         } else {
                             router.currentScreen = .main
                         }
@@ -124,7 +128,18 @@ struct RunResultModalView: View {
                 .frame(maxWidth: 340, maxHeight: 660)
                 
             }
+            .overlay {
+                if showRewardQueue {
+                    RewardQueueView(rewards: rewardQueue, onComplete: {
+                        showRewardQueue = false
+                        onComplete()
+                    })
+                    .environmentObject(router)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .onAppear {
+                // 사진 가져오기
                 runRecordVM.fetchLatestRouteImageOnly { urlString in
                     if let urlString = urlString,
                        let url = URL(string: urlString)
@@ -133,44 +148,46 @@ struct RunResultModalView: View {
                     }
                 }
                 
+                
+                // 거리 시간 칼로리 가져오기
                 runRecordVM.fetchLatestDistanceDurationCalories { _, _, _ in
                     print("✅ 거리, 시간, 칼로리 최신값 로드 완료")
                 }
                 
+                // 면적 가져오기
                 runRecordVM.fetchLatestCapturedAreaValue { value in
                     if let value = value {
                         runRecordVM.totalCapturedAreaValue = Int(value)
                     }
                 }
                 
+                // 서버에서 데이터 가져오기 (??)
                 runRecordVM.fetchRunRecordsFromFirestore()
                 
+                // 해금된 무기/똘마니 하나의 리워드 배열로 넣기
+                var collectedRewards: [RewardItem] = []
+                // 해금된 무기 찾기
                 weaponVM.checkWeaponUnlockOnStop { unlocked in
-                    //:: .last: 일단 해금된 무기가 여러 개 있더라도 마지막 것만 받아옴
-                    if let unlockedWeapon = unlocked.last {
-                        DispatchQueue.main.async {
-                            weaponVM.currentRewardWeapon = unlockedWeapon
+                    let weaponRewards = unlocked.map { RewardItem.weapon($0) }
+                    collectedRewards.append(contentsOf: weaponRewards)
+                    print("해금된 무기: \(unlocked.map {$0.id})")
+                    
+                    // 해금된 똘마니 찾기
+                    minionVM.checkMinionUnlockOnStop { unlockedMinions in
+                        let minionRewards = unlockedMinions.map { RewardItem.minion($0)}
+                        print("해금된 미니언: \(unlockedMinions.map {$0.id})")
+                        
+                        // 해금된 똘마니/무기 배열에 넣을때, 미니언부터 앞으로 넣음
+                        collectedRewards.insert(contentsOf: minionRewards, at: 0)
+                        
+                        // 리워드가 있다면 배열로 저장하고, 버튼이 '보상 확인하기'로 바뀜
+                        if !collectedRewards.isEmpty {
+                            rewardQueue = collectedRewards
                             hasReward = true
                         }
-                    }
-                    print("🔓 해금된 무기: \(unlocked.map { $0.id })")
-                }
-                
-                minionVM.checkMinionUnlockOnStop { unlocked in
-                    //:: .last: 일단 해금된 똘마니가 여러 개 있더라도 마지막 것만 받아옴
-                    if let latestUnlocked = unlocked.last {
-                        DispatchQueue.main.async {
-                            // 이후 보상 화면 연결 등을 위해 상태로 저장
-                            print("🔓 해금된 미니언: \(latestUnlocked.id)")
-                            hasReward = true
-                            // 필요 시 minionVM.selectedMinion = latestUnlocked 등 추가 가능
-                        }
-                    } else {
-                        print("🔒 이번 런닝으로 해금된 미니언 없음")
                     }
                 }
             }
-            
             .onChange(of: runRecordVM.runRecords) { records in
                 print("🔥 데이터 로드됨: \(records.count)개")
                 // 데이터가 로드되면 가장 최근 기록을 현재 기록으로 설정
@@ -184,7 +201,7 @@ struct RunResultModalView: View {
             }
         }
     }
-}
+// }
 
 private func formatDuration(from start: Date, to end: Date) -> String {
     let interval = end.timeIntervalSince(start)
@@ -204,8 +221,11 @@ private func formatDuration(_ duration: TimeInterval) -> String {
     RunResultModalView(
         onComplete: {
             print("구역 확장 결과 모달 버튼 클릭")
+        },
+        onRewardSelected: { weapon in
+            // Preview callback for reward selection
+            print("Reward selected: \(weapon.id)")
         }
-        //hasReward: true
     )
     .environmentObject(RunRecordViewModel())
 }
