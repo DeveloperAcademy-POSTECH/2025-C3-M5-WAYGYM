@@ -164,7 +164,6 @@ struct RunningListView: View {
                 }
             }
         }
-        
         .onAppear {
             runRecordVM.fetchAllRunSummaries { loadedSummaries in
                 self.summaries = loadedSummaries
