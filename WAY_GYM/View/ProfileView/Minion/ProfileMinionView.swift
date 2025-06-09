@@ -8,9 +8,20 @@ struct ProfileMinionView: View {
     
     @State private var recentMinions: [(minion: MinionDefinitionModel, acquisitionDate: Date)] = []
     
+    @State private var isLoading: Bool = true
+    
     var body: some View {
             HStack {
-                    if recentMinions.isEmpty {
+                if isLoading {
+                    VStack {
+                        Text("로딩 중...")
+                            .font(.text01)
+                            .frame(maxWidth: .infinity)
+                            .multilineTextAlignment(.center)
+                    }
+                    
+                } else
+                if recentMinions.isEmpty {
                         VStack(alignment: .center) {
                             Text("이런..!\n내 똘마니들이 없잖아?!")
                             Text("\n구역확장을 해야겠어...!")
@@ -46,9 +57,11 @@ struct ProfileMinionView: View {
         }
         
         private func loadRecentMinions() {
+            isLoading = true
+            
             runRecordVM.fetchAndSumDistances()
 
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 print("🟠 전체 미니언 수: \(minionModel.allMinions.count)")
                 print("📏 총 거리: \(runRecordVM.totalDistance)")
                 let unlockedMinions = minionModel.allMinions.filter { minion in
@@ -76,6 +89,9 @@ struct ProfileMinionView: View {
                         .map { $0 }
                     
                 }
+                
+                isLoading = false
+                
             }
         }
     }
