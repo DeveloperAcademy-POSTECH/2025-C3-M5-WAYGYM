@@ -232,8 +232,6 @@ struct ResultModalTestView: View {
                 }
                 .zIndex(2)
             }
-            
-            
         }
     }
 
