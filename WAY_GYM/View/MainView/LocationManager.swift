@@ -381,17 +381,40 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     }
     
     // CLLocationManagerDelegate: 위치 업데이트 처리
+//    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+//        guard let location = locations.last else { return }
+//        let newCoordinate = location.coordinate
+//        currentLocation = newCoordinate
+//        if isSimulating {
+//            updateCoordinates(newCoordinate: newCoordinate)
+//            // updateRunRecord(stepCount: stepCount, calories: caloriesBurned)
+//        }
+//        updateRegion(coordinate: newCoordinate)
+//    }
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
+        
+        // 좌표 필터링: 정확도 100m 이상 또는 음수인 경우 무시
+        guard location.horizontalAccuracy > 0, location.horizontalAccuracy <= 100 else {
+            print("부정확한 좌표 무시: accuracy = \(location.horizontalAccuracy)")
+            return
+        }
+        
+        // 최신 데이터인지 확인 (5초 이내)
+        let timeInterval = abs(location.timestamp.timeIntervalSinceNow)
+        guard timeInterval < 5 else {
+            print("오래된 좌표 무시: timestamp = \(location.timestamp)")
+            return
+        }
+        
         let newCoordinate = location.coordinate
+        print("유효 좌표 수신: \(newCoordinate.latitude), \(newCoordinate.longitude)")
         currentLocation = newCoordinate
         if isSimulating {
             updateCoordinates(newCoordinate: newCoordinate)
-            // updateRunRecord(stepCount: stepCount, calories: caloriesBurned)
         }
         updateRegion(coordinate: newCoordinate)
     }
-    
     // 시뮬레이션 시작
     func startSimulation() {
         guard clManager.authorizationStatus == .authorizedWhenInUse || clManager.authorizationStatus == .authorizedAlways else {
@@ -399,9 +422,9 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             return
         }
         
+        coordinates.removeAll()
         isSimulating = true
         startTime = Date()
-        coordinates.removeAll()
         polylines.removeAll()
         polygons.removeAll()
         lastIntersectionIndex = nil
@@ -445,6 +468,12 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     
     // 좌표 업데이트
     private func updateCoordinates(newCoordinate: CLLocationCoordinate2D) {
+        // 이상치 필터링
+        guard isValidCoordinate(newCoordinate, lastCoordinate: coordinates.last) else {
+            print("좌표 업데이트 무시: \(newCoordinate.latitude), \(newCoordinate.longitude)")
+            return
+        }
+        
         coordinates.append(newCoordinate)
         updateMapOverlays()
         checkForPolygon()
@@ -590,5 +619,28 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         }
 
         self.polygons.append(contentsOf: result)
+    }
+    private func isValidCoordinate(_ newCoordinate: CLLocationCoordinate2D, lastCoordinate: CLLocationCoordinate2D?) -> Bool {
+        guard let last = lastCoordinate else { return true } // 첫 좌표는 항상 유효
+        let lastLocation = CLLocation(latitude: last.latitude, longitude: last.longitude)
+        let newLocation = CLLocation(latitude: newCoordinate.latitude, longitude: newCoordinate.longitude)
+        
+        // 거리 계산
+        let distance = lastLocation.distance(from: newLocation)
+        // 최대 허용 거리: 500m (1초에 500m 이상 이동은 비현실적)
+        guard distance < 500 else {
+            print("비현실적 거리 감지: \(distance)m")
+            return false
+        }
+        
+        // 속도 계산 (1초 간격 기준)
+        let speed = distance / 1.0 // m/s
+        // 최대 허용 속도: 13.89 m/s (약 50km/h, 일반적인 달리기/자전거 속도)
+        guard speed < 13.89 else {
+            print("비현실적 속도 감지: \(speed)m/s")
+            return false
+        }
+        
+        return true
     }
 }

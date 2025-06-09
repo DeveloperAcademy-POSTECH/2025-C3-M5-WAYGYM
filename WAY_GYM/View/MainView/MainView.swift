@@ -8,11 +8,12 @@ import FirebaseStorage
 import Photos
 import FirebaseCore // Firebase 초기화를 위해 추가
 
-// MARK: - 메인 �뷰
+// MARK: - 메인 뷰
 struct MainView: View {
     @StateObject private var locationManager = LocationManager()
     @EnvironmentObject var router: AppRouter // 외부 종속성, 필요 시 활성화
     @State private var showResult = false
+    @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -20,8 +21,8 @@ struct MainView: View {
                 region: $locationManager.region,
                 polylines: locationManager.polylines,
                 polygons: locationManager.polygons,
-                currentLocation: $locationManager.currentLocation
-//                onPolygonAdded: locationManager.captureMapSnapshot
+                currentLocation: $locationManager.currentLocation,
+                selectedWeaponId: selectedWeaponId
             )
             .edgesIgnoringSafeArea(.all)
             
@@ -39,7 +40,7 @@ struct MainView: View {
                     .padding(20)
                 }
                 Spacer()
-                Text(String(format: "이동 거리: %.3f m", locationManager.runRecord?.distance ?? locationManager.calculateTotalDistance()))
+                Text(String(format: "이동 거리: %.3f m", locationManager.isSimulating ? locationManager.calculateTotalDistance() : 0.0))
                     .font(.system(size: 16, weight: .bold))
                     .padding(10)
                     .background(Color.black.opacity(0.7))
@@ -75,7 +76,7 @@ struct MapView: UIViewRepresentable {
     var polylines: [MKPolyline]
     var polygons: [MKPolygon]
     @Binding var currentLocation: CLLocationCoordinate2D?
-//    let onPolygonAdded: (MKMapView) -> Void
+    let selectedWeaponId: String
     
     func makeUIView(context: Context) -> MKMapView {
         let mapView = MKMapView()
@@ -120,7 +121,7 @@ struct MapView: UIViewRepresentable {
         func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
             if let polyline = overlay as? MKPolyline {
                 let renderer = MKPolylineRenderer(polyline: polyline)
-                renderer.strokeColor = UIColor(Color.green) // Color.gangHighlight 필요 시 활성화
+                renderer.strokeColor = UIColor(Color.green)
                 renderer.lineWidth = 3
                 return renderer
             }
@@ -130,7 +131,6 @@ struct MapView: UIViewRepresentable {
                 renderer.fillColor = UIColor(Color.green).withAlphaComponent(0.5)
                 renderer.strokeColor = UIColor(Color.green)
                 renderer.lineWidth = 4
-//                parent.onPolygonAdded(mapView)
                 return renderer
             }
             
@@ -145,9 +145,13 @@ struct MapView: UIViewRepresentable {
             
             if annotationView == nil {
                 annotationView = MKAnnotationView(annotation: annotation, reuseIdentifier: identifier)
-                annotationView?.image = UIImage(named: "Image") ?? UIImage(named: "H")
-                let imageSize = CGSize(width: 60, height: 60)
-                annotationView?.frame = CGRect(x: 0, y: 0, width: imageSize.width, height: imageSize.height)
+                let imageName = "main_\(parent.selectedWeaponId)"
+                annotationView?.image = UIImage(named: imageName) ?? UIImage(named: "H")
+                if UIImage(named: imageName) == nil {
+                    print("이미지 로드 실패: \(imageName)")
+                }
+                let imageSize = CGSize(width: 80, height: 80)
+                annotationView?.frame = CGRect(origin: .zero, size: imageSize)
                 annotationView?.centerOffset = CGPoint(x: 0, y: -imageSize.height / 2)
             } else {
                 annotationView?.annotation = annotation
@@ -273,8 +277,6 @@ struct ControlPanel: View {
         isSimulating ? stopAction() : startAction()
     }
 }
-
-
 
 // MARK: - 프리뷰
 struct MainView_Previews: PreviewProvider {
