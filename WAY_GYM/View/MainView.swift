@@ -61,7 +61,7 @@ struct MainView: View {
         }
         .onAppear {
             // FirebaseApp.configure() // Firebase 초기화
-            locationManager.requestHealthKitAuthorization()
+            // locationManager.requestHealthKitAuthorization()
             locationManager.fetchRunRecordsFromFirestore()
             locationManager.moveToCurrentLocation()
         }
@@ -79,6 +79,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     @Published var runRecordList: [RunRecordModels] = []
     @Published var stepCount: Double = 0
     @Published var caloriesBurned: Double = 0
+    @Published var capturedAreas: [CoordinatePairWithGroup] = []
     
     private let clManager = CLLocationManager()
     private var coordinates: [CLLocationCoordinate2D] = []
@@ -98,77 +99,77 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     }
     
     // HealthKit 권한 요청
-    func requestHealthKitAuthorization() {
-        guard HKHealthStore.isHealthDataAvailable() else { return }
-        
-        let typesToRead: Set = [
-            HKObjectType.quantityType(forIdentifier: .stepCount)!,
-            HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!
-        ]
-        
-        healthStore.requestAuthorization(toShare: nil, read: typesToRead) { success, error in
-            if success {
-                self.fetchHealthData()
-            } else if let error = error {
-                print("HealthKit 권한 요청 실패: \(error.localizedDescription)")
-            }
-        }
-    }
+//    func requestHealthKitAuthorization() {
+//        guard HKHealthStore.isHealthDataAvailable() else { return }
+//        
+//        let typesToRead: Set = [
+//            HKObjectType.quantityType(forIdentifier: .stepCount)!,
+//            HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!
+//        ]
+//        
+//        healthStore.requestAuthorization(toShare: nil, read: typesToRead) { success, error in
+//            if success {
+//                self.fetchHealthData()
+//            } else if let error = error {
+//                print("HealthKit 권한 요청 실패: \(error.localizedDescription)")
+//            }
+//        }
+//    }
     
     // HealthKit 데이터 가져오기
-    func fetchHealthData() {
-        let calendar = Calendar.current
-        let now = Date()
-        guard let startDate = calendar.date(byAdding: .day, value: -1, to: now) else { return }
-        
-        // 걸음 수 쿼리
-        if let stepType = HKObjectType.quantityType(forIdentifier: .stepCount) {
-            let predicate = HKQuery.predicateForSamples(withStart: startDate, end: now, options: .strictStartDate)
-            let query = HKStatisticsQuery(quantityType: stepType,
-                                          quantitySamplePredicate: predicate,
-                                          options: .cumulativeSum) { _, result, error in
-                if let result = result, let sum = result.sumQuantity() {
-                    DispatchQueue.main.async {
-                        self.stepCount = sum.doubleValue(for: HKUnit.count())
-                        self.updateRunRecord(stepCount: self.stepCount, calories: self.caloriesBurned)
-                    }
-                } else if let error = error {
-                    print("걸음 수 데이터 가져오기 실패: \(error.localizedDescription)")
-                }
-            }
-            healthStore.execute(query)
-        }
-        
-        // 칼로리 쿼리
-        if let calorieType = HKObjectType.quantityType(forIdentifier: .activeEnergyBurned) {
-            let predicate = HKQuery.predicateForSamples(withStart: startDate, end: now, options: .strictStartDate)
-            let query = HKStatisticsQuery(quantityType: calorieType,
-                                          quantitySamplePredicate: predicate,
-                                          options: .cumulativeSum) { _, result, error in
-                if let result = result, let sum = result.sumQuantity() {
-                    DispatchQueue.main.async {
-                        self.caloriesBurned = sum.doubleValue(for: HKUnit.kilocalorie())
-                        self.updateRunRecord(stepCount: self.stepCount, calories: self.caloriesBurned)
-                    }
-                } else if let error = error {
-                    print("칼로리 데이터 가져오기 실패: \(error.localizedDescription)")
-                }
-            }
-            healthStore.execute(query)
-        }
-    }
+//    func fetchHealthData() {
+//        let calendar = Calendar.current
+//        let now = Date()
+//        guard let startDate = calendar.date(byAdding: .day, value: -1, to: now) else { return }
+//        
+//        // 걸음 수 쿼리
+//        if let stepType = HKObjectType.quantityType(forIdentifier: .stepCount) {
+//            let predicate = HKQuery.predicateForSamples(withStart: startDate, end: now, options: .strictStartDate)
+//            let query = HKStatisticsQuery(quantityType: stepType,
+//                                          quantitySamplePredicate: predicate,
+//                                          options: .cumulativeSum) { _, result, error in
+//                if let result = result, let sum = result.sumQuantity() {
+//                    DispatchQueue.main.async {
+//                        self.stepCount = sum.doubleValue(for: HKUnit.count())
+//                        self.updateRunRecord(stepCount: self.stepCount, calories: self.caloriesBurned)
+//                    }
+//                } else if let error = error {
+//                    print("걸음 수 데이터 가져오기 실패: \(error.localizedDescription)")
+//                }
+//            }
+//            healthStore.execute(query)
+//        }
+//        
+//        // 칼로리 쿼리
+//        if let calorieType = HKObjectType.quantityType(forIdentifier: .activeEnergyBurned) {
+//            let predicate = HKQuery.predicateForSamples(withStart: startDate, end: now, options: .strictStartDate)
+//            let query = HKStatisticsQuery(quantityType: calorieType,
+//                                          quantitySamplePredicate: predicate,
+//                                          options: .cumulativeSum) { _, result, error in
+//                if let result = result, let sum = result.sumQuantity() {
+//                    DispatchQueue.main.async {
+//                        self.caloriesBurned = sum.doubleValue(for: HKUnit.kilocalorie())
+//                        self.updateRunRecord(stepCount: self.stepCount, calories: self.caloriesBurned)
+//                    }
+//                } else if let error = error {
+//                    print("칼로리 데이터 가져오기 실패: \(error.localizedDescription)")
+//                }
+//            }
+//            healthStore.execute(query)
+//        }
+//    }
     
     // Firestore에 데이터 저장 및 업데이트
     private func updateRunRecord(stepCount: Double, calories: Double, imageURL: String? = nil) {
         let endTime = isSimulating ? nil : Date()
         
         let coordinatesArray = coordinates.map { [$0.latitude, $0.longitude] }
-        let capturedAreas = polygons.map { polygon in
+        let capturedAreas: [CoordinatePairWithGroup] = polygons.enumerated().flatMap { (index, polygon) in
             let points = polygon.points()
             let count = polygon.pointCount
             return (0..<count).map {
                 let coordinate = points[$0].coordinate
-                return CoordinatePair(latitude: coordinate.latitude, longitude: coordinate.longitude)
+                return CoordinatePairWithGroup(latitude: coordinate.latitude, longitude: coordinate.longitude, groupId: index + 1)
             }
         }
         
@@ -180,9 +181,9 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             startTime: startTime ?? Date(),
             endTime: endTime,
             routeImage: imageURL,
-            coordinates: coordinatesArray,
+            coordinates: coordinates.map { CoordinatePair(latitude: $0.latitude, longitude: $0.longitude) },
             capturedAreas: capturedAreas,
-            capturedAreaValue: 0 // 기본값 설정
+            capturedAreaValue: 0
         )
         
         do {
@@ -470,8 +471,9 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
                     polygons.append(polygon)
                     
                     let areaCoordinatePairs = polygonCoordinates.map {
-                        CoordinatePair(latitude: $0.latitude, longitude: $0.longitude)
+                        CoordinatePairWithGroup(latitude: $0.latitude, longitude: $0.longitude, groupId: polygons.count)
                     }
+                    capturedAreas.append(contentsOf: areaCoordinatePairs)
                     // runRecord 업데이트는 updateRunRecord에서 처리
                     lastIntersectionIndex = coordinates.count - 2
                     
@@ -546,17 +548,20 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     // 저장된 면적을 지도에 불러오기
     func loadCapturedPolygons(from records: [RunRecordModels]) {
         var result: [MKPolygon] = []
-        
+
         for record in records {
-            for area in record.capturedAreas {
-                let coords = area.map {
+            // groupId 기준으로 그룹핑
+            let grouped = Dictionary(grouping: record.capturedAreas, by: { $0.groupId })
+
+            for (_, group) in grouped {
+                let coords = group.map {
                     CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
                 }
                 let polygon = MKPolygon(coordinates: coords, count: coords.count)
                 result.append(polygon)
             }
         }
-        
+
         self.polygons.append(contentsOf: result)
     }
 }
@@ -768,6 +773,7 @@ struct ControlPanel: View {
 struct ResultView: View {
     @ObservedObject var locationManager: LocationManager
     @Binding var showResult: Bool
+    
     
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
