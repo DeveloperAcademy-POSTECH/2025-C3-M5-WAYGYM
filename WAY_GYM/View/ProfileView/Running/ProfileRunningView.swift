@@ -1,78 +1,133 @@
+//
+//  Practicew.swift
+//  WAY_GYM
+//
+//  Created by 이주현 on 6/8/25.
+//
+
 import SwiftUI
-import FirebaseFirestore
 
 struct ProfileRunningView: View {
-    @StateObject private var userVM = UserViewModel()
-    
+    @EnvironmentObject private var runRecordVM: RunRecordViewModel
+    @State private var topSummaries: [RunSummary] = []
+
     var body: some View {
-        ZStack {
-            Color("gang_bg_profile")
-                .ignoresSafeArea()
-            
-            ScrollView {
-                VStack(alignment: .center, spacing: 16) {
-                    if userVM.user.runRecords.isEmpty {
-                        VStack(alignment: .center) {
-                            Text("이런...!\n내 구역이 없잖아?!")
-                            Text("\n구역확장을 해야겠어...!")
-                        }
+        ScrollView {
+            VStack(spacing: 16) {
+                if topSummaries.isEmpty {
+                    VStack(alignment: .center) {
+                        Text("이런...!\n내 구역이 없잖아?!")
+                        Text("\n구역확장을 해야겠어...!")
+                    }
                         .padding(5)
                         .font(.text01)
                         .frame(maxWidth: .infinity)
                         .multilineTextAlignment(.center)
-                        
-                    } else {
-                        ForEach(Array(userVM.user.runRecords.prefix(3)), id: \.id) { record in
-                            let dateText = formatDate(record.startTime)
-                            let distanceText = String(format: "%.2fkm", record.distance / 1000)
-                            let durationMin = record.endTime != nil ? Int(record.endTime!.timeIntervalSince(record.startTime) / 60) : 0
-
-                            ZStack {
-                                Color.white
+                } else {
+                    ForEach(topSummaries.prefix(5)) { summary in
+                        NavigationLink(destination: BigSingleRunningView(summary: summary)
+                            .foregroundColor(Color.gang_text_2)
+                            .font(.title01)
+                        ) {
+                            VStack(alignment: .center, spacing: 16) {
                                 HStack {
-                                    if let routeImage = record.routeImage {
-                                        AsyncImage(url: URL(string: routeImage)) { image in
-                                            image
-                                                .resizable()
-                                                .aspectRatio(contentMode: .fit)
-                                                .frame(width: 100)
-                                        } placeholder: {
-                                            ProgressView()
-                                                .frame(width: 100, height: 100)
+                                    if let url = summary.routeImageURL {
+                                        AsyncImage(url: url) { phase in
+                                            switch phase {
+                                            case .empty:
+                                                Image(systemName: "photo")
+                                                    .frame(width: 96, height: 96)
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 16)
+                                                            .stroke(Color.gray, lineWidth: 1)
+                                                    )
+                                                    .padding(.trailing, 16)
+                                            case .success(let image):
+                                                image
+                                                    .resizable()
+                                                    .frame(width: 96, height: 96)
+                                                    .cornerRadius(16)
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 16)
+                                                            .stroke(Color.gray, lineWidth: 1)
+                                                    )
+                                                    .padding(.trailing, 16)
+                                            case .failure:
+                                                Image(systemName: "photo")
+                                                    .resizable()
+                                                    .frame(width: 96, height: 96)
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 16)
+                                                            .stroke(Color.gray, lineWidth: 1)
+                                                    )
+                                                    .padding(.trailing, 16)
+                                            @unknown default:
+                                                EmptyView()
+                                            }
                                         }
                                     } else {
-                                        Image("route_1")
+                                        Image(systemName: "photo")
                                             .resizable()
-                                            .aspectRatio(contentMode: .fit)
-                                            .frame(width: 100)
+                                            .background(Color.gray.opacity(0.3))
+                                            .frame(width: 96, height: 96)
+                                            .border(Color.black, width: 1)
+                                            .padding(.trailing, 16)
                                     }
 
-                                    VStack(alignment: .leading) {
-                                        Text(dateText)
-                                        HStack {
-                                            Text(distanceText)
-                                            Text("\(durationMin)min")
-                                        }
-                                        .bold()
-                                    }
+                                    Text("\(Int(summary.capturedArea))m²")
+                                    Spacer()
+                                }
+
+                                HStack(spacing: 30) {
+                                    InfoItem(
+                                        title: "소요시간",
+                                        content: "\(Int(summary.duration) / 60):\(String(format: "%02d", Int(summary.duration) % 60))"
+                                    )
+                                    InfoItem(
+                                        title: "거리",
+                                        content: "\(String(format: "%.2f", summary.distance / 1000))km"
+                                    )
+                                    InfoItem(
+                                        title: "칼로리",
+                                        content: "\(Int(summary.calories))kcal"
+                                    )
                                 }
                             }
-                            .clipShape(RoundedRectangle(cornerRadius: 20))
-                            .frame(height: 150)
+                            .foregroundColor(.text_primary)
+                            .padding(20)
+                            .frame(maxWidth: .infinity, alignment: .top)
+                            .background(Color.white)
+                            .cornerRadius(16)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color.gang_bg_secondary_2, lineWidth: 2)
+                            )
+                            .overlay(
+                                Text(summary.startTime.formattedDate())
+                                    .font(.text01)
+                                    .foregroundColor(.text_secondary)
+                                    .padding(20),
+                                alignment: .topTrailing
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
                         }
+                        
                     }
                 }
             }
         }
-    }
-
-    func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy.MM.dd"
-        return formatter.string(from: date)
+       
+        .onAppear {
+            runRecordVM.fetchAllRunSummaries { allSummaries in
+                self.topSummaries = allSummaries.sorted(by: { $0.startTime > $1.startTime }).prefix(5).map { $0 }
+            }
+        }
     }
 }
 
 #Preview {
     ProfileRunningView()
+        .environmentObject(RunRecordViewModel())
+        .foregroundColor(Color.gang_text_2)
+        .font(.title01)
 }

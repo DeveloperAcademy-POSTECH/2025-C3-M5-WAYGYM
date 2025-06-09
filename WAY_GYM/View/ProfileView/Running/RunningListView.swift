@@ -1,154 +1,208 @@
 import SwiftUI
-import FirebaseFirestore
-
-struct MonthlySectionView: View {
-    let month: String
-    let records: [RunRecordModels]
-    let allRecords: [RunRecordModels]
-    let minionViewModel: MinionViewModel
-    let weaponViewModel: WeaponViewModel
-
-    var body: some View {
-        let areaSum = records.reduce(0) { $0 + $1.capturedAreaValue }
-        let distanceSum = records.reduce(0) { $0 + $1.distance }
-
-        VStack(alignment: .leading, spacing: 8) {
-            Text(month)
-                .font(.title02)
-                .bold()
-
-            HStack {
-                Text("구역순찰 \(records.count)회")
-                Text("\(String(format: "%.0f", areaSum))m²")
-                Text("\(String(format: "%.2f", distanceSum / 1000))km")
-            }
-            .font(.text02)
-            
-            ForEach(records.sorted(by: { $0.startTime > $1.startTime }), id: \.id) { record in
-                let weapons = WeaponModel().allWeapons
-                let minions = MinionModel().allMinions
-
-//                let weaponOnThisDate = weapons.first { weapon in
-//                    weaponViewModel.acquisitionDate(for: weapon, in: allRecords) == record.startTime
-//                }
-
-//                let minionOnThisDate = minions.first { minion in
-//                    minionViewModel.acquisitionDate(for: minion, in: allRecords) == record.startTime
-//                }
-
-                let dateText = formatDate(record.startTime)
-                let distanceText = String(format: "%.2fkm", record.distance / 1000)
-
-                let content = HStack {
-                    if let routeImage = record.routeImage {
-                        AsyncImage(url: URL(string: routeImage)) { image in
-                            image
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 100)
-                        } placeholder: {
-                            ProgressView()
-                                .frame(width: 100, height: 100)
-                        }
-                    } else {
-                        Image("route_1")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 100)
-                    }
-
-                    VStack(alignment: .leading) {
-                        Text(dateText)
-
-                        HStack {
-                            Text(distanceText)
-                            Text("\(Int(record.duration / 60))min")
-                        }
-                        .bold()
-                    }
-
-//                    if let weapon = weaponOnThisDate {
-//                        Image(weapon.imageName)
-//                            .resizable()
-//                            .aspectRatio(contentMode: .fit)
-//                            .frame(width: 30)
-//                    }
-
-//                    if let minion = minionOnThisDate {
-//                        Image(minion.iconName)
-//                            .resizable()
-//                            .aspectRatio(contentMode: .fit)
-//                            .frame(width: 30)
-//                    }
-                }
-
-                ZStack {
-                    Color.white
-
-                    content
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .frame(height: 150)
-            }
-        }
-    }
-    
-    private func formatDate(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy.MM.dd"
-        return formatter.string(from: date)
-    }
-}
 
 struct RunningListView: View {
-    @StateObject private var userVM = UserViewModel()
-    @StateObject private var minionViewModel = MinionViewModel()
-    @StateObject private var weaponViewModel = WeaponViewModel()
-
-    var groupedRunRecords: [String: [RunRecordModels]] {
-        Dictionary(grouping: userVM.user.runRecords) { record in
+    @State private var summaries: [RunSummary] = []
+    @EnvironmentObject private var runRecordVM: RunRecordViewModel
+    
+    private var groupedSummaries: [String: [RunSummary]] {
+        Dictionary(grouping: summaries) { summary in
             let formatter = DateFormatter()
             formatter.dateFormat = "yyyy년 M월"
-            return formatter.string(from: record.startTime)
+            formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+            return formatter.string(from: summary.startTime)
         }
-    }
-
-    func monthlyTotalArea(of records: [RunRecordModels]) -> Int {
-        records.map { $0.capturedAreaValue }.reduce(0, +)
-    }
-
-    func montlyTotalDistance(of records: [RunRecordModels]) -> Double {
-        records.map { $0.distance }.reduce(0, +)
     }
     
     var body: some View {
         ZStack {
-            Color("gang_bg_profile")
+            Color.gang_bg_primary_5
                 .ignoresSafeArea()
+            
+            VStack {
+                CustomNavigationBar(title: "구역 순찰 기록")
+                
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 13) {
+                        if summaries.isEmpty {
+                            Text("데이터를 불러오는 중입니다...")
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(.gray)
+                                .padding()
+                        } else {
+                            ForEach(groupedSummaries.keys.sorted(by: >), id: \.self) { month in
+                                let monthSummaries = groupedSummaries[month]!
+                                let totalArea = monthSummaries.reduce(0) { $0 + $1.capturedArea }
+                                let totalDistance = monthSummaries.reduce(0) { $0 + $1.distance }
+                                
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Text("\(month)")
+                                        .font(.title02)
+                                    HStack {
+                                        Text("구역순찰 \(monthSummaries.count)회")
+                                        Text("\(Int(totalArea))m²")
+                                        Text("\(String(format: "%.2f", totalDistance / 1000))km")
+                                    }
+                                }
+                                .font(.text02)
+                                .foregroundColor(.gang_text_1)
+                                .padding(.leading, 5)
+                                
+                                ForEach(monthSummaries) { summary in
+                                    NavigationLink(destination: BigSingleRunningView(summary: summary)
+                                        .foregroundColor(Color.gang_text_2)
+                                        .font(.title01)
+                                    ) {
+                                        VStack(alignment: .center, spacing: 16) {
+                                            HStack {
+                                                if let url = summary.routeImageURL {
+                                                    AsyncImage(url: url) { phase in
+                                                        switch phase {
+                                                        case .empty:
+                                                            Image(systemName: "photo")
+                                                                .frame(width: 96, height: 96)
+                                                        case .success(let image):
+                                                            let styledImage = image
+                                                                .resizable()
+                                                                .frame(width: 96, height: 96)
+                                                                .cornerRadius(16)
+                                                            
+                                                            styledImage
+                                                                .overlay(
+                                                                    RoundedRectangle(cornerRadius: 16)
+                                                                        .foregroundStyle(Color.clear)
+                                                                )
+                                                                .padding(.trailing, 16)
+                                                        case .failure:
+                                                            Image(systemName: "photo")
+                                                                .resizable()
+                                                                .frame(width: 96, height: 96)
+                                                                .border(Color.black, width: 1)
+                                                                .padding(.trailing, 16)
+                                                        @unknown default:
+                                                            EmptyView()
+                                                        }
+                                                    }
+                                                } else {
+                                                    Image(systemName: "photo")
+                                                        .resizable()
+                                                        .background(Color.gray.opacity(0.3))
+                                                        .frame(width: 96, height: 96)
+                                                        .border(Color.black, width: 1)
+                                                        .padding(.trailing, 16)
+                                                }
 
-            ScrollView {
-//                VStack(alignment: .leading, spacing: 16) {
-//                    ForEach(groupedRunRecords.keys.sorted(by: >), id: \.self) { month in
-//                        if let records = groupedRunRecords[month] {
-//                            MonthlySectionView(
-//                                month: month,
-//                                records: records,
-//                                allRecords: userVM.user.runRecords,
-//                                minionViewModel: minionViewModel,
-//                                weaponViewModel: weaponViewModel
-//                            )
-//                        }
-//                    }
-//                }
-//                .padding(.horizontal, 30)
+                                                Text("\(Int(summary.capturedArea))m²")
+
+                                                Spacer()
+                                            }
+
+                                            HStack(spacing: 30) {
+                                                InfoItem(
+                                                    title: "소요시간",
+                                                    content: "\(Int(summary.duration) / 60):\(String(format: "%02d", Int(summary.duration) % 60))"
+                                                )
+                                                InfoItem(
+                                                    title: "거리",
+                                                    content: "\(String(format: "%.2f", summary.distance / 1000))km"
+                                                )
+                                                InfoItem(
+                                                    title: "칼로리",
+                                                    content: "\(Int(summary.calories))kcal"
+                                                )
+                                            }
+                                        }
+                                        .foregroundColor(.text_primary)
+                                        .padding(20)
+                                        .frame(maxWidth: .infinity, alignment: .top)
+                                        .background(Color.white)
+                                        .cornerRadius(16)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .inset(by: 1)
+                                                .stroke(Color.gang_bg_secondary_2, lineWidth: 2)
+                                        )
+                                        .overlay(
+                                            Text(summary.startTime.formattedDate())
+                                                .font(.text01)
+                                                .foregroundColor(.text_secondary)
+                                                .padding(20),
+                                            alignment: .topTrailing
+                                        )
+                                        .clipShape(RoundedRectangle(cornerRadius: 16))
+                                    }
+                                   
+                                }
+                                
+                                Spacer()
+                                    .frame(height: 4)
+                                
+                            }
+                            
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    
+                }
+
             }
         }
         .onAppear {
-            userVM.fetchRunRecordsFromFirestore()
+            runRecordVM.fetchAllRunSummaries { loadedSummaries in
+                self.summaries = loadedSummaries
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+    }
+}
+
+struct InfoItem: View {
+    let title: String
+    let content: String
+
+    var body: some View {
+        VStack(spacing: 10) {
+            Text(title)
+                .font(.text01)
+                .foregroundColor(.text_secondary)
+            Text(content)
+                .foregroundColor(.text_primary)
         }
     }
 }
 
 #Preview {
     RunningListView()
+        .environmentObject(RunRecordViewModel())
+        .foregroundColor(Color.gang_text_2)
+        .font(.title01)
+}
+
+extension Date {
+    func formattedDate() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy.MM.dd HH:mm"
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        return formatter.string(from: self)
+    }
+    
+    func formattedYMD() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy.MM.dd"
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        return formatter.string(from: self)
+    }
+
+    func formattedHM() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        return formatter.string(from: self)
+    }
+
+    func koreanWeekday() -> String {
+        let weekdaySymbols = ["일", "월", "화", "수", "목", "금", "토"]
+        let calendar = Calendar(identifier: .gregorian)
+        let weekdayIndex = calendar.component(.weekday, from: self) - 1
+        return weekdaySymbols[weekdayIndex]
+    }
 }

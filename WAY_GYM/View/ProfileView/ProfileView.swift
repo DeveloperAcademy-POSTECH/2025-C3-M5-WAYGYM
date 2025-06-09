@@ -136,7 +136,9 @@ struct ProfileView: View {
                                         .font(.title01)
                                     Spacer()
                                     NavigationLink(destination: RunningListView()
-                                        .foregroundColor(Color.gang_text_2)) {
+                                        .environmentObject(runRecordVM)
+                                        .foregroundColor(Color.gang_text_2)
+                                        .font(.title01)) {
                                         Text("모두 보기")
                                             .foregroundStyle(Color.gang_highlight_3)
                                     }
@@ -183,6 +185,11 @@ struct ProfileView: View {
             .onAppear {
                 runRecordVM.fetchAndSumDistances()
                 runRecordVM.fetchAndSumCapturedValue()
+                runRecordVM.fetchRunRecordsFromFirestore()
+                print("🔥 가져온 runRecords 개수: \(runRecordVM.runRecords.count)")
+            }
+            .onChange(of: runRecordVM.runRecords) { records in
+                print("✅ 실제 runRecords 개수: \(records.count)")
             }
             .navigationBarHidden(true)
         }
@@ -199,65 +206,6 @@ private extension ProfileView {
     }
 }
 
-// MARK: - UserViewModel
-class UserViewModel: ObservableObject {
-    @Published var user: UserModel
-    private let db = Firestore.firestore()
-    
-    init() {
-        self.user = UserModel(id: UUID(), runRecords: [])
-        fetchRunRecordsFromFirestore()
-    }
-    
-    func fetchRunRecordsFromFirestore() {
-        db.collection("RunRecordModels")
-            .order(by: "start_time", descending: true)
-            .addSnapshotListener { snapshot, error in
-                guard let documents = snapshot?.documents else {
-                    print("Firestore에서 데이터 가져오기 실패: \(error?.localizedDescription ?? "No documents")")
-                    return
-                }
-                
-                let dataList = documents.compactMap { try? $0.data(as: RunRecordModels.self) }
-                DispatchQueue.main.async {
-                    self.user.runRecords = dataList
-                }
-            }
-    }
-}
-
-// MARK: - Custom Border Modifier
-struct CustomBorderModifier: ViewModifier {
-    var cornerRadius: CGFloat = 16
-
-    func body(content: Content) -> some View {
-        content
-            .overlay(
-                VStack(spacing: 0) {
-                    Rectangle()
-                        .fill(Color.black)
-                        .frame(height: 2)
-                    Spacer()
-                    Rectangle()
-                        .fill(Color.black)
-                        .frame(height: 4)
-                }
-                .padding(.horizontal, 2)
-            )
-            .background(
-                RoundedRectangle(cornerRadius: cornerRadius)
-                    .strokeBorder(Color.black, lineWidth: 2)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
-    }
-}
-
-extension View {
-    func customBorder(cornerRadius: CGFloat = 16) -> some View {
-        self.modifier(CustomBorderModifier(cornerRadius: cornerRadius))
-    }
-}
-
 #Preview {
     ProfileView()
         .environmentObject(MinionViewModel())
@@ -268,9 +216,8 @@ extension View {
         .foregroundColor(Color.gang_text_2)
 }
 
-// Computed property to check if any run records exist
 private extension ProfileView {
     var hasRunRecords: Bool {
-        !runRecordVM.runRecords.isEmpty
+        runRecordVM.totalDistance > 0
     }
 }

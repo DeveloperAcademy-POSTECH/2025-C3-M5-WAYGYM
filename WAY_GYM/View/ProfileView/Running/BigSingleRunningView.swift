@@ -6,10 +6,15 @@
 //
 
 import SwiftUI
+import MapKit
 
 struct BigSingleRunningView: View {
+    let summary: RunSummary
+    @Environment(\.dismiss) var dismiss
+
     var body: some View {
         ZStack {
+            //:: 추후 수정
             Image("SampleMap")
                 .resizable()
                 .ignoresSafeArea()
@@ -19,12 +24,15 @@ struct BigSingleRunningView: View {
                 
                 VStack {
                     HStack {
-                        customLabel(value: "0.00", title:
+                        customLabel(value: "\(Int(summary.capturedArea))", title:
                                         "영역(m²)")
                         
                         Spacer()
                         
-                        Text("2025.05.20\n08:40(수)")
+                        VStack() {
+                            Text(summary.startTime.formattedYMD())
+                            Text("\(summary.startTime.formattedHM()) (\(summary.startTime.koreanWeekday()))")
+                        }
                             .font(.text01)
                             .padding(.trailing, 16)
                     }
@@ -33,11 +41,11 @@ struct BigSingleRunningView: View {
                         .frame(height: 24)
                     
                     HStack {
-                        customLabel(value: "14:40", title: "소요시간")
+                        customLabel(value: "\(Int(summary.duration) / 60):\(String(format: "%02d", Int(summary.duration) % 60))", title: "소요시간")
                         Spacer()
-                        customLabel(value: "2.85", title: "거리(km)")
+                        customLabel(value: String(format: "%.2f", summary.distance / 1000), title: "거리(km)")
                         Spacer()
-                        customLabel(value: "132.6", title: "칼로리")
+                        customLabel(value: String(Int(summary.calories)), title: "칼로리")
                     }
                 }
                 .multilineTextAlignment(.center)
@@ -50,7 +58,27 @@ struct BigSingleRunningView: View {
                 
             }
             .ignoresSafeArea()
+            
+            VStack {
+                HStack {
+                    Spacer()
+                    
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image("xmark")
+                            .resizable()
+                            .frame(width: 20, height: 20)
+                            .foregroundStyle(Color.gang_text_2)
+                            .padding(15)
+                            .background(Circle().foregroundStyle(Color.gang_bg))
+                    }
+                }
+                .padding(.horizontal, 16)
+                Spacer()
+            }
         }
+        .navigationBarBackButtonHidden(true)
     }
     
     struct customLabel: View {
@@ -69,8 +97,8 @@ struct BigSingleRunningView: View {
     }
 }
 
-#Preview {
-    BigSingleRunningView()
-        .foregroundColor(Color.gang_text_2)
-        .font(.title01)
-}
+//#Preview {
+//    BigSingleRunningView(summary: RunSummary)
+//        .foregroundColor(Color.gang_text_2)
+//        .font(.title01)
+//}
