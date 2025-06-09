@@ -63,6 +63,20 @@ struct ResultModalTestView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .padding(.trailing, 16)
+                    
+                    Button(action: {
+                        // 땅따먹기 시작
+                    }) {
+                        Circle()
+                            .fill(Color.gangHighlight2)
+                            .frame(width: 86, height: 86)
+                            .overlay(
+                                Image("start")
+                                    .padding(.top, 2)
+                                    .padding(.leading, 3)
+                            )
+                    
+                    }
 
                     Spacer()
 
@@ -146,7 +160,7 @@ struct ResultModalTestView: View {
                                             }
                                         }
                                 )
-                                .padding(.trailing, 14)
+                                .padding(.trailing, 28)
 
                             Spacer()
 
@@ -168,8 +182,6 @@ struct ResultModalTestView: View {
                             .padding(.trailing, 12)
                         }
                         .padding(.top, 24)
-
-                        
                     }
                     .background(Color.secondary)
                 }
