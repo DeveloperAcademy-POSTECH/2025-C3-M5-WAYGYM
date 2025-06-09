@@ -399,9 +399,11 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             return
         }
         
+        coordinates.removeAll()
+        print("🚀 startSimulation coordinates cleared, count: \(coordinates.count)")
         isSimulating = true
         startTime = Date()
-        coordinates.removeAll()
+        
         polylines.removeAll()
         polygons.removeAll()
         lastIntersectionIndex = nil
@@ -446,6 +448,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     // 좌표 업데이트
     private func updateCoordinates(newCoordinate: CLLocationCoordinate2D) {
         coordinates.append(newCoordinate)
+        print("📍 Added coordinate, total count: \(coordinates.count)")
         updateMapOverlays()
         checkForPolygon()
         updateRegion(coordinate: newCoordinate)
