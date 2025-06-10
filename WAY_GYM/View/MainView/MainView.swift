@@ -309,19 +309,16 @@ struct ControlPanel: View {
                                 RoundedRectangle(cornerRadius: 18)
                                     .stroke(Color.yellow, lineWidth: 2)
                             )
+                        
                         RoundedRectangle(cornerRadius: 18)
                             .fill(Color.yellow)
                             .frame(width: 350 * holdProgress, height: 50)
                         
                         Text("길게 눌러서 땅따먹기 종료")
                             .foregroundColor(.white)
-                            .font(
-                                .custom(
-                                    "NeoDunggeunmoPro-Regular",
-                                    size: 20
-                                )
-                            )
+                            .font(.title02)
                             .padding(.horizontal)
+                            .frame(maxWidth: .infinity, alignment: .center)
                             .frame(height: 36)
                     }
                 .padding(.horizontal, 34)
@@ -392,13 +389,13 @@ struct ControlPanel: View {
                                     .foregroundColor(isAreaActive ? .yellow : .white)
                             }
                         }
+                        .padding(.horizontal, 16)
                     }
                     
                     // 재생 중일때 현 위치 버튼
                     if isSimulating {
                         // MARK: 현위치 버튼
                         VStack{
-                            
                             Button(
                                 action: {
                                     moveToCurrentLocationAction();
@@ -422,38 +419,11 @@ struct ControlPanel: View {
                                 .font(.text02)
                                 .foregroundColor(isLocationActive ? .yellow : .white)
                         }
-                        // MARK: 차지한 영역 (면적 레이어 토글 버튼)
-                        VStack{
-                            Button(
-                                action: {
-                                    if isAreaActive {
-                                        locationManager.polygons.removeAll() // 영역 제거
-                                    } else {
-                                        locationManager.loadCapturedPolygons(from: locationManager.runRecordList)
-                                    }
-                                    isAreaActive.toggle()
-                                }) {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(isAreaActive ? Color.yellow : Color.black)
-                                        .frame(width: 56, height: 56)
-                                        .overlay(
-                                            Image(systemName: "map.fill")
-                                                .resizable()
-                                                .scaledToFit()
-                                                .frame(width: 26, height: 26)
-                                                .foregroundColor(
-                                                    isAreaActive ? .black : .yellow
-                                                )
-                                        )
-                                }
-                            Text("차지한 영역")
-                                .font(.text02)
-                                .foregroundColor(isAreaActive ? .yellow : .white)
-                        }
+                        .padding(.trailing, 16)
                     }
-                    .padding(.trailing, 16)
+                    
                 }
-                .padding(.horizontal, 16)
+                
                 
                 Spacer()
                 // 재생 버튼
