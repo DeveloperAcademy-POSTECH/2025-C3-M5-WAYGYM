@@ -70,7 +70,6 @@ struct MainView: View {
                         countdown: $countdown,
                         showResultModal: $showResultModal
                     )
-                    // .padding(.trailing, 16)
                     Spacer()
                 }
             }
@@ -300,7 +299,6 @@ struct ControlPanel: View {
     
     var body: some View {
         VStack {
-            
             if showTipBox {
                 VStack {
                     ZStack(alignment: .leading) {
@@ -341,9 +339,9 @@ struct ControlPanel: View {
                 Spacer()
                 
                 if !isSimulating {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 25) {
                         // MARK: 현위치 버튼
-                        VStack{
+                        VStack(spacing: 12) {
                             Button(
                                 action: {
                                     moveToCurrentLocationAction();
@@ -362,6 +360,7 @@ struct ControlPanel: View {
                                                 )
                                         )
                                 }
+                            
                             Text("내 위치")
                                 .font(.text02)
                                 .foregroundColor(isLocationActive ? .yellow : .white)
@@ -369,7 +368,7 @@ struct ControlPanel: View {
                         
                         // MARK: 차지한 영역 (면적 레이어 토글 버튼)
                         // TODO: 영역 보이는 함수 넣어야 함
-                        VStack{
+                        VStack(spacing: 12) {
                             Button(
                                 action: {
                                     loadCapturedPolygons();
@@ -388,69 +387,96 @@ struct ControlPanel: View {
                                                 )
                                         )
                                 }
-                            Text("차지한 영역")
+                            Text("차지한\n영역")
+                                .multilineTextAlignment(.center)
                                 .font(.text02)
                                 .foregroundColor(isAreaActive ? .yellow : .white)
                         }
                     }
                 }
                 
+                if isSimulating {
+                    // MARK: 현위치 버튼
+                    VStack{
+                        Button(
+                            action: {
+                                moveToCurrentLocationAction();
+                                isLocationActive.toggle()
+                            })  {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(isLocationActive ? Color.yellow : Color.black)
+                                    .frame(width: 56, height: 56)
+                                    .overlay(
+                                        Image(systemName: "location.fill")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 26, height: 26)
+                                            .foregroundColor(
+                                                isLocationActive ? .black : .yellow
+                                            )
+                                    )
+                            }
+                        Text("내 위치")
+                            .font(.text02)
+                            .foregroundColor(isLocationActive ? .yellow : .white)
+                    }
+                }
+                
                 
             }
+            .padding(.horizontal, 16)
             
-        }
-        
-        Spacer()
-        
-        // 재생 버튼
-        HStack {
             Spacer()
-            
-            Button(action: {
-                if !isSimulating {
-                    isCountingDown = true
-                    countdown = 3
-                    startCountdown()
-                }
-            }) {
-                if isSimulating {
-                    Circle()
-                        .fill(isHolding ? Color.yellow : Color.white)
-                        .frame(width: 86, height: 86)
-                        .overlay(
-                            Text("◼️")
-                                .font(.system(size: 38))
-                                .foregroundColor(.black)
-                        )
-                        .simultaneousGesture(
-                            DragGesture(minimumDistance: 0)
-                                .onChanged { _ in
-                                    if !isHolding {
-                                        isHolding = true
-                                        showTipBox = true
-                                        startFilling()
+            // 재생 버튼
+            HStack {
+                Spacer()
+                
+                Button(action: {
+                    if !isSimulating {
+                        isCountingDown = true
+                        countdown = 3
+                        startCountdown()
+                    }
+                }) {
+                    if isSimulating {
+                        Circle()
+                            .fill(isHolding ? Color.yellow : Color.white)
+                            .frame(width: 86, height: 86)
+                            .overlay(
+                                Text("◼️")
+                                    .font(.system(size: 38))
+                                    .foregroundColor(.black)
+                            )
+                            .simultaneousGesture(
+                                DragGesture(minimumDistance: 0)
+                                    .onChanged { _ in
+                                        if !isHolding {
+                                            isHolding = true
+                                            showTipBox = true
+                                            startFilling()
+                                        }
                                     }
-                                }
-                                .onEnded { _ in
-                                    isHolding = false
-                                    holdProgress = 0.0
-
-                                    if holdProgress >= 1.0 {
-                                        showResultModal = true
-                                    } else {
+                                    .onEnded { _ in
+                                        isHolding = false
                                         holdProgress = 0.0
+                                        
+                                        if holdProgress >= 1.0 {
+                                            showResultModal = true
+                                        } else {
+                                            holdProgress = 0.0
+                                        }
                                     }
-                                }
-                        )
-                } else {
-                    Image("startButton")
-                        .resizable()
-                        .frame(width: 86, height: 86)
+                            )
+                    } else {
+                        Image("startButton")
+                            .resizable()
+                            .frame(width: 86, height: 86)
+                    }
                 }
-            }
-            
-            Spacer()
-        } // 재생 버튼
+                
+                Spacer()
+            } // 재생 버튼
+        }
     }
     
     func startCountdown() {
@@ -494,24 +520,24 @@ struct ControlPanel: View {
     }
     
 }
-//
-//// MARK: - 프리뷰
-//struct MainView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        MainView()
-//            .environmentObject(AppRouter()) // AppRouter 필요 시 활성화
-//    }
-//}
-//
-//struct ContentView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        MainView()
-//    }
-//}
-//
-//struct RView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        // RootView() // RootView 정의 필요 시 활성화
-//        MainView()
-//    }
-//}
+
+// MARK: - 프리뷰
+struct MainView_Previews: PreviewProvider {
+    static var previews: some View {
+        MainView()
+            .environmentObject(AppRouter()) // AppRouter 필요 시 활성화
+    }
+}
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        MainView()
+    }
+}
+
+struct RView_Previews: PreviewProvider {
+    static var previews: some View {
+        // RootView() // RootView 정의 필요 시 활성화
+        MainView()
+    }
+}
