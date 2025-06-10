@@ -40,7 +40,7 @@ struct RunResultModalView: View {
                         .font(.custom("NeoDunggeunmoPro-Regular", size: 30))
                         .bold()
                         .padding(.top, 26)
-                        .padding(.bottom, -20)
+                        // .padding(.bottom, -20)
                         .foregroundColor(.white)
 
                     if let url = routeImageURL {
@@ -104,7 +104,8 @@ struct RunResultModalView: View {
                         if !rewardQueue.isEmpty {
                             showRewardQueue = true
                         } else {
-                            router.currentScreen = .main
+                            router.currentScreen = .main(id: UUID())
+                    
                         }
                     }) {
                         Text(hasReward ? "보상 확인하기" : "구역 확장 끝내기")

@@ -13,8 +13,11 @@ struct RootView: View {
     var body: some View {
         NavigationStack {
             switch router.currentScreen {
-            case .main:
-                AnyView(MainView().environmentObject(router))
+            case .main(let id):
+                        MainView()
+                            .id(id) // 💡 이게 있어야 뷰가 강제로 새로 그려짐
+                            .environmentObject(router)
+                
             case .running:
                 AnyView(RunningView().environmentObject(router))
 //            case .result(_):
