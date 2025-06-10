@@ -40,7 +40,7 @@ struct RunResultModalView: View {
                         .font(.custom("NeoDunggeunmoPro-Regular", size: 30))
                         .bold()
                         .padding(.top, 26)
-                        .padding(.bottom, -20)
+                        // .padding(.bottom, -20)
                         .foregroundColor(.white)
 
                     if let url = routeImageURL {
@@ -104,7 +104,8 @@ struct RunResultModalView: View {
                         if !rewardQueue.isEmpty {
                             showRewardQueue = true
                         } else {
-                            router.currentScreen = .main
+                            router.currentScreen = .main(id: UUID())
+                    
                         }
                     }) {
                         Text(hasReward ? "보상 확인하기" : "구역 확장 끝내기")
@@ -188,7 +189,7 @@ struct RunResultModalView: View {
                     }
                 }
             }
-            .onChange(of: runRecordVM.runRecords) { records in
+            .onChange(of: runRecordVM.runRecords) {_, records in
                 print("🔥 데이터 로드됨: \(records.count)개")
                 // 데이터가 로드되면 가장 최근 기록을 현재 기록으로 설정
 

@@ -13,10 +13,11 @@ struct RootView: View {
     var body: some View {
         NavigationStack {
             switch router.currentScreen {
-            case .main:
-                AnyView(MainView().environmentObject(router))
-            case .running:
-                AnyView(RunningView().environmentObject(router))
+            case .main(let id):
+                        MainView()
+                            .id(id)
+                            .environmentObject(router)
+                
 //            case .result(_):
 //                AnyView(RunResultModalView(
 //                    capture: RunRecordModel.dummyData[5],

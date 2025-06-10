@@ -109,14 +109,6 @@ final class WeaponViewModel: ObservableObject {
         return Double(areaValue) >= weapon.unlockNumber
     }
 
-//    func toggleSelection(of weapon: WeaponDefinitionModel) {
-//        if selectedWeapon?.id == weapon.id {
-//            selectedWeapon = nil
-//        } else {
-//            selectedWeapon = weapon
-//        }
-//    }
-
     // 무기 얻은 날짜 계산 함수
     func acquisitionDate(for weapon: WeaponDefinitionModel, from records: [RunRecordModels]) -> Date? {
         let sorted = records.sorted { $0.startTime < $1.startTime }

@@ -8,10 +8,6 @@
 import Foundation
 
 enum AppScreen {
-    case main
-    case running
-//    case result(RunRecordModel)
+    case main(id: UUID = UUID())
     case profile
-
-
 }

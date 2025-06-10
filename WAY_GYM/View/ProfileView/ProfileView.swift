@@ -41,7 +41,6 @@ struct ProfileView: View {
                                                     .foregroundStyle(Color.gang_text_2)
                                                     .environmentObject(WeaponViewModel())
                                                     .environmentObject(runRecordVM))
-                                                
                                                 {
                                                     ZStack {
                                                         Image("box")
@@ -158,7 +157,7 @@ struct ProfileView: View {
                     .scrollIndicators(.hidden)
                     
                     Button(action: {
-                        router.currentScreen = .main
+                        router.currentScreen = .main(id: UUID())
                     }) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 8)
@@ -188,9 +187,9 @@ struct ProfileView: View {
                 runRecordVM.fetchRunRecordsFromFirestore()
                 print("🔥 가져온 runRecords 개수: \(runRecordVM.runRecords.count)")
             }
-            .onChange(of: runRecordVM.runRecords) { records in
-                print("✅ 실제 runRecords 개수: \(records.count)")
-            }
+//            .onChange(of: runRecordVM.runRecords) { records in
+//                print("✅ 실제 runRecords 개수: \(records.count)")
+//            }
             .navigationBarHidden(true)
         }
     }

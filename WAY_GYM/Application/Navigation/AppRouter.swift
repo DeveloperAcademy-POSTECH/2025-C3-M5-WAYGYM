@@ -9,5 +9,5 @@ import Foundation
 import SwiftUI
 
 class AppRouter: ObservableObject {
-    @Published var currentScreen: AppScreen = .main
+    @Published var currentScreen: AppScreen = .main(id: UUID())
 }

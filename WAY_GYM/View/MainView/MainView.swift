@@ -38,7 +38,7 @@ struct MainView: View {
                     HStack{
                         VStack(spacing: 6) {
                             Button(action: {
-                                router.currentScreen = .profile // AppRouter 필요 시 활성화
+                                router.currentScreen = .profile
                             }) {
                                 Image(systemName: "person.fill")
                                     .font(.system(size: 46))
@@ -192,7 +192,7 @@ struct MapView: UIViewRepresentable {
                 let imageName = "main_\(parent.selectedWeaponId)"
                 annotationView?.image = UIImage(named: imageName) ?? UIImage(named: "H")
                 if UIImage(named: imageName) == nil {
-                    print("이미지 로드 실패: \(imageName)")
+                    ("이미지 로드 실패: \(imageName)")
                 }
                 let imageSize = CGSize(width: 80, height: 80)
                 annotationView?.frame = CGRect(origin: .zero, size: imageSize)
@@ -368,7 +368,6 @@ struct ControlPanel: View {
                         }
                         
                         // MARK: 차지한 영역 (면적 레이어 토글 버튼)
-                        // TODO: 영역 보이는 함수 넣어야 함
                         VStack{
                             Button(
                                 action: {
@@ -393,6 +392,7 @@ struct ControlPanel: View {
                                 .foregroundColor(isAreaActive ? .yellow : .white)
                         }
                     }
+                    .padding(.trailing, 16)
                 }
                 
                 
