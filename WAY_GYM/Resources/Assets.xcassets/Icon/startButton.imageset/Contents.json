@@ -1,12 +1,11 @@
 {
   "images" : [
     {
-      "filename" : "main_0.svg",
+      "filename" : "startButton.svg",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "성인씨 1.png",
       "idiom" : "universal",
       "scale" : "2x"
     },

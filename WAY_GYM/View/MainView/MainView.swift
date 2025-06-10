@@ -258,6 +258,9 @@ struct ControlPanel: View {
     @Binding var isCountingDown: Bool
     @Binding var countdown: Int
     
+    
+    @State private var isHolding: Bool = false
+    
     var body: some View {
         HStack(spacing: 20) {
             ZStack {
@@ -271,13 +274,20 @@ struct ControlPanel: View {
                         toggleSimulation()
                     }
                 }) {
-                    Text(isSimulating ? "정지" : "시작")
-                        .font(.system(size: 18, weight: .bold))
-                        .frame(width: 80, height: 40)
-                        .background(isSimulating ? Color.red : Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                        .shadow(radius: 3)
+                    if isSimulating {
+                        Circle()
+                            .fill(isHolding ? Color.yellow : Color.white)
+                            .frame(width: 86, height: 86)
+                            .overlay(
+                                Text("◼️")
+                                    .font(.system(size: 38))
+                                    .foregroundColor(.black)
+                            )
+                    } else {
+                        Image("startButton")
+                            .resizable()
+                            .frame(width: 86, height: 86)
+                    }
                 }
             }
             
