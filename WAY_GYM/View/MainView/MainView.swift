@@ -15,6 +15,9 @@ struct MainView: View {
     @State private var showResult = false
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     
+    @State private var isCountingDown = false
+    @State private var countdown = 3
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             MapView(
@@ -53,9 +56,23 @@ struct MainView: View {
                     showResult: $showResult,
                     startAction: locationManager.startSimulation,
                     stopAction: locationManager.stopSimulation,
-                    moveToCurrentLocationAction: locationManager.moveToCurrentLocation
+                    moveToCurrentLocationAction: locationManager.moveToCurrentLocation,
+                    isCountingDown: $isCountingDown,
+                    countdown: $countdown
                 )
             }
+            
+            if isCountingDown {
+                Color.gang_start_bg
+                    .edgesIgnoringSafeArea(.all)
+                    .overlay(
+                        Text("\(countdown)")
+                            .font(.countdown)
+                            .foregroundColor(Color.gang_highlight_2)
+                    )
+                    .transition(.opacity)
+            }
+            
         }
         .sheet(isPresented: $showResult) {
             ResultView(locationManager: locationManager, showResult: $showResult)
@@ -238,16 +255,30 @@ struct ControlPanel: View {
     let stopAction: () -> Void
     let moveToCurrentLocationAction: () -> Void
     
+    @Binding var isCountingDown: Bool
+    @Binding var countdown: Int
+    
     var body: some View {
         HStack(spacing: 20) {
-            Button(action: toggleSimulation) {
-                Text(isSimulating ? "정지" : "시작")
-                    .font(.system(size: 18, weight: .bold))
-                    .frame(width: 80, height: 40)
-                    .background(isSimulating ? Color.red : Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .shadow(radius: 3)
+            ZStack {
+                Button(action: {
+                    if !isSimulating {
+                        isCountingDown = true
+                        countdown = 3
+                        startCountdown()
+                    }
+                    else {
+                        toggleSimulation()
+                    }
+                }) {
+                    Text(isSimulating ? "정지" : "시작")
+                        .font(.system(size: 18, weight: .bold))
+                        .frame(width: 80, height: 40)
+                        .background(isSimulating ? Color.red : Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                        .shadow(radius: 3)
+                }
             }
             
             Button(action: { showResult = true }) {
@@ -273,8 +304,20 @@ struct ControlPanel: View {
         .padding(.bottom, 30)
     }
     
-    private func toggleSimulation() {
+    func toggleSimulation() {
         isSimulating ? stopAction() : startAction()
+    }
+    
+    
+    func startCountdown() {
+        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
+            countdown -= 1
+            if countdown == 0 {
+                timer.invalidate()
+                isCountingDown = false
+                toggleSimulation()
+            }
+        }
     }
 }
 
