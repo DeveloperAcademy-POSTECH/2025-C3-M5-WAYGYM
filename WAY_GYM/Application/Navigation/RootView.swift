@@ -18,8 +18,6 @@ struct RootView: View {
                             .id(id)
                             .environmentObject(router)
                 
-            case .running:
-                AnyView(RunningView().environmentObject(router))
 //            case .result(_):
 //                AnyView(RunResultModalView(
 //                    capture: RunRecordModel.dummyData[5],
