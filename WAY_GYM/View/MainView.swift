@@ -27,25 +27,31 @@ struct MainView: View {
             
             VStack {
                 HStack {
-                    Spacer()
-                    Button(action: {
-                        router.currentScreen = .profile // AppRouter 필요 시 활성화
-                        print("Profile button tapped")
-                    }) {
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 40))
-                            .foregroundColor(.yellow)
+                    // MARK: profile button
+                    VStack(spacing: 6) {
+                        Button(action: {
+                            router.currentScreen = .profile // AppRouter 필요 시 활성화
+                        }) {
+                            Image(systemName: "person.fill")
+                                .font(.system(size: 46))
+                                .foregroundColor(.white)
+                        }
+                        Text("내 나와바리")
+                            .font(.text02)
+                            .foregroundColor(.white)
+                        // .padding(20)
                     }
                     .padding(20)
+                    Spacer()
                 }
-                Spacer()
-                Text(String(format: "이동 거리: %.3f m", locationManager.runRecord?.distance ?? locationManager.calculateTotalDistance()))
-                    .font(.system(size: 16, weight: .bold))
-                    .padding(10)
-                    .background(Color.black.opacity(0.7))
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-                    .padding(.bottom, 80)
+                // Spacer()
+//                Text(String(format: "이동 거리: %.3f m", locationManager.runRecord?.distance ?? locationManager.calculateTotalDistance()))
+//                    .font(.system(size: 16, weight: .bold))
+//                    .padding(10)
+//                    .background(Color.black.opacity(0.7))
+//                    .foregroundColor(.white)
+//                    .cornerRadius(8)
+//                    .padding(.bottom, 80)
                 
                 ControlPanel(
                     isSimulating: $locationManager.isSimulating,
@@ -54,6 +60,9 @@ struct MainView: View {
                     stopAction: locationManager.stopSimulation,
                     moveToCurrentLocationAction: locationManager.moveToCurrentLocation
                 )
+                Spacer()
+                
+                
             }
         }
         .sheet(isPresented: $showResult) {
@@ -419,6 +428,25 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     
     // 좌표 업데이트
     private func updateCoordinates(newCoordinate: CLLocationCoordinate2D) {
+        // 1. horizontalAccuracy 체크
+        if let currentCL = clManager.location,
+           currentCL.horizontalAccuracy < 0 || currentCL.horizontalAccuracy > 50 {
+            print("🚫 정확도 낮음: \(currentCL.horizontalAccuracy)m")
+            return
+        }
+
+        // 2. 이전 좌표와 거리 비교 (100m 이상 튀면 무시)
+        if let last = coordinates.last {
+            let lastLoc = CLLocation(latitude: last.latitude, longitude: last.longitude)
+            let newLoc = CLLocation(latitude: newCoordinate.latitude, longitude: newCoordinate.longitude)
+            let distance = lastLoc.distance(from: newLoc)
+
+            if distance > 100 {
+                print("🚨 갑자기 \(distance)m 튐 발생. 좌표 무시됨.")
+                return
+            }
+        }
+        
         coordinates.append(newCoordinate)
         updateMapOverlays()
         checkForPolygon()
@@ -726,6 +754,9 @@ struct RouteMapView: UIViewRepresentable {
 struct ControlPanel: View {
     @Binding var isSimulating: Bool
     @Binding var showResult: Bool
+    @State private var isLocationActive = false
+    @State private var isAreaActive = false
+
     let startAction: () -> Void
     let stopAction: () -> Void
     let moveToCurrentLocationAction: () -> Void
@@ -751,15 +782,57 @@ struct ControlPanel: View {
                     .cornerRadius(10)
                     .shadow(radius: 3)
             }
+            // MARK: 현위치 버튼
             
-            Button(action: moveToCurrentLocationAction) {
-                Text("현재 위치")
-                    .font(.system(size: 18, weight: .bold))
-                    .frame(width: 100, height: 40)
-                    .background(Color.orange)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .shadow(radius: 3)
+            VStack{
+                Button(
+                    action: {
+                        moveToCurrentLocationAction();
+                        isLocationActive.toggle()
+                    })  {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(isLocationActive ? Color.yellow : Color.black)
+                            .frame(width: 56, height: 56)
+                            .overlay(
+                                Image(systemName: "location.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 26, height: 26)
+                                    .foregroundColor(
+                                        isLocationActive ? .black : .yellow
+                                    )
+                            )
+                    }
+                Text("내 위치")
+                    .font(.text02)
+                    .foregroundColor(isLocationActive ? .yellow : .white)
+            }
+            
+            // MARK: 차지한 영역 (면적 레이어 토글 버튼)
+            // TODO: 영역 보이는 함수 넣어야 함
+            
+            VStack{
+                Button(
+                    action: {
+                        moveToCurrentLocationAction();
+                        isAreaActive.toggle()
+                    })  {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(isAreaActive ? Color.yellow : Color.black)
+                            .frame(width: 56, height: 56)
+                            .overlay(
+                                Image(systemName: "map.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 26, height: 26)
+                                    .foregroundColor(
+                                        isAreaActive ? .black : .yellow
+                                    )
+                            )
+                    }
+                Text("차지한 영역")
+                    .font(.text02)
+                    .foregroundColor(isAreaActive ? .yellow : .white)
             }
         }
         .padding(.bottom, 30)

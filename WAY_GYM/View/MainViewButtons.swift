@@ -16,6 +16,48 @@ struct ResultModalTestView: View {
         NavigationStack {
             ZStack(alignment: .topTrailing) {
                 Color.gray.ignoresSafeArea()
+<<<<<<< Updated upstream
+=======
+                
+                // 정지 버튼
+                VStack{
+                    Spacer()
+                    HStack{
+                        Circle()
+                            .fill(isHolding ? Color.yellow : Color.white)
+                            .frame(width: 86, height: 86)
+                            .overlay(
+                                Text("◼️")
+                                    .font(.system(size: 46))
+                                    .foregroundColor(.black)
+                            )
+                            .frame(maxWidth: .infinity, alignment: .center)
+                        
+                            .simultaneousGesture(
+                                DragGesture(minimumDistance: 0)
+                                    .onChanged { _ in
+                                        if !isHolding {
+                                            isHolding = true
+                                            showTipBox = true
+                                            startFilling()
+                                        }
+                                    }
+                                    .onEnded { _ in
+                                        isHolding = false
+                                        holdProgress = 0.0
+                                        
+                                        if holdProgress >= 1.0 {
+                                            showResult = true
+                                        } else {
+                                            holdProgress = 0.0
+                                        }
+                                    }
+                            )
+                    }
+                }
+                 .zIndex(2)
+
+>>>>>>> Stashed changes
 
                 VStack {
                     VStack(spacing: 14) {
