@@ -194,27 +194,27 @@ struct ResultModalTestView: View {
         }
     }
 
-    func startFilling() {
-        Timer.scheduledTimer(withTimeInterval: 0.03, repeats: true) { timer in
-            if isHolding {
-                holdProgress += 0.03
-                if holdProgress >= 1.0 {
-                    timer.invalidate()
-                    holdProgress = 1.0
-
-                    DispatchQueue.main.async {
-                        showResult = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                            showReward = true
-                        }
-                    }
-                }
-            } else {
-                timer.invalidate()
-                holdProgress = 0.0
-            }
-        }
-    }
+//    func startFilling() {
+//        Timer.scheduledTimer(withTimeInterval: 0.03, repeats: true) { timer in
+//            if isHolding {
+//                holdProgress += 0.03
+//                if holdProgress >= 1.0 {
+//                    timer.invalidate()
+//                    holdProgress = 1.0
+//
+//                    DispatchQueue.main.async {
+//                        showResult = true
+//                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+//                            showReward = true
+//                        }
+//                    }
+//                }
+//            } else {
+//                timer.invalidate()
+//                holdProgress = 0.0
+//            }
+//        }
+//    }
 }
 
 #Preview {
