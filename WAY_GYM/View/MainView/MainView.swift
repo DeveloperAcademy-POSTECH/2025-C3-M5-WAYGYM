@@ -192,7 +192,7 @@ struct MapView: UIViewRepresentable {
                 let imageName = "main_\(parent.selectedWeaponId)"
                 annotationView?.image = UIImage(named: imageName) ?? UIImage(named: "H")
                 if UIImage(named: imageName) == nil {
-                    print("이미지 로드 실패: \(imageName)")
+                    ("이미지 로드 실패: \(imageName)")
                 }
                 let imageSize = CGSize(width: 80, height: 80)
                 annotationView?.frame = CGRect(origin: .zero, size: imageSize)
