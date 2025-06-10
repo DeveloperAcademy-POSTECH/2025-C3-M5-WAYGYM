@@ -12,6 +12,8 @@ enum FontName: String {
 }
 
 extension Font {
+    static let countdown: Font = .custom(FontName.PixelRegular.rawValue, size: 128)
+    
     static let largeTitle01: Font = .custom(FontName.PixelRegular.rawValue, size: 44)
     static let largeTitle02: Font = .custom(FontName.PixelRegular.rawValue, size: 40)
     

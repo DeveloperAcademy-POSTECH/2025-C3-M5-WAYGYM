@@ -67,6 +67,7 @@ struct ResultModalTestView: View {
                     Spacer()
 
                     VStack(spacing: 0) {
+                        
                         if showDetailInfo {
                             HStack(spacing: 80) {
                                 VStack(spacing: 24) {
@@ -95,6 +96,7 @@ struct ResultModalTestView: View {
                             .cornerRadius(12)
                             .transition(.move(edge: .bottom).combined(with: .opacity))
                         }
+                        
                         HStack {
                             Group {
                                 if !showDetailInfo {
