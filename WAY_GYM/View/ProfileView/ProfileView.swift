@@ -192,6 +192,7 @@ struct ProfileView: View {
 //            }
             .navigationBarHidden(true)
         }
+        .navigationBarHidden(true)
     }
 }
 
