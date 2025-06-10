@@ -9,12 +9,13 @@ import SwiftUI
 
 struct RootView: View {
     @StateObject private var router = AppRouter()
-    
+    @StateObject private var locationManager = LocationManager()
+
     var body: some View {
         NavigationStack {
             switch router.currentScreen {
             case .main(let id):
-                        MainView()
+                        MainView(locationManager: locationManager)
                             .id(id)
                             .environmentObject(router)
                             .environmentObject(LocationManager())

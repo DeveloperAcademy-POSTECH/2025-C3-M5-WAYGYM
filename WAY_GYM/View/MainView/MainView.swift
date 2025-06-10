@@ -10,7 +10,7 @@ import FirebaseCore // Firebase 초기화를 위해 추가
 
 // MARK: - 메인 뷰
 struct MainView: View {
-    @StateObject private var locationManager = LocationManager()
+    @ObservedObject var locationManager: LocationManager
     @EnvironmentObject var router: AppRouter // 외부 종속성, 필요 시 활성화
     @State private var showResult = false
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
@@ -59,6 +59,8 @@ struct MainView: View {
                 Spacer()
                 VStack{
                     ControlPanel(
+                        locationManager: locationManager,
+
                         isSimulating: $locationManager.isSimulating,
                         // showResult: $showResult,
                         startAction: locationManager.startSimulation,
@@ -166,7 +168,7 @@ struct MapView: UIViewRepresentable {
             if let polyline = overlay as? MKPolyline {
                 let renderer = MKPolylineRenderer(polyline: polyline)
                 renderer.strokeColor = UIColor(Color.green)
-                renderer.lineWidth = 3
+                renderer.lineWidth = 2
                 return renderer
             }
             
@@ -174,7 +176,7 @@ struct MapView: UIViewRepresentable {
                 let renderer = MKPolygonRenderer(polygon: polygon)
                 renderer.fillColor = UIColor(Color.green).withAlphaComponent(0.5)
                 renderer.strokeColor = UIColor(Color.green)
-                renderer.lineWidth = 4
+                renderer.lineWidth = 2
                 return renderer
             }
             
@@ -266,7 +268,7 @@ struct RouteMapView: UIViewRepresentable {
             if let polyline = overlay as? MKPolyline {
                 let renderer = MKPolylineRenderer(polyline: polyline)
                 renderer.strokeColor = .systemGreen
-                renderer.lineWidth = 3
+                renderer.lineWidth = 2
                 return renderer
             }
             return MKOverlayRenderer()
@@ -276,8 +278,7 @@ struct RouteMapView: UIViewRepresentable {
 
 // MARK: - 컨트롤 패널
 struct ControlPanel: View {
-    @StateObject private var locationManager = LocationManager()
-    
+    @ObservedObject var locationManager: LocationManager
     @Binding var isSimulating: Bool
     // @Binding var showResult: Bool
     let startAction: () -> Void
@@ -289,11 +290,11 @@ struct ControlPanel: View {
     @State private var isAreaActive = false
     
     @Binding var isCountingDown: Bool
-        @Binding var countdown: Int
+    @Binding var countdown: Int
 
-        @State private var isHolding: Bool = false
-        @State private var holdProgress: CGFloat = 0.0
-        @State private var showTipBox: Bool = false
+    @State private var isHolding: Bool = false
+    @State private var holdProgress: CGFloat = 0.0
+    @State private var showTipBox: Bool = false
     
     @Binding var showResultModal: Bool
     
@@ -371,12 +372,15 @@ struct ControlPanel: View {
                         VStack{
                             Button(
                                 action: {
-                                    if isAreaActive {
-                                        locationManager.polygons.removeAll() // 영역 제거
-                                    } else {
-                                        locationManager.loadCapturedPolygons(from: locationManager.runRecordList)
-                                    }
                                     isAreaActive.toggle()
+
+                                    if isAreaActive {
+                                        loadCapturedPolygons();
+
+                                        //locationManager.loadCapturedPolygons(from: locationManager.runRecordList)
+                                    } else {
+                                        locationManager.polygons.removeAll() // 영역 제거
+                                    }
                                 }) {
                                     RoundedRectangle(cornerRadius: 10)
                                         .fill(isAreaActive ? Color.yellow : Color.black)
