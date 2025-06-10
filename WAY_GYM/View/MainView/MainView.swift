@@ -371,9 +371,13 @@ struct ControlPanel: View {
                         VStack{
                             Button(
                                 action: {
-                                    loadCapturedPolygons();
+                                    if isAreaActive {
+                                        locationManager.polygons.removeAll() // 영역 제거
+                                    } else {
+                                        locationManager.loadCapturedPolygons(from: locationManager.runRecordList)
+                                    }
                                     isAreaActive.toggle()
-                                })  {
+                                }) {
                                     RoundedRectangle(cornerRadius: 10)
                                         .fill(isAreaActive ? Color.yellow : Color.black)
                                         .frame(width: 56, height: 56)
