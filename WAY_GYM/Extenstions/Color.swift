@@ -46,6 +46,8 @@ extension Color {
     
     static let gang_area = Color("gang_area")
     static let success_color = Color("success")
+    
+    static let gang_start_bg = Color("gang_start_bg")
 }
 
 extension UIColor {

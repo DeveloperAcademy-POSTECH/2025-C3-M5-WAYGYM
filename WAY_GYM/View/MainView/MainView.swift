@@ -15,6 +15,9 @@ struct MainView: View {
     @State private var showResult = false
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     
+    @State private var isCountingDown = false
+    @State private var countdown = 3
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             MapView(
@@ -57,11 +60,24 @@ struct MainView: View {
                         stopAction: locationManager.stopSimulation,
                         moveToCurrentLocationAction: locationManager.moveToCurrentLocation,
                         loadCapturedPolygons:
-                            { locationManager.loadCapturedPolygons(from: locationManager.runRecordList ) }
+                            { locationManager.loadCapturedPolygons(from: locationManager.runRecordList ) },
+                        isCountingDown: $isCountingDown,
+                                                countdown: $countdown
                     )
                     .padding(.trailing, 16)
                     Spacer()
                 }
+            }
+            
+            if isCountingDown {
+                Color.gang_start_bg
+                    .edgesIgnoringSafeArea(.all)
+                    .overlay(
+                        Text("\(countdown)")
+                            .font(.countdown)
+                            .foregroundColor(Color.gang_highlight_2)
+                    )
+                    .transition(.opacity)
             }
 
         }
@@ -246,78 +262,214 @@ struct ControlPanel: View {
     let stopAction: () -> Void
     let moveToCurrentLocationAction: () -> Void
     let loadCapturedPolygons: () -> Void
-
+    
     @State private var isLocationActive = false
     @State private var isAreaActive = false
     
+    @Binding var isCountingDown: Bool
+    @Binding var countdown: Int
+    
+    @State private var isHolding: Bool = false
+    @State private var holdProgress: CGFloat = 0.0
+    @State private var showTipBox: Bool = false
+    
     
     var body: some View {
-//            Button(action: toggleSimulation) {
-//                Text(isSimulating ? "정지" : "시작")
-//                    .font(.system(size: 18, weight: .bold))
-//                    .frame(width: 80, height: 40)
-//                    .background(isSimulating ? Color.red : Color.blue)
-//                    .foregroundColor(.white)
-//                    .cornerRadius(10)
-//                    .shadow(radius: 3)
-//            }
         VStack(spacing: 20) {
-               // MARK: 현위치 버튼
-                
-                VStack{
-                    Button(
-                        action: {
-                            moveToCurrentLocationAction();
-                            isLocationActive.toggle()
-                        })  {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(isLocationActive ? Color.yellow : Color.black)
-                                .frame(width: 56, height: 56)
-                                .overlay(
-                                    Image(systemName: "location.fill")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 26, height: 26)
-                                        .foregroundColor(
-                                            isLocationActive ? .black : .yellow
-                                        )
+            
+            if showTipBox {
+                VStack {
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 18)
+                            .fill(Color.black.opacity(0.4))
+                            .frame(width: 350, height: 50)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 18)
+                                    .stroke(Color.yellow, lineWidth: 2)
+                            )
+                        RoundedRectangle(cornerRadius: 18)
+                            .fill(Color.yellow)
+                            .frame(width: 350 * holdProgress, height: 50)
+
+                        Text("길게 눌러서 땅따먹기 종료")
+                            .foregroundColor(.white)
+                            .font(
+                                .custom(
+                                    "NeoDunggeunmoPro-Regular",
+                                    size: 20
                                 )
-                        }
-                    Text("내 위치")
-                        .font(.text02)
-                        .foregroundColor(isLocationActive ? .yellow : .white)
+                            )
+                            .frame(height: 36)
+                            .padding(.horizontal)
+                    }
+                    .padding(.top, 60)
+
+                    Spacer()
                 }
-                // MARK: 차지한 영역 (면적 레이어 토글 버튼)
-                // TODO: 영역 보이는 함수 넣어야 함
-                VStack{
-                    Button(
-                        action: {
-                            loadCapturedPolygons();
-                            isAreaActive.toggle()
-                        })  {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(isAreaActive ? Color.yellow : Color.black)
-                                .frame(width: 56, height: 56)
-                                .overlay(
-                                    Image(systemName: "map.fill")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 26, height: 26)
-                                        .foregroundColor(
-                                            isAreaActive ? .black : .yellow
+                .frame(maxHeight: .infinity)
+                .frame(maxWidth: .infinity)
+                .alignmentGuide(.top) { _ in 0 }
+                .ignoresSafeArea()
+                .zIndex(1)
+            }
+            
+            HStack {
+                Spacer()
+                
+                VStack {
+                    // MARK: 현위치 버튼
+                        VStack {
+                            Button(
+                                action: {
+                                    moveToCurrentLocationAction();
+                                    isLocationActive.toggle()
+                                })  {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(isLocationActive ? Color.yellow : Color.black)
+                                        .frame(width: 56, height: 56)
+                                        .overlay(
+                                            Image(systemName: "location.fill")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 26, height: 26)
+                                                .foregroundColor(
+                                                    isLocationActive ? .black : .yellow
+                                                )
                                         )
-                                )
+                                }
+                            Text("내 위치")
+                                .font(.text02)
+                                .foregroundColor(isLocationActive ? .yellow : .white)
                         }
-                    Text("차지한 영역")
-                        .font(.text02)
-                        .foregroundColor(isAreaActive ? .yellow : .white)
+                        
+                        // MARK: 차지한 영역 (면적 레이어 토글 버튼)
+                        // TODO: 영역 보이는 함수 넣어야 함
+                        VStack{
+                            Button(
+                                action: {
+                                    loadCapturedPolygons();
+                                    isAreaActive.toggle()
+                                })  {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(isAreaActive ? Color.yellow : Color.black)
+                                        .frame(width: 56, height: 56)
+                                        .overlay(
+                                            Image(systemName: "map.fill")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 26, height: 26)
+                                                .foregroundColor(
+                                                    isAreaActive ? .black : .yellow
+                                                )
+                                        )
+                                }
+                            Text("차지한 영역")
+                                .font(.text02)
+                                .foregroundColor(isAreaActive ? .yellow : .white)
+                        }
+                    
                 }
             }
-        Spacer()
+            
+            Spacer()
+            
+            // 재생 버튼
+            HStack {
+                Spacer()
+                
+                Button(action: {
+                    if !isSimulating {
+                        isCountingDown = true
+                        countdown = 3
+                        startCountdown()
+                    } else {
+                        toggleSimulation()
+                    }
+                }) {
+                    if isSimulating {
+                        Circle()
+                            .fill(isHolding ? Color.yellow : Color.white)
+                            .frame(width: 86, height: 86)
+                            .overlay(
+                                Text("◼️")
+                                    .font(.system(size: 38))
+                                    .foregroundColor(.black)
+                            )
+                            .simultaneousGesture(
+                                DragGesture(minimumDistance: 0)
+                                    .onChanged { _ in
+                                        if !isHolding {
+                                            isHolding = true
+                                            showTipBox = true
+                                            startFilling()
+                                        }
+                                    }
+                                    .onEnded { _ in
+                                        isHolding = false
+                                        holdProgress = 0.0
 
+                                        if holdProgress >= 1.0 {
+                                            showResult = true
+                                        } else {
+                                            holdProgress = 0.0
+                                        }
+                                    }
+                            )
+                    } else {
+                        Image("startButton")
+                            .resizable()
+                            .frame(width: 86, height: 86)
+                    }
+                }
+                
+                Spacer()
+            } // 재생 버튼
+            
+        }
     }
+    
     private func toggleSimulation() {
-        isSimulating ? stopAction() : startAction()
+        if isSimulating {
+            stopAction()
+        } else {
+            startAction()
+        }
+    }
+    
+    func startCountdown() {
+        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
+            countdown -= 1
+            if countdown == 0 {
+                timer.invalidate()
+                isCountingDown = false
+                toggleSimulation()
+                isSimulating = true
+            }
+        }
+    }
+    
+    func startFilling() {
+        Timer.scheduledTimer(withTimeInterval: 0.03, repeats: true) { timer in
+            if isHolding {
+                holdProgress += 0.03
+                if holdProgress >= 1.0 {
+                    timer.invalidate()
+                    holdProgress = 1.0
+
+                    DispatchQueue.main.async {
+                        showResult = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            // showReward = true
+                        }
+                    }
+                    
+                    showTipBox = false
+                }
+            } else {
+                timer.invalidate()
+                holdProgress = 0.0
+            }
+        }
     }
 }
 

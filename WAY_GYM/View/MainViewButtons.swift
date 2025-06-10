@@ -3,9 +3,11 @@ import SwiftUI
 struct ResultModalTestView: View {
     @State private var showResult = false
     @State private var navigateToMain = false
-    @State private var holdProgress: CGFloat = 0.0
+    
     @State private var isHolding: Bool = false
+    @State private var holdProgress: CGFloat = 0.0
     @State private var showTipBox: Bool = false
+    
     @State private var showReward: Bool = false
 
     @State private var isLocationActive = false
