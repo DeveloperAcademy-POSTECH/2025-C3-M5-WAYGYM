@@ -26,36 +26,44 @@ struct MainView: View {
             )
             .edgesIgnoringSafeArea(.all)
             
-            VStack {
-                HStack {
-                    Spacer()
+            // MARK: profile button
+            HStack{
+            
+                VStack(spacing: 6) {
                     Button(action: {
                         router.currentScreen = .profile // AppRouter 필요 시 활성화
-                        print("Profile button tapped")
                     }) {
                         Image(systemName: "person.fill")
-                            .font(.system(size: 40))
-                            .foregroundColor(.yellow)
+                            .font(.system(size: 46))
+                            .foregroundColor(.white)
                     }
-                    .padding(20)
+                    Text("내 나와바리")
+                        .font(.text02)
+                        .foregroundColor(.white)
+                    // .padding(20)
+                    Spacer()
+                    
                 }
+                .padding(20)
                 Spacer()
-                Text(String(format: "이동 거리: %.3f m", locationManager.isSimulating ? locationManager.calculateTotalDistance() : 0.0))
-                    .font(.system(size: 16, weight: .bold))
-                    .padding(10)
-                    .background(Color.black.opacity(0.7))
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-                    .padding(.bottom, 80)
-                
-                ControlPanel(
-                    isSimulating: $locationManager.isSimulating,
-                    showResult: $showResult,
-                    startAction: locationManager.startSimulation,
-                    stopAction: locationManager.stopSimulation,
-                    moveToCurrentLocationAction: locationManager.moveToCurrentLocation
-                )
             }
+            HStack{
+                Spacer()
+                VStack{
+                    ControlPanel(
+                        isSimulating: $locationManager.isSimulating,
+                        showResult: $showResult,
+                        startAction: locationManager.startSimulation,
+                        stopAction: locationManager.stopSimulation,
+                        moveToCurrentLocationAction: locationManager.moveToCurrentLocation,
+                        loadCapturedPolygons:
+                            { locationManager.loadCapturedPolygons(from: locationManager.runRecordList ) }
+                    )
+                    .padding(.trailing, 16)
+                    Spacer()
+                }
+            }
+
         }
         .sheet(isPresented: $showResult) {
             ResultView(locationManager: locationManager, showResult: $showResult)
@@ -237,42 +245,77 @@ struct ControlPanel: View {
     let startAction: () -> Void
     let stopAction: () -> Void
     let moveToCurrentLocationAction: () -> Void
+    let loadCapturedPolygons: () -> Void
+
+    @State private var isLocationActive = false
+    @State private var isAreaActive = false
+    
     
     var body: some View {
-        HStack(spacing: 20) {
-            Button(action: toggleSimulation) {
-                Text(isSimulating ? "정지" : "시작")
-                    .font(.system(size: 18, weight: .bold))
-                    .frame(width: 80, height: 40)
-                    .background(isSimulating ? Color.red : Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .shadow(radius: 3)
+//            Button(action: toggleSimulation) {
+//                Text(isSimulating ? "정지" : "시작")
+//                    .font(.system(size: 18, weight: .bold))
+//                    .frame(width: 80, height: 40)
+//                    .background(isSimulating ? Color.red : Color.blue)
+//                    .foregroundColor(.white)
+//                    .cornerRadius(10)
+//                    .shadow(radius: 3)
+//            }
+        VStack(spacing: 20) {
+               // MARK: 현위치 버튼
+                
+                VStack{
+                    Button(
+                        action: {
+                            moveToCurrentLocationAction();
+                            isLocationActive.toggle()
+                        })  {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(isLocationActive ? Color.yellow : Color.black)
+                                .frame(width: 56, height: 56)
+                                .overlay(
+                                    Image(systemName: "location.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 26, height: 26)
+                                        .foregroundColor(
+                                            isLocationActive ? .black : .yellow
+                                        )
+                                )
+                        }
+                    Text("내 위치")
+                        .font(.text02)
+                        .foregroundColor(isLocationActive ? .yellow : .white)
+                }
+                // MARK: 차지한 영역 (면적 레이어 토글 버튼)
+                // TODO: 영역 보이는 함수 넣어야 함
+                VStack{
+                    Button(
+                        action: {
+                            loadCapturedPolygons();
+                            isAreaActive.toggle()
+                        })  {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(isAreaActive ? Color.yellow : Color.black)
+                                .frame(width: 56, height: 56)
+                                .overlay(
+                                    Image(systemName: "map.fill")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 26, height: 26)
+                                        .foregroundColor(
+                                            isAreaActive ? .black : .yellow
+                                        )
+                                )
+                        }
+                    Text("차지한 영역")
+                        .font(.text02)
+                        .foregroundColor(isAreaActive ? .yellow : .white)
+                }
             }
-            
-            Button(action: { showResult = true }) {
-                Text("결과보기")
-                    .font(.system(size: 18, weight: .bold))
-                    .frame(width: 100, height: 40)
-                    .background(Color.green)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .shadow(radius: 3)
-            }
-            
-            Button(action: moveToCurrentLocationAction) {
-                Text("현재 위치")
-                    .font(.system(size: 18, weight: .bold))
-                    .frame(width: 100, height: 40)
-                    .background(Color.orange)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                    .shadow(radius: 3)
-            }
-        }
-        .padding(.bottom, 30)
+        Spacer()
+
     }
-    
     private func toggleSimulation() {
         isSimulating ? stopAction() : startAction()
     }

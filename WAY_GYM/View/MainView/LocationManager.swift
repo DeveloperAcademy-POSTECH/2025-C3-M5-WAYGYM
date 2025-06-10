@@ -45,67 +45,6 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         clManager.requestWhenInUseAuthorization()
     }
     
-    // HealthKit 권한 요청
-//    func requestHealthKitAuthorization() {
-//        guard HKHealthStore.isHealthDataAvailable() else { return }
-//
-//        let typesToRead: Set = [
-//            HKObjectType.quantityType(forIdentifier: .stepCount)!,
-//            HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!
-//        ]
-//
-//        healthStore.requestAuthorization(toShare: nil, read: typesToRead) { success, error in
-//            if success {
-//                self.fetchHealthData()
-//            } else if let error = error {
-//                print("HealthKit 권한 요청 실패: \(error.localizedDescription)")
-//            }
-//        }
-//    }
-    
-    // HealthKit 데이터 가져오기
-//    func fetchHealthData() {
-//        let calendar = Calendar.current
-//        let now = Date()
-//        guard let startDate = calendar.date(byAdding: .day, value: -1, to: now) else { return }
-//
-//        // 걸음 수 쿼리
-//        if let stepType = HKObjectType.quantityType(forIdentifier: .stepCount) {
-//            let predicate = HKQuery.predicateForSamples(withStart: startDate, end: now, options: .strictStartDate)
-//            let query = HKStatisticsQuery(quantityType: stepType,
-//                                          quantitySamplePredicate: predicate,
-//                                          options: .cumulativeSum) { _, result, error in
-//                if let result = result, let sum = result.sumQuantity() {
-//                    DispatchQueue.main.async {
-//                        self.stepCount = sum.doubleValue(for: HKUnit.count())
-//                        self.updateRunRecord(stepCount: self.stepCount, calories: self.caloriesBurned)
-//                    }
-//                } else if let error = error {
-//                    print("걸음 수 데이터 가져오기 실패: \(error.localizedDescription)")
-//                }
-//            }
-//            healthStore.execute(query)
-//        }
-//
-//        // 칼로리 쿼리
-//        if let calorieType = HKObjectType.quantityType(forIdentifier: .activeEnergyBurned) {
-//            let predicate = HKQuery.predicateForSamples(withStart: startDate, end: now, options: .strictStartDate)
-//            let query = HKStatisticsQuery(quantityType: calorieType,
-//                                          quantitySamplePredicate: predicate,
-//                                          options: .cumulativeSum) { _, result, error in
-//                if let result = result, let sum = result.sumQuantity() {
-//                    DispatchQueue.main.async {
-//                        self.caloriesBurned = sum.doubleValue(for: HKUnit.kilocalorie())
-//                        self.updateRunRecord(stepCount: self.stepCount, calories: self.caloriesBurned)
-//                    }
-//                } else if let error = error {
-//                    print("칼로리 데이터 가져오기 실패: \(error.localizedDescription)")
-//                }
-//            }
-//            healthStore.execute(query)
-//        }
-//    }
-    
     // Firestore에 데이터 저장 및 업데이트
     private func updateRunRecord(imageURL: String? = nil) {
         let endTime = isSimulating ? nil : Date()
