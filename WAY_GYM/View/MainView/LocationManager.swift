@@ -564,7 +564,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             }
         }
 
-        self.polygons.append(contentsOf: result)
+        self.polygons = result
     }
     private func isValidCoordinate(_ newCoordinate: CLLocationCoordinate2D, lastCoordinate: CLLocationCoordinate2D?) -> Bool {
         guard let last = lastCoordinate else { return true } // 첫 좌표는 항상 유효
