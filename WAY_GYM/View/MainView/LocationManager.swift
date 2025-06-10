@@ -53,6 +53,9 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             return
         }
         
+        print("🏁 startTime: \(startTime?.description ?? "nil")")
+        print("🏁 endTime: \(endTime?.description ?? "nil")")
+        
         let coordinatesArray = coordinates.map { [$0.latitude, $0.longitude] }
         let capturedAreas: [CoordinatePairWithGroup] = polygons.enumerated().flatMap { (index, polygon) in
             let points = polygon.points()

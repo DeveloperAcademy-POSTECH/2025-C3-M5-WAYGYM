@@ -50,7 +50,7 @@ struct ProfileMinionView: View {
                     }
                 
             }
-            .frame(height: .infinity)
+            .frame(maxHeight: .infinity)
             .onAppear {
                 loadRecentMinions()
             }
