@@ -38,7 +38,7 @@ struct MainView: View {
                     HStack{
                         VStack(spacing: 6) {
                             Button(action: {
-                                router.currentScreen = .profile // AppRouter 필요 시 활성화
+                                router.currentScreen = .profile
                             }) {
                                 Image(systemName: "person.fill")
                                     .font(.system(size: 46))

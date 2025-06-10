@@ -15,7 +15,7 @@ struct RootView: View {
             switch router.currentScreen {
             case .main(let id):
                         MainView()
-                            .id(id) // 💡 이게 있어야 뷰가 강제로 새로 그려짐
+                            .id(id)
                             .environmentObject(router)
                 
             case .running:

@@ -189,7 +189,7 @@ struct RunResultModalView: View {
                     }
                 }
             }
-            .onChange(of: runRecordVM.runRecords) { records in
+            .onChange(of: runRecordVM.runRecords) {_, records in
                 print("🔥 데이터 로드됨: \(records.count)개")
                 // 데이터가 로드되면 가장 최근 기록을 현재 기록으로 설정
 
