@@ -461,7 +461,9 @@ struct ControlPanel: View {
                 isCountingDown = false
                 // toggleSimulation()
                 isSimulating = true
+                
                 startAction()
+                // locationManager.startSimulation()
             }
         }
     }
@@ -483,7 +485,7 @@ struct ControlPanel: View {
                     
                     showTipBox = false
                     stopAction()
-                    locationManager.stopSimulation()
+                    // locationManager.stopSimulation()
                     showResultModal = true
                 }
             } else {

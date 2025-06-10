@@ -33,6 +33,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     private var simulationTimer: Timer?
     private var lastIntersectionIndex: Int?
     private var startTime: Date?
+    private var endTime: Date?
     private let healthStore = HKHealthStore()
     private let db = Firestore.firestore()
     private let storage = Storage.storage()
@@ -47,7 +48,10 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     
     // Firestore에 데이터 저장 및 업데이트
     private func updateRunRecord(imageURL: String? = nil) {
-        let endTime = isSimulating ? nil : Date()
+        guard let start = startTime else {
+            print("⚠️ 시작 시간이 설정되지 않음")
+            return
+        }
         
         let coordinatesArray = coordinates.map { [$0.latitude, $0.longitude] }
         let capturedAreas: [CoordinatePairWithGroup] = polygons.enumerated().flatMap { (index, polygon) in
@@ -64,7 +68,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             distance: calculateTotalDistance(),
             // stepCount: stepCount,
             // caloriesBurned: calories,
-            startTime: startTime ?? Date(),
+            startTime: start,
             endTime: endTime,
             routeImage: imageURL,
             coordinates: coordinates.map { CoordinatePair(latitude: $0.latitude, longitude: $0.longitude) },
@@ -92,7 +96,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     // 진행 시간 계산 (분 단위)
     private func calculateDuration() -> Double {
         guard let start = startTime else { return 0 }
-        let end = isSimulating ? Date() : (runRecord?.endTime ?? Date())
+        let end = endTime ?? Date()
         let seconds = end.timeIntervalSince(start)
         return seconds / 60
     }
@@ -364,6 +368,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         coordinates.removeAll()
         isSimulating = true
         startTime = Date()
+        endTime = nil
         polylines.removeAll()
         polygons.removeAll()
         lastIntersectionIndex = nil
@@ -374,7 +379,6 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             if let lastLocation = self.clManager.location {
                 if self.isSimulating {
                     self.updateCoordinates(newCoordinate: lastLocation.coordinate)
-                    // self.updateRunRecord()
                 }
                 self.currentLocation = lastLocation.coordinate
                 self.updateRegion(coordinate: lastLocation.coordinate)
@@ -385,9 +389,9 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     // 시뮬레이션 정지
     func stopSimulation() {
         isSimulating = false
+        endTime = Date()
         simulationTimer?.invalidate()
         clManager.stopUpdatingLocation()
-        // updateRunRecord(stepCount: stepCount, calories: caloriesBurned)
         self.updateRunRecord()
     }
     
