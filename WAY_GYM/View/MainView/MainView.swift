@@ -368,7 +368,6 @@ struct ControlPanel: View {
                         }
                         
                         // MARK: 차지한 영역 (면적 레이어 토글 버튼)
-                        // TODO: 영역 보이는 함수 넣어야 함
                         VStack{
                             Button(
                                 action: {
@@ -393,6 +392,7 @@ struct ControlPanel: View {
                                 .foregroundColor(isAreaActive ? .yellow : .white)
                         }
                     }
+                    .padding(.trailing, 16)
                 }
                 
                 

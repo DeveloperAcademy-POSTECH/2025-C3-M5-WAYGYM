@@ -25,7 +25,7 @@ final class MinionModel: ObservableObject {
             MinionDefinitionModel(
                 id: "minion_1",
                 name: "노터",
-                description: "말은 안 해도 눈빛 하나로\n대화 끝나는 그림자 에이스",
+                description: "말은 안 해도 눈빛 하나로\n대화 끝내는 그림자 에이스",
                 iconName: "minion_1",
                 unlockNumber: unlockDistance(for: 1)
             ),
