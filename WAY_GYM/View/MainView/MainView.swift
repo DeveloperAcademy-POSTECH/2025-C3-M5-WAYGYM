@@ -38,7 +38,7 @@ struct MainView: View {
                     HStack{
                         VStack(spacing: 6) {
                             Button(action: {
-                                router.currentScreen = .profile // AppRouter 필요 시 활성화
+                                router.currentScreen = .profile
                             }) {
                                 Image(systemName: "person.fill")
                                     .font(.system(size: 46))
@@ -191,7 +191,7 @@ struct MapView: UIViewRepresentable {
                 let imageName = "main_\(parent.selectedWeaponId)"
                 annotationView?.image = UIImage(named: imageName) ?? UIImage(named: "H")
                 if UIImage(named: imageName) == nil {
-                    print("이미지 로드 실패: \(imageName)")
+                    ("이미지 로드 실패: \(imageName)")
                 }
                 let imageSize = CGSize(width: 80, height: 80)
                 annotationView?.frame = CGRect(origin: .zero, size: imageSize)
@@ -422,9 +422,36 @@ struct ControlPanel: View {
                                 .font(.text02)
                                 .foregroundColor(isLocationActive ? .yellow : .white)
                         }
+                        // MARK: 차지한 영역 (면적 레이어 토글 버튼)
+                        VStack{
+                            Button(
+                                action: {
+                                    if isAreaActive {
+                                        locationManager.polygons.removeAll() // 영역 제거
+                                    } else {
+                                        locationManager.loadCapturedPolygons(from: locationManager.runRecordList)
+                                    }
+                                    isAreaActive.toggle()
+                                }) {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(isAreaActive ? Color.yellow : Color.black)
+                                        .frame(width: 56, height: 56)
+                                        .overlay(
+                                            Image(systemName: "map.fill")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 26, height: 26)
+                                                .foregroundColor(
+                                                    isAreaActive ? .black : .yellow
+                                                )
+                                        )
+                                }
+                            Text("차지한 영역")
+                                .font(.text02)
+                                .foregroundColor(isAreaActive ? .yellow : .white)
+                        }
                     }
-                    
-                    
+                    .padding(.trailing, 16)
                 }
                 .padding(.horizontal, 16)
                 
@@ -492,6 +519,7 @@ struct ControlPanel: View {
                 isCountingDown = false
                 // toggleSimulation()
                 isSimulating = true
+                
                 startAction()
                 // locationManager.startSimulation()
             }

@@ -37,7 +37,7 @@ struct RewardQueueView: View {
         } else {
             DispatchQueue.main.async {
                 onComplete()
-                router.currentScreen = .main
+                router.currentScreen = .main(id: UUID())
             }
             return AnyView(EmptyView())
         }
