@@ -298,9 +298,9 @@ struct ControlPanel: View {
     
     
     var body: some View {
-        VStack {
+        ZStack {
+            
             if showTipBox {
-                VStack {
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 18)
                             .fill(Color.black.opacity(0.4))
@@ -321,27 +321,84 @@ struct ControlPanel: View {
                                     size: 20
                                 )
                             )
-                            .frame(height: 36)
                             .padding(.horizontal)
+                            .frame(height: 36)
                     }
-                    .padding(.top, 60)
-                    
-                    Spacer()
-                }
-                .frame(maxHeight: .infinity)
-                .frame(maxWidth: .infinity)
-                .alignmentGuide(.top) { _ in 0 }
+                .padding(.horizontal, 34)
+                .padding(.top, 20)
+                .position(x: UIScreen.main.bounds.width / 2, y: 120)
+                // .alignmentGuide(.top) { _ in 0 }
                 .ignoresSafeArea()
                 .zIndex(1)
             }
             
-            HStack {
-                Spacer()
-                
-                if !isSimulating {
-                    VStack(spacing: 25) {
+            VStack {
+                HStack {
+                    Spacer()
+                    
+                    // 재생 버튼 누르기 전 버튼들
+                    if !isSimulating {
+                        VStack(spacing: 25) {
+                            // MARK: 현위치 버튼
+                            VStack(spacing: 12) {
+                                Button(
+                                    action: {
+                                        moveToCurrentLocationAction();
+                                        isLocationActive.toggle()
+                                    })  {
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .fill(isLocationActive ? Color.yellow : Color.black)
+                                            .frame(width: 56, height: 56)
+                                            .overlay(
+                                                Image(systemName: "location.fill")
+                                                    .resizable()
+                                                    .scaledToFit()
+                                                    .frame(width: 26, height: 26)
+                                                    .foregroundColor(
+                                                        isLocationActive ? .black : .yellow
+                                                    )
+                                            )
+                                    }
+                                
+                                Text("내 위치")
+                                    .font(.text02)
+                                    .foregroundColor(isLocationActive ? .yellow : .white)
+                            }
+                            
+                            // MARK: 차지한 영역 (면적 레이어 토글 버튼)
+                            // TODO: 영역 보이는 함수 넣어야 함
+                            VStack(spacing: 12) {
+                                Button(
+                                    action: {
+                                        loadCapturedPolygons();
+                                        isAreaActive.toggle()
+                                    })  {
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .fill(isAreaActive ? Color.yellow : Color.black)
+                                            .frame(width: 56, height: 56)
+                                            .overlay(
+                                                Image(systemName: "map.fill")
+                                                    .resizable()
+                                                    .scaledToFit()
+                                                    .frame(width: 26, height: 26)
+                                                    .foregroundColor(
+                                                        isAreaActive ? .black : .yellow
+                                                    )
+                                            )
+                                    }
+                                Text("차지한\n영역")
+                                    .multilineTextAlignment(.center)
+                                    .font(.text02)
+                                    .foregroundColor(isAreaActive ? .yellow : .white)
+                            }
+                        }
+                    }
+                    
+                    // 재생 중일때 현 위치 버튼
+                    if isSimulating {
                         // MARK: 현위치 버튼
-                        VStack(spacing: 12) {
+                        VStack{
+                            
                             Button(
                                 action: {
                                     moveToCurrentLocationAction();
@@ -365,118 +422,66 @@ struct ControlPanel: View {
                                 .font(.text02)
                                 .foregroundColor(isLocationActive ? .yellow : .white)
                         }
-                        
-                        // MARK: 차지한 영역 (면적 레이어 토글 버튼)
-                        // TODO: 영역 보이는 함수 넣어야 함
-                        VStack(spacing: 12) {
-                            Button(
-                                action: {
-                                    loadCapturedPolygons();
-                                    isAreaActive.toggle()
-                                })  {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(isAreaActive ? Color.yellow : Color.black)
-                                        .frame(width: 56, height: 56)
-                                        .overlay(
-                                            Image(systemName: "map.fill")
-                                                .resizable()
-                                                .scaledToFit()
-                                                .frame(width: 26, height: 26)
-                                                .foregroundColor(
-                                                    isAreaActive ? .black : .yellow
-                                                )
-                                        )
-                                }
-                            Text("차지한\n영역")
-                                .multilineTextAlignment(.center)
-                                .font(.text02)
-                                .foregroundColor(isAreaActive ? .yellow : .white)
+                    }
+                    
+                    
+                }
+                .padding(.horizontal, 16)
+                
+                Spacer()
+                // 재생 버튼
+                HStack {
+                    Spacer()
+                    
+                    Button(action: {
+                        if !isSimulating {
+                            isCountingDown = true
+                            countdown = 3
+                            startCountdown()
+                        }
+                    }) {
+                        if isSimulating {
+                            Circle()
+                                .fill(isHolding ? Color.yellow : Color.white)
+                                .frame(width: 86, height: 86)
+                                .overlay(
+                                    Text("◼️")
+                                        .font(.system(size: 38))
+                                        .foregroundColor(.black)
+                                )
+                                .simultaneousGesture(
+                                    DragGesture(minimumDistance: 0)
+                                        .onChanged { _ in
+                                            if isSimulating && !isHolding {
+                                                isHolding = true
+                                                showTipBox = true
+                                                startFilling()
+                                            }
+                                        }
+                                        .onEnded { _ in
+                                            isHolding = false
+                                            holdProgress = 0.0
+                                            showTipBox = false
+
+                                            if holdProgress >= 1.0 {
+                                                showResultModal = true
+                                            } else {
+                                                holdProgress = 0.0
+                                            }
+                                        }
+                                )
+                        } else {
+                            Image("startButton")
+                                .resizable()
+                                .frame(width: 86, height: 86)
                         }
                     }
-                }
-                
-                if isSimulating {
-                    // MARK: 현위치 버튼
-                    VStack{
-                        Button(
-                            action: {
-                                moveToCurrentLocationAction();
-                                isLocationActive.toggle()
-                            })  {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(isLocationActive ? Color.yellow : Color.black)
-                                    .frame(width: 56, height: 56)
-                                    .overlay(
-                                        Image(systemName: "location.fill")
-                                            .resizable()
-                                            .scaledToFit()
-                                            .frame(width: 26, height: 26)
-                                            .foregroundColor(
-                                                isLocationActive ? .black : .yellow
-                                            )
-                                    )
-                            }
-                        Text("내 위치")
-                            .font(.text02)
-                            .foregroundColor(isLocationActive ? .yellow : .white)
-                    }
-                }
-                
-                
+                    
+                    Spacer()
+                } // 재생 버튼
             }
-            .padding(.horizontal, 16)
-            
-            Spacer()
-            // 재생 버튼
-            HStack {
-                Spacer()
-                
-                Button(action: {
-                    if !isSimulating {
-                        isCountingDown = true
-                        countdown = 3
-                        startCountdown()
-                    }
-                }) {
-                    if isSimulating {
-                        Circle()
-                            .fill(isHolding ? Color.yellow : Color.white)
-                            .frame(width: 86, height: 86)
-                            .overlay(
-                                Text("◼️")
-                                    .font(.system(size: 38))
-                                    .foregroundColor(.black)
-                            )
-                            .simultaneousGesture(
-                                DragGesture(minimumDistance: 0)
-                                    .onChanged { _ in
-                                        if !isHolding {
-                                            isHolding = true
-                                            showTipBox = true
-                                            startFilling()
-                                        }
-                                    }
-                                    .onEnded { _ in
-                                        isHolding = false
-                                        holdProgress = 0.0
-                                        
-                                        if holdProgress >= 1.0 {
-                                            showResultModal = true
-                                        } else {
-                                            holdProgress = 0.0
-                                        }
-                                    }
-                            )
-                    } else {
-                        Image("startButton")
-                            .resizable()
-                            .frame(width: 86, height: 86)
-                    }
-                }
-                
-                Spacer()
-            } // 재생 버튼
         }
+        
     }
     
     func startCountdown() {
@@ -488,6 +493,7 @@ struct ControlPanel: View {
                 // toggleSimulation()
                 isSimulating = true
                 startAction()
+                // locationManager.startSimulation()
             }
         }
     }
@@ -500,16 +506,16 @@ struct ControlPanel: View {
                     timer.invalidate()
                     holdProgress = 1.0
                     
-                    DispatchQueue.main.async {
-                        // showResult = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                            // showReward = true
-                        }
-                    }
+//                    DispatchQueue.main.async {
+//                        // showResult = true
+//                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+//                            // showReward = true
+//                        }
+//                    }
                     
                     showTipBox = false
                     stopAction()
-                    locationManager.stopSimulation()
+                    // locationManager.stopSimulation()
                     showResultModal = true
                 }
             } else {
