@@ -17,6 +17,7 @@ struct RootView: View {
                         MainView()
                             .id(id)
                             .environmentObject(router)
+                            .environmentObject(LocationManager())
                 
 //            case .result(_):
 //                AnyView(RunResultModalView(
