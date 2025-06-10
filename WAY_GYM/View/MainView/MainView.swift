@@ -16,8 +16,12 @@ struct MainView: View {
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     
     @State private var isCountingDown = false
-       @State private var countdown = 3
+    @State private var countdown = 3
     
+    @StateObject private var weaponVM = WeaponViewModel()
+    @StateObject private var runRecordVM = RunRecordViewModel()
+    @State private var showResultModal = false
+
     var body: some View {
         ZStack(alignment: .bottom) {
             MapView(
@@ -29,42 +33,44 @@ struct MainView: View {
             )
             .edgesIgnoringSafeArea(.all)
             
-            // MARK: profile button
-            HStack{
-            
-                VStack(spacing: 6) {
-                    Button(action: {
-                        router.currentScreen = .profile // AppRouter 필요 시 활성화
-                    }) {
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 46))
-                            .foregroundColor(.white)
+                // 내 나와바리 이동 버튼
+                if !locationManager.isSimulating {
+                    HStack{
+                        VStack(spacing: 6) {
+                            Button(action: {
+                                router.currentScreen = .profile // AppRouter 필요 시 활성화
+                            }) {
+                                Image(systemName: "person.fill")
+                                    .font(.system(size: 46))
+                                    .foregroundColor(.white)
+                            }
+                            Text("내 나와바리")
+                                .font(.text02)
+                                .foregroundColor(.white)
+                            // .padding(20)
+                            Spacer()
+                        }
+                        .padding(20)
+                        Spacer()
                     }
-                    Text("내 나와바리")
-                        .font(.text02)
-                        .foregroundColor(.white)
-                    // .padding(20)
-                    Spacer()
-                    
-                }
-                .padding(20)
-                Spacer()
-            }
+                } // 내 나와바리 이동 버튼
+            
             HStack{
                 Spacer()
                 VStack{
                     ControlPanel(
                         isSimulating: $locationManager.isSimulating,
-                        showResult: $showResult,
+                        // showResult: $showResult,
                         startAction: locationManager.startSimulation,
                         stopAction: locationManager.stopSimulation,
                         moveToCurrentLocationAction: locationManager.moveToCurrentLocation,
                         loadCapturedPolygons:
                             { locationManager.loadCapturedPolygons(from: locationManager.runRecordList ) },
                         isCountingDown: $isCountingDown,
-                        countdown: $countdown
+                        countdown: $countdown,
+                        showResultModal: $showResultModal
                     )
-                    .padding(.trailing, 16)
+                    // .padding(.trailing, 16)
                     Spacer()
                 }
             }
@@ -92,6 +98,19 @@ struct MainView: View {
             locationManager.moveToCurrentLocation()
 //            locationManager.setupSimulatorLocation() // 시뮬레이터 초기화
         }
+        .overlay(content: {
+            if showResultModal {
+                ZStack {
+                    Color.gang_black_opacity
+                        .ignoresSafeArea()
+                    
+                    RunResultModalView(onComplete: { showResultModal = false })
+                        .environmentObject(runRecordVM)
+                        .environmentObject(weaponVM)
+                        .environmentObject(router)
+                }
+            }
+        })
     }
 }
 
@@ -260,7 +279,7 @@ struct ControlPanel: View {
     @StateObject private var locationManager = LocationManager()
     
     @Binding var isSimulating: Bool
-    @Binding var showResult: Bool
+    // @Binding var showResult: Bool
     let startAction: () -> Void
     let stopAction: () -> Void
     let moveToCurrentLocationAction: () -> Void
@@ -276,105 +295,111 @@ struct ControlPanel: View {
         @State private var holdProgress: CGFloat = 0.0
         @State private var showTipBox: Bool = false
     
+    @Binding var showResultModal: Bool
+    
     
     var body: some View {
         VStack {
             
             if showTipBox {
-                           VStack {
-                               ZStack(alignment: .leading) {
-                                   RoundedRectangle(cornerRadius: 18)
-                                       .fill(Color.black.opacity(0.4))
-                                       .frame(width: 350, height: 50)
-                                       .overlay(
-                                           RoundedRectangle(cornerRadius: 18)
-                                               .stroke(Color.yellow, lineWidth: 2)
-                                       )
-                                   RoundedRectangle(cornerRadius: 18)
-                                       .fill(Color.yellow)
-                                       .frame(width: 350 * holdProgress, height: 50)
-
-                                   Text("길게 눌러서 땅따먹기 종료")
-                                       .foregroundColor(.white)
-                                       .font(
-                                           .custom(
-                                               "NeoDunggeunmoPro-Regular",
-                                               size: 20
-                                           )
-                                       )
-                                       .frame(height: 36)
-                                       .padding(.horizontal)
-                               }
-                               .padding(.top, 60)
-
-                               Spacer()
-                           }
-                           .frame(maxHeight: .infinity)
-                           .frame(maxWidth: .infinity)
-                           .alignmentGuide(.top) { _ in 0 }
-                           .ignoresSafeArea()
-                           .zIndex(1)
-                       }
+                VStack {
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 18)
+                            .fill(Color.black.opacity(0.4))
+                            .frame(width: 350, height: 50)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 18)
+                                    .stroke(Color.yellow, lineWidth: 2)
+                            )
+                        RoundedRectangle(cornerRadius: 18)
+                            .fill(Color.yellow)
+                            .frame(width: 350 * holdProgress, height: 50)
+                        
+                        Text("길게 눌러서 땅따먹기 종료")
+                            .foregroundColor(.white)
+                            .font(
+                                .custom(
+                                    "NeoDunggeunmoPro-Regular",
+                                    size: 20
+                                )
+                            )
+                            .frame(height: 36)
+                            .padding(.horizontal)
+                    }
+                    .padding(.top, 60)
+                    
+                    Spacer()
+                }
+                .frame(maxHeight: .infinity)
+                .frame(maxWidth: .infinity)
+                .alignmentGuide(.top) { _ in 0 }
+                .ignoresSafeArea()
+                .zIndex(1)
+            }
             
             HStack {
                 Spacer()
                 
-                VStack(spacing: 20) {
-                    // MARK: 현위치 버튼
-                     VStack{
-                         Button(
-                             action: {
-                                 moveToCurrentLocationAction();
-                                 isLocationActive.toggle()
-                             })  {
-                                 RoundedRectangle(cornerRadius: 10)
-                                     .fill(isLocationActive ? Color.yellow : Color.black)
-                                     .frame(width: 56, height: 56)
-                                     .overlay(
-                                         Image(systemName: "location.fill")
-                                             .resizable()
-                                             .scaledToFit()
-                                             .frame(width: 26, height: 26)
-                                             .foregroundColor(
-                                                 isLocationActive ? .black : .yellow
-                                             )
-                                     )
-                             }
-                         Text("내 위치")
-                             .font(.text02)
-                             .foregroundColor(isLocationActive ? .yellow : .white)
-                     }
-                    
-                     // MARK: 차지한 영역 (면적 레이어 토글 버튼)
-                     // TODO: 영역 보이는 함수 넣어야 함
-                     VStack{
-                         Button(
-                             action: {
-                                 loadCapturedPolygons();
-                                 isAreaActive.toggle()
-                             })  {
-                                 RoundedRectangle(cornerRadius: 10)
-                                     .fill(isAreaActive ? Color.yellow : Color.black)
-                                     .frame(width: 56, height: 56)
-                                     .overlay(
-                                         Image(systemName: "map.fill")
-                                             .resizable()
-                                             .scaledToFit()
-                                             .frame(width: 26, height: 26)
-                                             .foregroundColor(
-                                                 isAreaActive ? .black : .yellow
-                                             )
-                                     )
-                             }
-                         Text("차지한 영역")
-                             .font(.text02)
-                             .foregroundColor(isAreaActive ? .yellow : .white)
-                     }
+                if !isSimulating {
+                    VStack(spacing: 20) {
+                        // MARK: 현위치 버튼
+                        VStack{
+                            Button(
+                                action: {
+                                    moveToCurrentLocationAction();
+                                    isLocationActive.toggle()
+                                })  {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(isLocationActive ? Color.yellow : Color.black)
+                                        .frame(width: 56, height: 56)
+                                        .overlay(
+                                            Image(systemName: "location.fill")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 26, height: 26)
+                                                .foregroundColor(
+                                                    isLocationActive ? .black : .yellow
+                                                )
+                                        )
+                                }
+                            Text("내 위치")
+                                .font(.text02)
+                                .foregroundColor(isLocationActive ? .yellow : .white)
+                        }
+                        
+                        // MARK: 차지한 영역 (면적 레이어 토글 버튼)
+                        // TODO: 영역 보이는 함수 넣어야 함
+                        VStack{
+                            Button(
+                                action: {
+                                    loadCapturedPolygons();
+                                    isAreaActive.toggle()
+                                })  {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(isAreaActive ? Color.yellow : Color.black)
+                                        .frame(width: 56, height: 56)
+                                        .overlay(
+                                            Image(systemName: "map.fill")
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(width: 26, height: 26)
+                                                .foregroundColor(
+                                                    isAreaActive ? .black : .yellow
+                                                )
+                                        )
+                                }
+                            Text("차지한 영역")
+                                .font(.text02)
+                                .foregroundColor(isAreaActive ? .yellow : .white)
+                        }
+                    }
                 }
                 
+                
             }
-               
-            }
+            
+        }
+        
         Spacer()
         
         // 재생 버튼
@@ -386,8 +411,6 @@ struct ControlPanel: View {
                     isCountingDown = true
                     countdown = 3
                     startCountdown()
-                } else {
-                    toggleSimulation()
                 }
             }) {
                 if isSimulating {
@@ -413,7 +436,7 @@ struct ControlPanel: View {
                                     holdProgress = 0.0
 
                                     if holdProgress >= 1.0 {
-                                        showResult = true
+                                        showResultModal = true
                                     } else {
                                         holdProgress = 0.0
                                     }
@@ -436,17 +459,10 @@ struct ControlPanel: View {
             if countdown == 0 {
                 timer.invalidate()
                 isCountingDown = false
-                toggleSimulation()
+                // toggleSimulation()
                 isSimulating = true
+                startAction()
             }
-        }
-    }
-    
-    private func toggleSimulation() {
-        if isSimulating {
-            stopAction()
-        } else {
-            startAction()
         }
     }
     
@@ -459,15 +475,16 @@ struct ControlPanel: View {
                     holdProgress = 1.0
                     
                     DispatchQueue.main.async {
-                        showResult = true
+                        // showResult = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             // showReward = true
                         }
                     }
                     
                     showTipBox = false
+                    stopAction()
                     locationManager.stopSimulation()
-                    
+                    showResultModal = true
                 }
             } else {
                 timer.invalidate()
@@ -477,24 +494,24 @@ struct ControlPanel: View {
     }
     
 }
-
-// MARK: - 프리뷰
-struct MainView_Previews: PreviewProvider {
-    static var previews: some View {
-        MainView()
-            .environmentObject(AppRouter()) // AppRouter 필요 시 활성화
-    }
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        MainView()
-    }
-}
-
-struct RView_Previews: PreviewProvider {
-    static var previews: some View {
-        // RootView() // RootView 정의 필요 시 활성화
-        MainView()
-    }
-}
+//
+//// MARK: - 프리뷰
+//struct MainView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        MainView()
+//            .environmentObject(AppRouter()) // AppRouter 필요 시 활성화
+//    }
+//}
+//
+//struct ContentView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        MainView()
+//    }
+//}
+//
+//struct RView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        // RootView() // RootView 정의 필요 시 활성화
+//        MainView()
+//    }
+//}
