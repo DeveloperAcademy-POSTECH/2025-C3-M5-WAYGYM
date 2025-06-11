@@ -40,9 +40,9 @@ struct MainView: View {
                             Button(action: {
                                 router.currentScreen = .profile
                             }) {
-                                Image(systemName: "person.fill")
-                                    .font(.system(size: 46))
-                                    .foregroundColor(.white)
+                                Image("ProfilIcon")
+                                    .resizable()
+                                    .frame(width: 40, height: 40)
                             }
                             Text("내 나와바리")
                                 .font(.text02)
@@ -51,6 +51,7 @@ struct MainView: View {
                             Spacer()
                         }
                         .padding(20)
+                        
                         Spacer()
                     }
                 } // 내 나와바리 이동 버튼
