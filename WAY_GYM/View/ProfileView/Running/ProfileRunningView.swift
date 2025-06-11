@@ -9,7 +9,11 @@ import SwiftUI
 
 struct ProfileRunningView: View {
     @EnvironmentObject private var runRecordVM: RunRecordViewModel
-    @State private var topSummaries: [RunSummary] = []
+    // @State private var topSummaries: [RunSummary] = []
+    @State private var topSummaries: [RunSummaryProfile] = []
+    @State private var selectedSummary: RunSummary? = nil
+    @State private var isDetailActive: Bool = false
+
 
     var body: some View {
         ScrollView {
@@ -25,26 +29,50 @@ struct ProfileRunningView: View {
                     .multilineTextAlignment(.center)
                 } else {
                     ForEach(topSummaries.prefix(5)) { summary in
-                        SummaryCardView(summary: summary)
+                        SummaryCardView(summary: summary) { tapped in
+                            runRecordVM.fetchRunSummary(by: tapped.id) { fullSummary in
+                                if let summary = fullSummary {
+                                    self.selectedSummary = summary
+                                    self.isDetailActive = true
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
         .onAppear {
-            runRecordVM.fetchAllRunSummaries { allSummaries in
+            runRecordVM.fetchAllProfileRunSummaries { allSummaries in
                 self.topSummaries = Array(allSummaries.sorted(by: { $0.startTime > $1.startTime }).prefix(5))
             }
         }
+        
+        NavigationLink(
+            destination: selectedSummary.map { summary in
+                AnyView(
+                    BigSingleRunningView(summary: summary)
+                        .foregroundColor(Color.gang_text_2)
+                        .font(.title01)
+                )
+            } ?? AnyView(EmptyView()),
+            isActive: $isDetailActive,
+            label: {
+                EmptyView()
+            }
+        )
+        .hidden()
+        
     }
 }
 
 struct SummaryCardView: View {
-    let summary: RunSummary
+    let summary: RunSummaryProfile
+    let onTap: (RunSummaryProfile) -> Void
 
     var body: some View {
-        let destinationView = BigSingleRunningView(summary: summary)
-            .foregroundColor(Color.gang_text_2)
-            .font(.title01)
+//        let destinationView = BigSingleRunningView(summary: summary)
+//            .foregroundColor(Color.gang_text_2)
+//            .font(.title01)
 
         let imageView: some View = {
             if let url = summary.routeImageURL {
@@ -130,7 +158,10 @@ struct SummaryCardView: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 16))
 
-        return NavigationLink(destination: destinationView) {
+//        return NavigationLink(destination: destinationView) {
+        return Button(action: {
+            onTap(summary)
+        }) {
             contentView
         }
     }
