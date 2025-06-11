@@ -20,7 +20,7 @@ struct MainView: View {
     @StateObject private var weaponVM = WeaponViewModel()
     @StateObject private var runRecordVM = RunRecordViewModel()
     @State private var showResultModal = false
-
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             MapView(
@@ -32,39 +32,37 @@ struct MainView: View {
             )
             .edgesIgnoringSafeArea(.all)
             
-
-                // 내 나와바리 이동 버튼
-                if !locationManager.isSimulating {
-                    HStack{
-                        VStack(spacing: 6) {
-                            NavigationLink(destination: ProfileView()
-                                .environmentObject(MinionViewModel())
-                                .environmentObject(WeaponViewModel())
-                                .environmentObject(AppRouter())
-                                .environmentObject(RunRecordViewModel())
-                                .font(.text01)
-                                .foregroundColor(Color.gang_text_2)
-                            ) {
-                                Image("ProfilIcon")
-                                    .resizable()
-                                    .frame(width: 40, height: 40)
-                            }
-                            Text("내 나와바리")
-                                .font(.text02)
-                                .foregroundColor(.white)
-                            // .padding(20)
-                            Spacer()
-
+            // 내 나와바리 이동 버튼
+            if !locationManager.isSimulating {
+                HStack{
+                    VStack(spacing: 6) {
+                        NavigationLink(destination: ProfileView()
+                            .environmentObject(MinionViewModel())
+                            .environmentObject(WeaponViewModel())
+                            .environmentObject(AppRouter())
+                            .environmentObject(RunRecordViewModel())
+                            .font(.text01)
+                            .foregroundColor(Color.gang_text_2)
+                        ) {
+                            Image("ProfilIcon")
+                                .resizable()
+                                .frame(width: 40, height: 40)
                         }
                         Text("내 나와바리")
                             .font(.text02)
                             .foregroundColor(.white)
+                        // .padding(20)
                         Spacer()
+                        
                     }
-                    .padding(20)
-                    
+                    Text("내 나와바리")
+                        .font(.text02)
+                        .foregroundColor(.white)
                     Spacer()
                 }
+                .padding(20)
+                
+                Spacer()
             }
             
             HStack {
@@ -103,12 +101,12 @@ struct MainView: View {
         .onAppear {
             locationManager.fetchRunRecordsFromFirestore()
             locationManager.moveToCurrentLocation()
-
+            
             locationManager.isSimulating = false
             isCountingDown = false
             countdown = 3
             
-
+            
         }
         .overlay {
             if showResultModal {
