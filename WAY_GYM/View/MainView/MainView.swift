@@ -521,6 +521,7 @@ struct ControlPanel: View {
                     stopAction()
                     // locationManager.stopSimulation()
                     showResultModal = true
+                    runRecordVM.resetDistanceCache()
                 }
             } else {
                 timer.invalidate()

@@ -153,8 +153,10 @@ struct ProfileView: View {
                             .padding(20)
                             .customBorder()
                         }
+                        .padding(.top, 70)
                     }
                     .scrollIndicators(.hidden)
+                    .edgesIgnoringSafeArea(.top)
                     
                     Button(action: {
                         router.currentScreen = .main(id: UUID())
@@ -182,17 +184,15 @@ struct ProfileView: View {
                 .padding(.horizontal, 25)
             }
             .onAppear {
-                runRecordVM.fetchAndSumDistances()
+                runRecordVM.fetchAndSumDistances { total in
+                    print("총 거리: \(total)")
+                }
                 runRecordVM.fetchAndSumCapturedValue()
-                runRecordVM.fetchRunRecordsFromFirestore()
-                print("🔥 가져온 runRecords 개수: \(runRecordVM.runRecords.count)")
             }
-//            .onChange(of: runRecordVM.runRecords) { records in
-//                print("✅ 실제 runRecords 개수: \(records.count)")
-//            }
-            .navigationBarHidden(true)
         }
+        .navigationBarTitleDisplayMode(.inline)
         .navigationBarHidden(true)
+        .ignoresSafeArea(.all, edges: .top)
     }
 }
 
