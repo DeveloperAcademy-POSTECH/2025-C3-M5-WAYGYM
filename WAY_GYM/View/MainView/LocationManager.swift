@@ -98,15 +98,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
                 DispatchQueue.main.async {
                     self.runRecordList = dataList
                     self.runRecord = dataList.first
-                    if self.isAreaActive {
-                        self.polylines = dataList.flatMap { record in
-                            let coords = record.coordinates.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
-                            return [MKPolyline(coordinates: coords, count: coords.count)]
-                        }
-                        print("Polylines loaded: \(self.polylines.count)")
-                    } else {
-                        self.polylines.removeAll()
-                    }
+                    self.polylines.removeAll()
                 }
             }
     }
@@ -121,7 +113,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             return
         }
         print("🚨 startSimulation() 실행됨")
-
+        
         coordinates.removeAll()
         isSimulating = true
         startTime = Date()
@@ -129,18 +121,12 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         polylines.removeAll()
         polygons.removeAll()
         lastIntersectionIndex = nil
-
-        clManager.startUpdatingLocation()
-
-
-        simulationTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            if let lastLocation = self.clManager.location {
-
         
-        simulationTimer = Timer
-            .scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-                if let lastLocation = self.clManager.location {
-
+        clManager.startUpdatingLocation()
+        
+        simulationTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            if let lastLocation = self.clManager.location {
                 if self.isSimulating {
                     self.updateCoordinates(newCoordinate: lastLocation.coordinate)
                 }
@@ -157,7 +143,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         clManager.stopUpdatingLocation()
         self.updateRunRecord()
     }
-
+    
     func moveToCurrentLocation() {
         clManager.requestWhenInUseAuthorization()
         if let currentLocation = clManager.location {
@@ -169,23 +155,23 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             clManager.startUpdatingLocation()
         }
     }
-
+    
     private func updateCoordinates(newCoordinate: CLLocationCoordinate2D) {
         guard isValidCoordinate(newCoordinate, lastCoordinate: coordinates.last) else {
             print("좌표 업데이트 무시: \(newCoordinate.latitude), \(newCoordinate.longitude)")
             return
         }
-
+        
         coordinates.append(newCoordinate)
         updateMapOverlays()
         checkForPolygon()
         updateRegion(coordinate: newCoordinate)
     }
-
+    
     private func updateMapOverlays() {
         let startIdx = (lastIntersectionIndex ?? -1) + 1
         guard startIdx + 1 < coordinates.count else { return }
-
+        
         let recentCoordinates = Array(coordinates[startIdx...])
         let polyline = MKPolyline(coordinates: recentCoordinates, count: recentCoordinates.count)
         if !isAreaActive {
@@ -195,24 +181,24 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             print("Polyline skipped due to isAreaActive")
         }
     }
-
+    
     private func updateRegion(coordinate: CLLocationCoordinate2D) {
         region = MKCoordinateRegion(
             center: coordinate,
             span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
         )
     }
-
+    
     private func checkForPolygon() {
         guard coordinates.count >= 4 else { return }
-
+        
         let newLineStart = coordinates[coordinates.count - 2]
         let newLineEnd = coordinates[coordinates.count - 1]
-
+        
         for i in 0..<coordinates.count - 3 {
             let existingLineStart = coordinates[i]
             let existingLineEnd = coordinates[i + 1]
-
+            
             if linesIntersect(
                 line1Start: existingLineStart,
                 line1End: existingLineEnd,
@@ -229,7 +215,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
                         [x] + coordinates[(i+1)...(coordinates.count - 2)] + [x]
                     let polygon = MKPolygon(coordinates: polygonCoordinates, count: polygonCoordinates.count)
                     polygons.append(polygon)
-
+                    
                     let areaCoordinatePairs = polygonCoordinates.map {
                         CoordinatePairWithGroup(latitude: $0.latitude, longitude: $0.longitude, groupId: polygons.count)
                     }
@@ -240,7 +226,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             }
         }
     }
-
+    
     private func intersectionPoint(
         line1Start: CLLocationCoordinate2D,
         line1End: CLLocationCoordinate2D,
@@ -255,16 +241,16 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         let y3 = line2Start.latitude
         let x4 = line2End.longitude
         let y4 = line2End.latitude
-
+        
         let denominator = (x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4)
         if denominator == 0 { return nil }
-
+        
         let px = ((x1*y2 - y1*x2)*(x3 - x4) - (x1 - x2)*(x3*y4 - y3*x4)) / denominator
         let py = ((x1*y2 - y1*x2)*(y3 - y4) - (y1 - y2)*(x3*y4 - y3*x4)) / denominator
-
+        
         return CLLocationCoordinate2D(latitude: py, longitude: px)
     }
-
+    
     private func linesIntersect(
         line1Start: CLLocationCoordinate2D,
         line1End: CLLocationCoordinate2D,
@@ -275,19 +261,19 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         let p2 = CGPoint(x: line1End.longitude, y: line1End.latitude)
         let p3 = CGPoint(x: line2Start.longitude, y: line2Start.latitude)
         let p4 = CGPoint(x: line2End.longitude, y: line2End.latitude)
-
+        
         let denominator = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x)*(p2.y - p1.y)
         if denominator == 0 { return false }
-
+        
         let ua = ((p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x)) / denominator
         let ub = ((p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x)) / denominator
-
+        
         return ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1
     }
-
+    
     func calculateTotalDistance() -> Double {
         guard coordinates.count >= 2 else { return 0.0 }
-
+        
         var totalDistance: Double = 0.0
         for i in 0..<coordinates.count - 1 {
             let start = CLLocation(latitude: coordinates[i].latitude, longitude: coordinates[i].longitude)
@@ -296,7 +282,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         }
         return totalDistance
     }
-
+    
     func loadCapturedPolygons(from records: [RunRecordModels]) {
         var result: [MKPolygon] = []
         for record in records {
@@ -315,16 +301,14 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         }
         self.polygons = result
     }
-
+    
     private func isValidCoordinate(_ newCoordinate: CLLocationCoordinate2D, lastCoordinate: CLLocationCoordinate2D?) -> Bool {
-        // 위도/경도 범위 검사
         guard newCoordinate.latitude >= -90 && newCoordinate.latitude <= 90 &&
-              newCoordinate.longitude >= -180 && newCoordinate.longitude <= 180 else {
+                newCoordinate.longitude >= -180 && newCoordinate.longitude <= 180 else {
             print("유효하지 않은 좌표 범위: \(newCoordinate)")
             return false
         }
         
-        // 첫 좌표는 항상 유효
         guard let last = lastCoordinate else { return true }
         
         let lastLocation = CLLocation(latitude: last.latitude, longitude: last.longitude)
@@ -341,18 +325,18 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         }
         return true
     }
-
+    
     private func isValidCoordinate(_ coordinate: CLLocationCoordinate2D) -> Bool {
         return coordinate.latitude >= -90 && coordinate.latitude <= 90 &&
                coordinate.longitude >= -180 && coordinate.longitude <= 180
     }
-
+    
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == .authorizedWhenInUse || status == .authorizedAlways {
             clManager.startUpdatingLocation()
         }
     }
-
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         
