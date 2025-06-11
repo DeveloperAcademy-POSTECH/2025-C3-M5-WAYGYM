@@ -6,12 +6,11 @@ import FirebaseFirestore
 import FirebaseFirestoreSwift
 import FirebaseStorage
 import Photos
-import FirebaseCore // Firebase 초기화를 위해 추가
+import FirebaseCore
 
-// MARK: - 메인 뷰
 struct MainView: View {
     @ObservedObject var locationManager: LocationManager
-    @EnvironmentObject var router: AppRouter // 외부 종속성, 필요 시 활성화
+    @EnvironmentObject var router: AppRouter
     @State private var showResult = false
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     
@@ -33,49 +32,45 @@ struct MainView: View {
             )
             .edgesIgnoringSafeArea(.all)
             
-                // 내 나와바리 이동 버튼
-                if !locationManager.isSimulating {
-                    HStack{
-                        VStack(spacing: 6) {
-                            Button(action: {
-                                router.currentScreen = .profile
-                            }) {
-                                Image("ProfilIcon")
-                                    .resizable()
-                                    .frame(width: 40, height: 40)
-                            }
-                            Text("내 나와바리")
-                                .font(.text02)
-                                .foregroundColor(.white)
-                            // .padding(20)
-                            Spacer()
+            if !locationManager.isSimulating {
+                HStack {
+                    VStack(spacing: 6) {
+                        Button(action: {
+                            router.currentScreen = .profile
+                        }) {
+                            Image("ProfilIcon")
+                                .resizable()
+                                .frame(width: 40, height: 40)
                         }
-                        .padding(20)
-                        
+                        Text("내 나와바리")
+                            .font(.text02)
+                            .foregroundColor(.white)
                         Spacer()
                     }
-                } // 내 나와바리 이동 버튼
+                    .padding(20)
+                    
+                    Spacer()
+                }
+            }
             
-            HStack{
+            HStack {
                 Spacer()
-                VStack{
+                VStack {
                     ControlPanel(
                         locationManager: locationManager,
                         isSimulating: $locationManager.isSimulating,
-                        // showResult: $showResult,
                         startAction: locationManager.startSimulation,
                         stopAction: locationManager.stopSimulation,
                         moveToCurrentLocationAction: locationManager.moveToCurrentLocation,
-                        loadCapturedPolygons:
-                            { locationManager.loadCapturedPolygons(from: locationManager.runRecordList ) },
+                        loadCapturedPolygons: { locationManager.loadCapturedPolygons(from: locationManager.runRecordList) },
                         isCountingDown: $isCountingDown,
                         countdown: $countdown,
-                        showResultModal: $showResultModal
+                        showResultModal: $showResultModal,
+                        isAreaActive: $locationManager.isAreaActive
                     )
                     Spacer()
                 }
             }
-
             
             if isCountingDown {
                 Color.gang_start_bg
@@ -87,19 +82,15 @@ struct MainView: View {
                     )
                     .transition(.opacity)
             }
-            
         }
         .sheet(isPresented: $showResult) {
             ResultView(locationManager: locationManager, showResult: $showResult)
         }
         .onAppear {
-             // FirebaseApp.configure() // Firebase 초기화
-            // locationManager.requestHealthKitAuthorization()
             locationManager.fetchRunRecordsFromFirestore()
             locationManager.moveToCurrentLocation()
-//            locationManager.setupSimulatorLocation() // 시뮬레이터 초기화
         }
-        .overlay(content: {
+        .overlay {
             if showResultModal {
                 ZStack {
                     Color.gang_black_opacity
@@ -111,11 +102,10 @@ struct MainView: View {
                         .environmentObject(router)
                 }
             }
-        })
+        }
     }
 }
 
-// MARK: - 지도 뷰
 struct MapView: UIViewRepresentable {
     @Binding var region: MKCoordinateRegion
     var polylines: [MKPolyline]
@@ -130,8 +120,6 @@ struct MapView: UIViewRepresentable {
         mapView.showsPointsOfInterest = false
         mapView.mapType = .mutedStandard
         mapView.overrideUserInterfaceStyle = .dark
-        // mapView.isOpaque = true // 렌더링 최적화
-        // mapView.isMultipleTouchEnabled = false // 불필요한 터치 이벤트 방지
         return mapView
     }
     
@@ -139,11 +127,11 @@ struct MapView: UIViewRepresentable {
         mapView.setRegion(region, animated: true)
         
         mapView.removeOverlays(mapView.overlays)
-        polylines.forEach { mapView.addOverlay($0) }
         polygons.forEach { mapView.addOverlay($0) }
+        print("Rendering polylines: \(polylines.count)")
+        polylines.forEach { mapView.addOverlay($0) }
         
         mapView.removeAnnotations(mapView.annotations)
-        
         if let currentLocation = currentLocation {
             let annotation = MKPointAnnotation()
             annotation.coordinate = currentLocation
@@ -193,7 +181,7 @@ struct MapView: UIViewRepresentable {
                 let imageName = "main_\(parent.selectedWeaponId)"
                 annotationView?.image = UIImage(named: imageName) ?? UIImage(named: "H")
                 if UIImage(named: imageName) == nil {
-                    ("이미지 로드 실패: \(imageName)")
+                    print("이미지 로드 실패: \(imageName)")
                 }
                 let imageSize = CGSize(width: 80, height: 80)
                 annotationView?.frame = CGRect(origin: .zero, size: imageSize)
@@ -208,7 +196,6 @@ struct MapView: UIViewRepresentable {
     }
 }
 
-// MARK: - 경로 지도 표시 뷰
 struct RouteMapView: UIViewRepresentable {
     let coordinates: [CLLocationCoordinate2D]
     
@@ -228,7 +215,7 @@ struct RouteMapView: UIViewRepresentable {
         return mapView
     }
     
-    func updateUIView(_ mapView: MKMapView, context _: Context) {}
+    func updateUIView(_ mapView: MKMapView, context: Context) {}
     
     func makeCoordinator() -> Coordinator {
         Coordinator()
@@ -270,63 +257,62 @@ struct RouteMapView: UIViewRepresentable {
                 renderer.lineWidth = 2
                 return renderer
             }
+            if let polygon = overlay as? MKPolygon {
+                let renderer = MKPolygonRenderer(polygon: polygon)
+                renderer.fillColor = UIColor.yellow.withAlphaComponent(0.3)
+                renderer.strokeColor = UIColor.yellow
+                renderer.lineWidth = 2
+                return renderer
+            }
             return MKOverlayRenderer()
         }
     }
 }
 
-// MARK: - 컨트롤 패널
 struct ControlPanel: View {
     @ObservedObject var locationManager: LocationManager
-    
     @Binding var isSimulating: Bool
-    // @Binding var showResult: Bool
     let startAction: () -> Void
     let stopAction: () -> Void
     let moveToCurrentLocationAction: () -> Void
     let loadCapturedPolygons: () -> Void
-
-    @State private var isLocationActive = false
-    @State private var isAreaActive = false
-    
     @Binding var isCountingDown: Bool
-        @Binding var countdown: Int
-
-        @State private var isHolding: Bool = false
-        @State private var holdProgress: CGFloat = 0.0
-        @State private var showTipBox: Bool = false
-    
+    @Binding var countdown: Int
     @Binding var showResultModal: Bool
+    @Binding var isAreaActive: Bool
     
+    @State private var isLocationActive = false
+    @State private var isHolding: Bool = false
+    @State private var holdProgress: CGFloat = 0.0
+    @State private var showTipBox: Bool = false
+    @State private var backupPolylines: [MKPolyline] = []
     
     var body: some View {
         ZStack {
-            
             if showTipBox {
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 18)
-                            .fill(Color.black.opacity(0.4))
-                            .frame(width: 350, height: 50)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 18)
-                                    .stroke(Color.yellow, lineWidth: 2)
-                            )
-                        
-                        RoundedRectangle(cornerRadius: 18)
-                            .fill(Color.yellow)
-                            .frame(width: 350 * holdProgress, height: 50)
-                        
-                        Text("길게 눌러서 땅따먹기 종료")
-                            .foregroundColor(.white)
-                            .font(.title02)
-                            .padding(.horizontal)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .frame(height: 36)
-                    }
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 18)
+                        .fill(Color.black.opacity(0.4))
+                        .frame(width: 350, height: 50)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 18)
+                                .stroke(Color.yellow, lineWidth: 2)
+                        )
+                    
+                    RoundedRectangle(cornerRadius: 18)
+                        .fill(Color.yellow)
+                        .frame(width: 350 * holdProgress, height: 50)
+                    
+                    Text("길게 눌러서 땅따먹기 종료")
+                        .foregroundColor(.white)
+                        .font(.title02)
+                        .padding(.horizontal)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .frame(height: 36)
+                }
                 .padding(.horizontal, 34)
                 .padding(.top, 20)
                 .position(x: UIScreen.main.bounds.width / 2, y: 120)
-                // .alignmentGuide(.top) { _ in 0 }
                 .ignoresSafeArea()
                 .zIndex(1)
             }
@@ -335,16 +321,14 @@ struct ControlPanel: View {
                 HStack {
                     Spacer()
                     
-                    // 재생 버튼 누르기 전 버튼들
                     if !isSimulating {
                         VStack(spacing: 25) {
-                            // MARK: 현위치 버튼
                             VStack(spacing: 12) {
                                 Button(
                                     action: {
-                                        moveToCurrentLocationAction();
+                                        moveToCurrentLocationAction()
                                         isLocationActive.toggle()
-                                    })  {
+                                    }) {
                                         RoundedRectangle(cornerRadius: 10)
                                             .fill(isLocationActive ? Color.yellow : Color.black)
                                             .frame(width: 56, height: 56)
@@ -364,18 +348,24 @@ struct ControlPanel: View {
                                     .foregroundColor(isLocationActive ? .yellow : .white)
                             }
                             
-                            // MARK: 차지한 영역 (면적 레이어 토글 버튼)
                             VStack(spacing: 12) {
                                 Button(
                                     action: {
                                         isAreaActive.toggle()
-                                        
-                                        if isAreaActive{
-                                            loadCapturedPolygons();
-                                        } else{
+                                        if isAreaActive {
+                                            backupPolylines = locationManager.polylines
+                                            locationManager.polylines.removeAll()
+                                            loadCapturedPolygons()
+                                            print("Polylines cleared: \(locationManager.polylines.isEmpty)")
+                                            // Firestore 리스너 재호출로 polylines 방지
+                                            locationManager.fetchRunRecordsFromFirestore()
+                                        } else {
                                             locationManager.polygons.removeAll()
+                                            locationManager.polylines = backupPolylines
+                                            print("Polylines restored: \(locationManager.polylines.count)")
+                                            locationManager.fetchRunRecordsFromFirestore()
                                         }
-                                    })  {
+                                    }) {
                                         RoundedRectangle(cornerRadius: 10)
                                             .fill(isAreaActive ? Color.yellow : Color.black)
                                             .frame(width: 56, height: 56)
@@ -398,15 +388,13 @@ struct ControlPanel: View {
                         .padding(.horizontal, 16)
                     }
                     
-                    // 재생 중일때 현 위치 버튼
                     if isSimulating {
-                        // MARK: 현위치 버튼
-                        VStack{
+                        VStack {
                             Button(
                                 action: {
-                                    moveToCurrentLocationAction();
+                                    moveToCurrentLocationAction()
                                     isLocationActive.toggle()
-                                })  {
+                                }) {
                                     RoundedRectangle(cornerRadius: 10)
                                         .fill(isLocationActive ? Color.yellow : Color.black)
                                         .frame(width: 56, height: 56)
@@ -427,12 +415,9 @@ struct ControlPanel: View {
                         }
                         .padding(.trailing, 16)
                     }
-                    
                 }
                 
-                
                 Spacer()
-                // 재생 버튼
                 HStack {
                     Spacer()
                     
@@ -465,7 +450,6 @@ struct ControlPanel: View {
                                             isHolding = false
                                             holdProgress = 0.0
                                             showTipBox = false
-
                                             if holdProgress >= 1.0 {
                                                 showResultModal = true
                                             } else {
@@ -481,10 +465,9 @@ struct ControlPanel: View {
                     }
                     
                     Spacer()
-                } // 재생 버튼
+                }
             }
         }
-        
     }
     
     func startCountdown() {
@@ -493,11 +476,8 @@ struct ControlPanel: View {
             if countdown == 0 {
                 timer.invalidate()
                 isCountingDown = false
-                // toggleSimulation()
                 isSimulating = true
-                
                 startAction()
-                // locationManager.startSimulation()
             }
         }
     }
@@ -509,17 +489,8 @@ struct ControlPanel: View {
                 if holdProgress >= 1.0 {
                     timer.invalidate()
                     holdProgress = 1.0
-                    
-//                    DispatchQueue.main.async {
-//                        // showResult = true
-//                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-//                            // showReward = true
-//                        }
-//                    }
-                    
                     showTipBox = false
                     stopAction()
-                    // locationManager.stopSimulation()
                     showResultModal = true
                     runRecordVM.resetDistanceCache()
                 }
@@ -529,26 +500,4 @@ struct ControlPanel: View {
             }
         }
     }
-    
 }
-
-// MARK: - 프리뷰
-//struct MainView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        MainView()
-//            .environmentObject(AppRouter()) // AppRouter 필요 시 활성화
-//    }
-//}
-//
-//struct ContentView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        MainView()
-//    }
-//}
-//
-//struct RView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        // RootView() // RootView 정의 필요 시 활성화
-//        MainView()
-//    }
-//}
