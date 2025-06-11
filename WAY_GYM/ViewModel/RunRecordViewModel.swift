@@ -22,6 +22,8 @@ class RunRecordViewModel: ObservableObject {
      @Published var calories: Double?
     
     private var db = Firestore.firestore()
+    private var isDistanceLoaded = false
+    
     
     // 서버에서 런닝 기록 가져오기
     func fetchRunRecordsFromFirestore() {
@@ -44,52 +46,84 @@ class RunRecordViewModel: ObservableObject {
             }
     }
 
-// MARK: - 지도 오버레이 생성
-func makePolylines(from coordinates: [CoordinatePair]) -> [MKPolyline] {
-    guard coordinates.count >= 2 else { return [] }
+    // MARK: - 지도 오버레이 생성
+    func makePolylines(from coordinates: [CoordinatePair]) -> [MKPolyline] {
+        guard coordinates.count >= 2 else { return [] }
 
-    let locationCoords = coordinates.map {
-        CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
-    }
-    let polyline = MKPolyline(coordinates: locationCoords, count: locationCoords.count)
-    return [polyline]
-}
-
-func makePolygons(from areas: [CoordinatePairWithGroup]) -> [MKPolygon] {
-    let grouped = Dictionary(grouping: areas, by: { $0.groupId })
-
-    return grouped.values.compactMap { group in
-        let coords = group.map {
+        let locationCoords = coordinates.map {
             CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
         }
-        return MKPolygon(coordinates: coords, count: coords.count)
+        let polyline = MKPolyline(coordinates: locationCoords, count: locationCoords.count)
+        return [polyline]
     }
-}
+
+    func makePolygons(from areas: [CoordinatePairWithGroup]) -> [MKPolygon] {
+        let grouped = Dictionary(grouping: areas, by: { $0.groupId })
+
+        return grouped.values.compactMap { group in
+            let coords = group.map {
+                CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+            }
+            return MKPolygon(coordinates: coords, count: coords.count)
+        }
+    }
     
     // 서버에서 달린 거리의 합 가져오기
-    func fetchAndSumDistances() {
+//    func fetchAndSumDistances() {
+//        db.collection("RunRecordModels")
+//            .getDocuments { [weak self] snapshot, error in
+//                guard let documents = snapshot?.documents else {
+//                    print("⚠️ 런닝 총거리 불러오기 실패: \(error?.localizedDescription ?? "")")
+//                    return
+//                }
+//
+//                // distance만 직접 추출
+//                let distances = documents.compactMap { doc -> Double? in
+//                    if let value = doc.data()["distance"] as? Double {
+//                        return value
+//                    } else {
+//                        print("⚠️ distance 없음 또는 타입 불일치")
+//                        return nil
+//                    }
+//                }
+//
+//                DispatchQueue.main.async {
+//                    self?.totalDistance = distances.reduce(0, +)
+//                    print("🎯 총 달린 거리 계산 완료: \(self?.totalDistance ?? 0)")
+//                }
+//            }
+//    }
+    
+    func fetchAndSumDistances(completion: @escaping (Double) -> Void) {
+        if isDistanceLoaded {
+            completion(totalDistance)
+            return
+        }
+
         db.collection("RunRecordModels")
             .getDocuments { [weak self] snapshot, error in
                 guard let documents = snapshot?.documents else {
                     print("⚠️ 런닝 총거리 불러오기 실패: \(error?.localizedDescription ?? "")")
+                    completion(0.0)
                     return
                 }
 
-                // distance만 직접 추출
                 let distances = documents.compactMap { doc -> Double? in
-                    if let value = doc.data()["distance"] as? Double {
-                        return value
-                    } else {
-                        print("⚠️ distance 없음 또는 타입 불일치")
-                        return nil
-                    }
+                    doc.data()["distance"] as? Double
                 }
 
+                let sum = distances.reduce(0, +)
+
                 DispatchQueue.main.async {
-                    self?.totalDistance = distances.reduce(0, +)
-                    print("🎯 총 달린 거리 계산 완료: \(self?.totalDistance ?? 0)")
+                    self?.totalDistance = sum
+                    self?.isDistanceLoaded = true
+                    print("🎯 총 달린 거리 계산 완료: \(sum)")
+                    completion(sum)
                 }
             }
+    }
+    func resetDistanceCache() {
+        isDistanceLoaded = false
     }
     
     // 서버에서 총 딴 면적 가져오기

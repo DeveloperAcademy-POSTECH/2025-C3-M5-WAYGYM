@@ -162,7 +162,9 @@ struct MinionListView: View {
             .padding(.horizontal, 14)
         }
         .onAppear {
-            runRecordVM.fetchAndSumDistances()
+            runRecordVM.fetchAndSumDistances { total in
+                print("총 거리: \(total)")
+            }
         }
         .onChange(of: selectedMinion) { newMinion in
             if let minion = newMinion {

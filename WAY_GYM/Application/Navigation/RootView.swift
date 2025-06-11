@@ -36,6 +36,7 @@ struct RootView: View {
                         .environmentObject(RunRecordViewModel())
                         .font(.text01)
                         .foregroundColor(Color("gang_text_2"))
+                         .navigationBarHidden(true)
                 )
 //            case .weaponReward(let weapon):
 //                AnyView(
