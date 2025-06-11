@@ -37,9 +37,14 @@ struct MainView: View {
                 if !locationManager.isSimulating {
                     HStack{
                         VStack(spacing: 6) {
-                            Button(action: {
-                                router.currentScreen = .profile
-                            }) {
+                            NavigationLink(destination: ProfileView()
+                                .environmentObject(MinionViewModel())
+                                .environmentObject(WeaponViewModel())
+                                .environmentObject(AppRouter())
+                                .environmentObject(RunRecordViewModel())
+                                .font(.text01)
+                                .foregroundColor(Color.gang_text_2)
+                            ) {
                                 Image("ProfilIcon")
                                     .resizable()
                                     .frame(width: 40, height: 40)
