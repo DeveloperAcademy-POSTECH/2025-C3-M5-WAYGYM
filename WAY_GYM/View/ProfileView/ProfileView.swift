@@ -10,6 +10,8 @@ struct ProfileView: View {
     
     @StateObject private var runRecordVM = RunRecordViewModel()
     
+    @Environment(\.dismiss) var dismiss
+    
     var body: some View {
         NavigationView {
             ZStack {
@@ -162,7 +164,7 @@ struct ProfileView: View {
                     .edgesIgnoringSafeArea(.top)
                     
                     Button(action: {
-                        router.currentScreen = .main(id: UUID())
+                        dismiss()
                     }) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 8)

@@ -55,9 +55,6 @@ struct MainView: View {
                         Spacer()
                         
                     }
-                    Text("내 나와바리")
-                        .font(.text02)
-                        .foregroundColor(.white)
                     Spacer()
                 }
                 .padding(20)
