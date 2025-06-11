@@ -96,9 +96,9 @@ struct RunRecordModels: Identifiable, Codable, Equatable {
     }
 }
 
-// running list view에서 필요한 항목만 가져오기 위해 정의
+// running detail view에서 필요한 항목만 가져오기 위해 정의
 struct RunSummary: Identifiable {
-    let id = UUID()
+    let id: String
     let routeImageURL: URL?
     let distance: Double
     let duration: TimeInterval
@@ -107,4 +107,15 @@ struct RunSummary: Identifiable {
     let startTime: Date
     let coordinates: [CoordinatePair]
     let capturedAreas: [CoordinatePairWithGroup]
+    }
+
+// running list view에서
+struct RunSummaryProfile: Identifiable {
+    let id: String
+    let routeImageURL: URL?
+    let distance: Double
+    let duration: TimeInterval
+    let calories: Double
+    let capturedArea: Double
+    let startTime: Date
     }
