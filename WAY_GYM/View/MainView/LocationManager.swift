@@ -98,16 +98,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
                 DispatchQueue.main.async {
                     self.runRecordList = dataList
                     self.runRecord = dataList.first
-                    if !self.isAreaActive {
-                        self.polylines = dataList.flatMap { record in
-                            let coords = record.coordinates.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
-                            return [MKPolyline(coordinates: coords, count: coords.count)]
-                        }
-                        print("Polylines loaded: \(self.polylines.count)")
-                    } else {
-                        self.polylines.removeAll()
-                        print("Polylines cleared due to isAreaActive")
-                    }
+                    self.polylines.removeAll()
                 }
             }
     }
@@ -295,29 +286,20 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     func loadCapturedPolygons(from records: [RunRecordModels]) {
         var result: [MKPolygon] = []
         for record in records {
-            let grouped = Dictionary(grouping: record.capturedAreas, by: { $0.groupId })
-            for (_, group) in grouped {
-                let coords = group.map {
-                    CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+            let coords = record.coordinates.map {
+                CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+            }
+            if coords.count >= 3 && coords.allSatisfy({ isValidCoordinate($0) }) {
+                var closedCoords = coords
+                if closedCoords.first?.latitude != closedCoords.last?.latitude || 
+                   closedCoords.first?.longitude != closedCoords.last?.longitude {
+                    closedCoords.append(closedCoords.first!)
                 }
-                if coords.count >= 3 && coords.allSatisfy({ isValidCoordinate($0) }) {
-                    var closedCoords = coords
-                    if closedCoords.first?.latitude != closedCoords.last?.latitude || 
-                       closedCoords.first?.longitude != closedCoords.last?.longitude {
-                        closedCoords.append(closedCoords.first!)
-                    }
-                    let polygon = MKPolygon(coordinates: closedCoords, count: closedCoords.count)
-                    result.append(polygon)
-                } else {
-                    print("유효하지 않은 폴리곤 좌표: \(coords)")
-                }
+                let polygon = MKPolygon(coordinates: closedCoords, count: closedCoords.count)
+                result.append(polygon)
             }
         }
         self.polygons = result
-        if isAreaActive {
-            self.polylines.removeAll()
-            print("Polylines cleared in loadCapturedPolygons")
-        }
     }
     
     private func isValidCoordinate(_ newCoordinate: CLLocationCoordinate2D, lastCoordinate: CLLocationCoordinate2D?) -> Bool {
