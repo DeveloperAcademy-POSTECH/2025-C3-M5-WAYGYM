@@ -89,6 +89,12 @@ struct MainView: View {
         .onAppear {
             locationManager.fetchRunRecordsFromFirestore()
             locationManager.moveToCurrentLocation()
+
+            locationManager.isSimulating = false
+            isCountingDown = false
+            countdown = 3
+            
+
         }
         .overlay {
             if showResultModal {
@@ -422,10 +428,11 @@ struct ControlPanel: View {
                     Spacer()
                     
                     Button(action: {
-                        if !isSimulating {
+                        if !isSimulating && !isCountingDown {
                             isCountingDown = true
                             countdown = 3
                             startCountdown()
+                            print("재생 버튼 눌림")
                         }
                     }) {
                         if isSimulating {
@@ -462,7 +469,13 @@ struct ControlPanel: View {
                                 .resizable()
                                 .frame(width: 86, height: 86)
                         }
+                        
                     }
+//                    .onTapGesture {
+//                        if !isSimulating && !isCountingDown {
+//                            startCountdown()
+//                        }
+//                    }
                     
                     Spacer()
                 }
@@ -471,6 +484,10 @@ struct ControlPanel: View {
     }
     
     func startCountdown() {
+        guard !isSimulating else {
+            print("⛔️ 이미 시뮬레이션 중이므로 countdown 시작 안 함")
+            return
+        }
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
             countdown -= 1
             if countdown == 0 {
@@ -478,6 +495,9 @@ struct ControlPanel: View {
                 isCountingDown = false
                 isSimulating = true
                 startAction()
+
+                print("✅ startCountdown 실행됨") 
+
             }
         }
     }
@@ -491,6 +511,9 @@ struct ControlPanel: View {
                     holdProgress = 1.0
                     showTipBox = false
                     stopAction()
+
+                    isCountingDown = false
+                    countdown = 3
                     showResultModal = true
                     runRecordVM.resetDistanceCache()
                 }

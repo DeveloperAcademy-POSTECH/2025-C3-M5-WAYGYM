@@ -116,6 +116,11 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             clManager.requestWhenInUseAuthorization()
             return
         }
+        guard !isSimulating else {
+            print("🛑 이미 시뮬레이션 중이므로 실행 안 함")
+            return
+        }
+        print("🚨 startSimulation() 실행됨")
 
         coordinates.removeAll()
         isSimulating = true
@@ -127,8 +132,15 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
 
         clManager.startUpdatingLocation()
 
+
         simulationTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             if let lastLocation = self.clManager.location {
+
+        
+        simulationTimer = Timer
+            .scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+                if let lastLocation = self.clManager.location {
+
                 if self.isSimulating {
                     self.updateCoordinates(newCoordinate: lastLocation.coordinate)
                 }
