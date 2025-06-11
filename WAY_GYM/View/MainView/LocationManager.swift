@@ -108,10 +108,10 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             clManager.requestWhenInUseAuthorization()
             return
         }
-        guard !isSimulating else {
-            print("🛑 이미 시뮬레이션 중이므로 실행 안 함")
-            return
-        }
+//        guard !isSimulating else {
+//            print("🛑 이미 시뮬레이션 중이므로 실행 안 함")
+//            return
+//        }
         print("🚨 startSimulation() 실행됨")
         
         coordinates.removeAll()
@@ -303,6 +303,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     }
     
     private func isValidCoordinate(_ newCoordinate: CLLocationCoordinate2D, lastCoordinate: CLLocationCoordinate2D?) -> Bool {
+        // 1. 좌표 범위 검사
         guard newCoordinate.latitude >= -90 && newCoordinate.latitude <= 90 &&
                 newCoordinate.longitude >= -180 && newCoordinate.longitude <= 180 else {
             print("유효하지 않은 좌표 범위: \(newCoordinate)")
@@ -311,16 +312,21 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         
         guard let last = lastCoordinate else { return true }
         
+        // 2. 거리와 속도 검사
         let lastLocation = CLLocation(latitude: last.latitude, longitude: last.longitude)
         let newLocation = CLLocation(latitude: newCoordinate.latitude, longitude: newCoordinate.longitude)
         let distance = lastLocation.distance(from: newLocation)
-        guard distance < 500 else {
+        
+        // 50m 이상 이동한 경우 무시
+        guard distance < 50 else {
             print("비현실적 거리 감지: \(distance)m")
             return false
         }
-        let speed = distance / 1.0
-        guard speed < 13.89 else {
-            print("비현실적 속도 감지: \(speed)m/s")
+        
+        // 20km/h (약 5.56m/s) 이상의 속도는 무시
+        let speed = distance / 1.0  // 1초당 속도
+        guard speed < 5.56 else {
+            print("비현실적 속도 감지: \(speed)m/s (약 \(speed * 3.6)km/h)")
             return false
         }
         return true
@@ -354,6 +360,8 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         let newCoordinate = location.coordinate
         print("유효 좌표 수신: \(newCoordinate.latitude), \(newCoordinate.longitude)")
         currentLocation = newCoordinate
+        
+        // 시뮬레이션 중일 때만 위치 업데이트 및 유효성 검사 수행
         if isSimulating {
             updateCoordinates(newCoordinate: newCoordinate)
         }

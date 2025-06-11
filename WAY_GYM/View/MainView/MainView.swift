@@ -143,8 +143,25 @@ struct MapView: UIViewRepresentable {
         
         mapView.removeOverlays(mapView.overlays)
         polygons.forEach { mapView.addOverlay($0) }
-        print("Rendering polylines: \(polylines.count)")
-        polylines.forEach { mapView.addOverlay($0) }
+        
+        // 유효한 폴리라인만 그리기
+        let validPolylines = polylines.filter { polyline in
+            let points = polyline.points()
+            let count = polyline.pointCount
+            
+            // 폴리라인의 모든 좌표가 유효한지 확인
+            for i in 0..<count {
+                let coordinate = points[i].coordinate
+                if coordinate.latitude < -90 || coordinate.latitude > 90 ||
+                   coordinate.longitude < -180 || coordinate.longitude > 180 {
+                    return false
+                }
+            }
+            return true
+        }
+        
+        print("Rendering valid polylines: \(validPolylines.count) / \(polylines.count)")
+        validPolylines.forEach { mapView.addOverlay($0) }
         
         mapView.removeAnnotations(mapView.annotations)
         if let currentLocation = currentLocation {
