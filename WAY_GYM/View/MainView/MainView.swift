@@ -98,6 +98,10 @@ struct MainView: View {
             locationManager.fetchRunRecordsFromFirestore()
             locationManager.moveToCurrentLocation()
 //            locationManager.setupSimulatorLocation() // 시뮬레이터 초기화
+            locationManager.isSimulating = false
+            isCountingDown = false
+            countdown = 3
+            
         }
         .overlay(content: {
             if showResultModal {
@@ -437,10 +441,11 @@ struct ControlPanel: View {
                     Spacer()
                     
                     Button(action: {
-                        if !isSimulating {
+                        if !isSimulating && !isCountingDown {
                             isCountingDown = true
                             countdown = 3
                             startCountdown()
+                            print("재생 버튼 눌림")
                         }
                     }) {
                         if isSimulating {
@@ -478,7 +483,13 @@ struct ControlPanel: View {
                                 .resizable()
                                 .frame(width: 86, height: 86)
                         }
+                        
                     }
+//                    .onTapGesture {
+//                        if !isSimulating && !isCountingDown {
+//                            startCountdown()
+//                        }
+//                    }
                     
                     Spacer()
                 } // 재생 버튼
@@ -488,16 +499,19 @@ struct ControlPanel: View {
     }
     
     func startCountdown() {
+        guard !isSimulating else {
+            print("⛔️ 이미 시뮬레이션 중이므로 countdown 시작 안 함")
+            return
+        }
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
             countdown -= 1
             if countdown == 0 {
                 timer.invalidate()
                 isCountingDown = false
-                // toggleSimulation()
                 isSimulating = true
-                
                 startAction()
-                // locationManager.startSimulation()
+                print("✅ startCountdown 실행됨") 
+
             }
         }
     }
@@ -520,6 +534,8 @@ struct ControlPanel: View {
                     showTipBox = false
                     stopAction()
                     // locationManager.stopSimulation()
+                    isCountingDown = false
+                    countdown = 3
                     showResultModal = true
                     runRecordVM.resetDistanceCache()
                 }
