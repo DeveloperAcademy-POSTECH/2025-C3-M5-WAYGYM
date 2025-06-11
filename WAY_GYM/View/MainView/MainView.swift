@@ -32,15 +32,29 @@ struct MainView: View {
             )
             .edgesIgnoringSafeArea(.all)
             
-            if !locationManager.isSimulating {
-                HStack {
-                    VStack(spacing: 6) {
-                        Button(action: {
-                            router.currentScreen = .profile
-                        }) {
-                            Image("ProfilIcon")
-                                .resizable()
-                                .frame(width: 40, height: 40)
+
+                // 내 나와바리 이동 버튼
+                if !locationManager.isSimulating {
+                    HStack{
+                        VStack(spacing: 6) {
+                            NavigationLink(destination: ProfileView()
+                                .environmentObject(MinionViewModel())
+                                .environmentObject(WeaponViewModel())
+                                .environmentObject(AppRouter())
+                                .environmentObject(RunRecordViewModel())
+                                .font(.text01)
+                                .foregroundColor(Color.gang_text_2)
+                            ) {
+                                Image("ProfilIcon")
+                                    .resizable()
+                                    .frame(width: 40, height: 40)
+                            }
+                            Text("내 나와바리")
+                                .font(.text02)
+                                .foregroundColor(.white)
+                            // .padding(20)
+                            Spacer()
+
                         }
                         Text("내 나와바리")
                             .font(.text02)

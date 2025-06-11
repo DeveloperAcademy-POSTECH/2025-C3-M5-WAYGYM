@@ -36,6 +36,7 @@ struct ProfileView: View {
                                     VStack {
                                         HStack {
                                             Spacer()
+                                            
                                             VStack {
                                                 NavigationLink(destination: WeaponListView()
                                                     .foregroundStyle(Color.gang_text_2)
@@ -53,9 +54,11 @@ struct ProfileView: View {
                                                             .frame(width: 40)
                                                     }
                                                 }
+                                                
                                                 Text("무기")
                                                     .font(.title02)
                                             }
+                                            
                                         }
                                         Spacer()
                                     } // 무기 선택
@@ -154,7 +157,7 @@ struct ProfileView: View {
                             .customBorder()
                         }
                         .padding(.top, 70)
-                    }
+                    } // 스크롤뷰
                     .scrollIndicators(.hidden)
                     .edgesIgnoringSafeArea(.top)
                     
@@ -178,7 +181,7 @@ struct ProfileView: View {
                         }
                         .padding(.bottom, 5)
                     }
-                    // .padding(.bottom, 5)
+                    
                     
                 }
                 .padding(.horizontal, 25)
@@ -190,7 +193,7 @@ struct ProfileView: View {
                 runRecordVM.fetchAndSumCapturedValue()
             }
         }
-        .navigationBarTitleDisplayMode(.inline)
+        // .navigationBarTitleDisplayMode(.inline)
         .navigationBarHidden(true)
         .ignoresSafeArea(.all, edges: .top)
     }
