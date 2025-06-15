@@ -1,0 +1,10 @@
+# Xcode 사용자 설정 무시
+*.xcuserdatad/
+*.xcuserstate
+*.xcscheme
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+WAY_GYM.xcodeproj/project.xcworkspace/xcuserdata/judy.xcuserdatad/UserInterfaceState.xcuserstate
+*.xcodeproj/project.xcworkspace/xcuserdata/.DS_Store
+.DS_Store

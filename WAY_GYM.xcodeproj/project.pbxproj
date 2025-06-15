@@ -6,6 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		B36066862DEECF4200863D7F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B36066852DEECF4200863D7F /* FirebaseAuth */; };
+		B360668A2DEECF4200863D7F /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = B36066892DEECF4200863D7F /* FirebaseDatabase */; };
+		B360668C2DEECF4200863D7F /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = B360668B2DEECF4200863D7F /* FirebaseFirestore */; };
+		B360668E2DEECF4200863D7F /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = B360668D2DEECF4200863D7F /* FirebaseStorage */; };
+		B36066CA2DEEE85600863D7F /* FirebaseFirestoreSwift in Frameworks */ = {isa = PBXBuildFile; productRef = B36066C92DEEE85600863D7F /* FirebaseFirestoreSwift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		B34B7AAC2DE54FDD00B14CAB /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -42,6 +50,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B36066CA2DEEE85600863D7F /* FirebaseFirestoreSwift in Frameworks */,
+				B360668A2DEECF4200863D7F /* FirebaseDatabase in Frameworks */,
+				B360668C2DEECF4200863D7F /* FirebaseFirestore in Frameworks */,
+				B360668E2DEECF4200863D7F /* FirebaseStorage in Frameworks */,
+				B36066862DEECF4200863D7F /* FirebaseAuth in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -66,6 +79,7 @@
 			isa = PBXGroup;
 			children = (
 				B34B7AA02DE54FDB00B14CAB /* WAY_GYM */,
+				B36066C82DEEDE4700863D7F /* Frameworks */,
 				B34B7A9F2DE54FDB00B14CAB /* Products */,
 			);
 			sourceTree = "<group>";
@@ -78,6 +92,13 @@
 				B34B7AB52DE54FDD00B14CAB /* WAY_GYMUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		B36066C82DEEDE4700863D7F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -100,6 +121,11 @@
 			);
 			name = WAY_GYM;
 			packageProductDependencies = (
+				B36066852DEECF4200863D7F /* FirebaseAuth */,
+				B36066892DEECF4200863D7F /* FirebaseDatabase */,
+				B360668B2DEECF4200863D7F /* FirebaseFirestore */,
+				B360668D2DEECF4200863D7F /* FirebaseStorage */,
+				B36066C92DEEE85600863D7F /* FirebaseFirestoreSwift */,
 			);
 			productName = WAY_GYM;
 			productReference = B34B7A9E2DE54FDB00B14CAB /* WAY_GYM.app */;
@@ -177,6 +203,9 @@
 			);
 			mainGroup = B34B7A952DE54FDB00B14CAB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				B36066842DEECF4200863D7F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B34B7A9F2DE54FDB00B14CAB /* Products */;
 			projectDirPath = "";
@@ -375,22 +404,34 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = WAY_GYM/WAY_GYM.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 7653A24B9G;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "WAY-GYM-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "나와바리GO";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "걸음 수와 칼로리 데이터를 읽기 위해 HealthKit 접근이 필요합니다.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "HealthKit 데이터를 사용하기 위해 권한이 필요합니다.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = please;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "-025-C3-M5-.WAY-GYM";
+				PRODUCT_BUNDLE_IDENTIFIER = WAYGYM;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "C3-M5-Profile";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -402,22 +443,34 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = WAY_GYM/WAY_GYM.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 7653A24B9G;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "WAY-GYM-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "나와바리GO";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "걸음 수와 칼로리 데이터를 읽기 위해 HealthKit 접근이 필요합니다.";
+				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "HealthKit 데이터를 사용하기 위해 권한이 필요합니다.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = please;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "-025-C3-M5-.WAY-GYM";
+				PRODUCT_BUNDLE_IDENTIFIER = WAYGYM;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "C3-M5-Profile";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -532,6 +585,45 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		B36066842DEECF4200863D7F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.29.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B36066852DEECF4200863D7F /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36066842DEECF4200863D7F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		B36066892DEECF4200863D7F /* FirebaseDatabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36066842DEECF4200863D7F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseDatabase;
+		};
+		B360668B2DEECF4200863D7F /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36066842DEECF4200863D7F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+		B360668D2DEECF4200863D7F /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36066842DEECF4200863D7F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
+		B36066C92DEEE85600863D7F /* FirebaseFirestoreSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B36066842DEECF4200863D7F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestoreSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = B34B7A962DE54FDB00B14CAB /* Project object */;
 }
