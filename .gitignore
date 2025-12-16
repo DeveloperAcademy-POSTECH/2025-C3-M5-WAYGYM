@@ -1,4 +1,3 @@
-
 # Created by https://www.toptal.com/developers/gitignore/api/xcode,macos,swift,swiftpackagemanager,cocoapods
 # Edit at https://www.toptal.com/developers/gitignore?templates=xcode,macos,swift,swiftpackagemanager,cocoapods
 
@@ -128,3 +127,15 @@ fastlane/test_output
 iOSInjectionProject/
 
 # End of https://www.toptal.com/developers/gitignore/api/xcode,macos,swift,swiftpackagemanager,cocoapods
+
+
+# Xcode 사용자 설정 무시
+*.xcuserdatad/
+*.xcuserstate
+*.xcscheme
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+WAY_GYM.xcodeproj/project.xcworkspace/xcuserdata/judy.xcuserdatad/UserInterfaceState.xcuserstate
+*.xcodeproj/project.xcworkspace/xcuserdata/.DS_Store
+.DS_Store

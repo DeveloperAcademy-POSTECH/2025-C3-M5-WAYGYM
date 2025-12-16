@@ -104,14 +104,16 @@ struct ProfileView: View {
                                 NavigationLink(destination: SocialView())
                                 {
                                     Group {
-                                        Text(localUser?.name ?? "")
-                                            .font(.title01)
-                                            .padding(.bottom, 2)
-                                        
-                                        HStack {
-                                            Text(localUser?.region ?? "")
-                                            Text("1대손파")
-                                            Text(genderText)
+                                        VStack {
+                                            Text(localUser?.name ?? "")
+                                                .font(.title01)
+                                                .padding(.bottom, 2)
+                                            
+                                            HStack {
+                                                Text(localUser?.region ?? "")
+                                                Text("1대손파")
+                                                Text(genderText)
+                                            }
                                         }
                                     }
                                     .foregroundStyle(Color.white)

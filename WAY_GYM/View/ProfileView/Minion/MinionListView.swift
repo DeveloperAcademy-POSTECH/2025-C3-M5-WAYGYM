@@ -1,0 +1,186 @@
+import SwiftUI
+import FirebaseFirestore
+
+// minion = distance, 5000단위
+struct MinionListView: View {
+    @StateObject private var minionModel = MinionModel()
+    // @StateObject private var userVM = UserViewModel()
+    @StateObject private var minionVM = MinionViewModel()
+    @State private var selectedMinion: MinionDefinitionModel? = nil
+    
+    @StateObject private var runRecordVM = RunRecordViewModel()
+    @State private var acquisitionDate: Date? = nil
+    
+    var body: some View {
+        ZStack {
+            Color.gang_bg_profile
+                .ignoresSafeArea()
+                
+            VStack {
+                CustomNavigationBar(title: "똘마니들")
+                
+                ZStack {
+                    Color.gang_bg_primary_4
+                    
+                    VStack{
+                        // 캐릭터
+                        ZStack {
+                            Image("Flash")
+                                .resizable()
+                                .frame(width: 180, height: 170)
+                            
+                            if let selectedMinion = selectedMinion {
+                                Image(selectedMinion.id)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 150)
+                                    .padding(.bottom, -30)
+                            } else {
+                                Image("questionMark")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 150)
+                            }
+                        }
+                        
+                        // 설명
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color.black, lineWidth: 3)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 124)
+                            
+                            VStack {
+                                if let minion = selectedMinion {
+                                    HStack {
+                                        Text(minion.name)
+                                        Spacer()
+                                        if let date = acquisitionDate {
+                                            Text("\(formatShortDate(date))")
+                                        }
+                                    }
+                                    .padding(.horizontal, 26)
+                                    
+                                    Text(minion.description)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 16)
+                                        .padding(.top, 6)
+                                        
+                                } else {
+                                    Text("똘마니를\n선택해주세요.")
+                                        .multilineTextAlignment(.center)
+                                }
+                            } // 설명 vstack
+                            .font(.title01)
+                        }
+                        .padding(.horizontal, 14)
+                    }
+                }
+                .frame(height: UIScreen.main.bounds.height * 0.4)
+                .overlay(
+                    Rectangle()
+                        .fill(Color.black)
+                        .frame(height: 3)
+                        .frame(maxHeight: .infinity, alignment: .bottom)
+                )
+                .padding(.bottom, 5)
+                .padding(.horizontal, -14)
+                
+                ScrollView {
+                    let columns = [
+                        GridItem(.flexible()),
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ]
+                    LazyVGrid(columns: columns, spacing: 16) {
+                        ForEach(minionModel.allMinions) { minion in
+                            
+                            let isUnlocked = minionVM.isUnlocked(minion, with: Int(runRecordVM.totalDistance))
+                            
+                            if isUnlocked {
+                                Button(action: {
+                                    selectedMinion = minion
+                                }) {
+                                    ZStack {
+                                        Image("minion_box")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: UIScreen.main.bounds.width * 0.25)
+                                        
+                                        VStack {
+                                            Image(minion.iconName)
+                                                .resizable()
+                                                .aspectRatio(contentMode: .fit)
+                                                .frame(width: 80)
+                                                .shadow(color: selectedMinion?.id == minion.id ? Color.yellow : Color.black, radius: 4, x: 0, y: 0)
+                                            
+                                            Text(minion.name)
+                                                .foregroundStyle(Color.black)
+                                            
+                                            Text(String(format: "%.0f km", minion.unlockNumber))
+                                                .foregroundStyle(Color.black)
+                                        }
+                                    }
+                                    .cornerRadius(8)
+                                    .shadow(radius: 2)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            } else {
+                                ZStack {
+                                    Image("minion_box")
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: UIScreen.main.bounds.width * 0.25)
+                                    
+                                    VStack {
+                                        Image("questionMark")
+                                            .resizable()
+                                            .aspectRatio(contentMode: .fit)
+                                            .frame(width: 80)
+                                            .shadow(color: Color.black, radius: 4, x: 0, y: 0)
+                                        
+                                        Text("???")
+                                            .foregroundStyle(Color.black)
+                                        
+                                        Text(String(format: "%.0f km", minion.unlockNumber))
+                                            .foregroundStyle(Color.black)
+                                    }
+                                }
+                                .cornerRadius(8)
+                            }
+                        }
+                    }
+                    .padding(16)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color.black, lineWidth: 7)
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                }
+                .scrollIndicators(.hidden)
+            }
+            .padding(.horizontal, 14)
+        }
+        .onAppear {
+            runRecordVM.fetchAndSumDistances { total in
+                print("총 거리: \(total)")
+            }
+        }
+        .onChange(of: selectedMinion) { newMinion in
+            if let minion = newMinion {
+                runRecordVM.fetchRunRecordsAndCalculateMinionAcquisitionDate(for: minion.unlockNumber) { date in
+                    acquisitionDate = date
+                }
+            } else {
+                acquisitionDate = nil
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+    }
+}
+
+#Preview {
+    MinionListView()
+        .font(.text01)
+        .foregroundColor(Color.gang_text_2)
+}
