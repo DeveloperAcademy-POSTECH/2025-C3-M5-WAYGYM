@@ -6,6 +6,7 @@ import FirebaseFirestoreSwift
 import FirebaseStorage
 import Photos
 import FirebaseCore
+import FirebaseAuth
 
 final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var region = MKCoordinateRegion()
@@ -34,6 +35,56 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         clManager.delegate = self
         clManager.desiredAccuracy = kCLLocationAccuracyBest
         clManager.requestWhenInUseAuthorization()
+    }
+    
+    // MARK: - 초기 세팅, 런닝 지역 가져오기
+    func extractRegionName(from placemark: CLPlacemark) -> String? {
+        // 1) 1차 시도: placemark 필드에서 바로 추출
+        let province = placemark.administrativeArea // 예: 경기도/서울특별시 (사용 안함)
+        let si = placemark.locality                 // 예: 용인시/서울특별시/하남시
+        let guOrGunRaw = placemark.subAdministrativeArea // 예: 처인구/마포구(일부 기기/지역에서 비어있을 수 있음)
+        let dongEupMyeonRaw = placemark.subLocality      // 예: 역삼동/모현읍/○○면
+
+        // 헬퍼: 접미사 체크
+        func endsWith(_ text: String?, suffixes: [String]) -> Bool {
+            guard let t = text, !t.isEmpty else { return false }
+            return suffixes.contains { t.hasSuffix($0) }
+        }
+
+        // 정규화된 후보
+        var guOrGun: String? = endsWith(guOrGunRaw, suffixes: ["구","군"]) ? guOrGunRaw : nil
+        var dongEupMyeon: String? = endsWith(dongEupMyeonRaw, suffixes: ["동","읍","면"]) ? dongEupMyeonRaw : nil
+
+        // 2) 2차 시도: FormattedAddressLines에서 파싱 (서울특별시 등 일부 케이스 보완)
+        if (guOrGun == nil || dongEupMyeon == nil),
+           let lines = placemark.addressDictionary?["FormattedAddressLines"] as? [String],
+           let full = lines.first {
+            // "대한민국 " 제거 후 공백 분리
+            let trimmed = full.replacingOccurrences(of: "대한민국 ", with: "")
+            let comps = trimmed.split(separator: " ").map(String.init)
+
+            // 구/군 토큰과 동/읍/면 토큰 탐색
+            var foundGuGun: String?
+            var foundDongEupMyeon: String?
+            for i in 0..<comps.count {
+                let token = comps[i]
+                if foundGuGun == nil && (token.hasSuffix("구") || token.hasSuffix("군")) {
+                    foundGuGun = token
+                }
+                if foundDongEupMyeon == nil && (token.hasSuffix("동") || token.hasSuffix("읍") || token.hasSuffix("면")) {
+                    foundDongEupMyeon = token
+                }
+            }
+            if guOrGun == nil { guOrGun = foundGuGun }
+            if dongEupMyeon == nil { dongEupMyeon = foundDongEupMyeon }
+        }
+
+        // 3) 최종 조합 규칙
+        if let gu = guOrGun, let dem = dongEupMyeon { return "\(gu) \(dem)" }
+        if let city = si, city != province, let dem = dongEupMyeon { return "\(city) \(dem)" }
+        if let gu = guOrGun { return gu }                // 동/읍/면이 없을 때 최소한 구/군만이라도
+        if let dem = dongEupMyeon { return dem }         // 구/군이 전혀 없을 때
+        return nil
     }
     
     // MARK: - 런닝 중
@@ -81,6 +132,11 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     
     // 현재 세션의 좌표/폴리곤을 러닝 기록 데이터로 변환하고 Firestore에 저장.
     func updateRunRecord(imageURL: String? = nil) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            print ("사용자 UID를 가져올 수 없습니다")
+            return
+        }
+        
         guard let start = startTime else {
             print("⚠️ 시작 시간이 설정되지 않았습니다")
             return
@@ -108,7 +164,8 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         )
         
         do {
-            let ref = db.collection("RunRecordModels").document()
+            // let ref = db.collection("RunRecordModels").document()
+            let ref = db.collection("RunRecordModels").document(uid).collection("runRecords").document()
             try ref.setData(from: newData) { error in
                 if let error = error {
                     print("Firestore 저장 실패: \(error.localizedDescription)")
@@ -154,7 +211,14 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     func fetchRunRecordsFromFirestore() {
         firestoreListener?.remove()
         
-        firestoreListener = db.collection("RunRecordModels")
+        // firestoreListener = db.collection("RunRecordModels")
+        
+        guard let uid = Auth.auth().currentUser?.uid else {
+            print("⚠️ 사용자 UID를 가져올 수 없습니다.")
+            return
+        }
+        
+        firestoreListener = db.collection("RunRecordModels").document(uid).collection("runRecords")
             .order(by: "start_time", descending: true)
             .addSnapshotListener { [weak self] snapshot, error in
                 guard let self = self else { return }
@@ -371,7 +435,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         }
         
         let newCoordinate = location.coordinate
-        print("유효 좌표 수신: \(newCoordinate.latitude), \(newCoordinate.longitude)")
+        // print("유효 좌표 수신: \(newCoordinate.latitude), \(newCoordinate.longitude)")
         currentLocation = newCoordinate
         
         // 시뮬레이션 중일 때만 위치 업데이트 및 유효성 검사 수행
@@ -381,3 +445,4 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         updateRegion(coordinate: newCoordinate)
     }
 }
+

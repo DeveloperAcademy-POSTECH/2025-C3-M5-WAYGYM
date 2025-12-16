@@ -153,7 +153,7 @@ struct MapView: UIViewRepresentable {
             return true
         }
         
-        print("Rendering valid polylines: \(validPolylines.count) / \(polylines.count)")
+        // print("Rendering valid polylines: \(validPolylines.count) / \(polylines.count)")
         validPolylines.forEach { mapView.addOverlay($0) }
         
         mapView.removeAnnotations(mapView.annotations)

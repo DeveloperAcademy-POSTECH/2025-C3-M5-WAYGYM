@@ -1,9 +1,13 @@
 import Foundation
 import FirebaseFirestore
 import FirebaseFirestoreSwift
+import FirebaseAuth
 import CoreLocation
 
-private enum FirestorePaths { static let runs = "RunRecordModels" }
+private enum FirestorePaths {
+    static let userRunsRoot = "RunRecordModels"        // top-level collection
+    static let perUserRunRecords = "runRecords"           // subcollection under each uid
+}
 
 // MARK: - 좌표 쌍 구조체
 struct CoordinatePair: Codable, Equatable {
@@ -133,7 +137,13 @@ extension RunCardModel {
         }
     
     static func fetchRunSummary(db: Firestore = Firestore.firestore()) async throws -> [RunCardModel] {
-        let snap = try await db.collection(FirestorePaths.runs)
+        guard let uid = Auth.auth().currentUser?.uid else {
+            throw NSError(domain: "auth_missing_uid", code: 0)
+        }
+        let snap = try await db
+            .collection(FirestorePaths.userRunsRoot)
+            .document(uid)
+            .collection(FirestorePaths.perUserRunRecords)
             .order(by: "start_time", descending: true)
             .getDocuments()
         return try snap.documents.map { try RunCardModel.fromFirestoreDocument(doc: $0) }
@@ -199,7 +209,15 @@ extension RunDetailModel {
     }
     
     static func fetch(byId id: String, db: Firestore = Firestore.firestore()) async throws -> RunDetailModel {
-        let doc = try await db.collection(FirestorePaths.runs).document(id).getDocument()
+        guard let uid = Auth.auth().currentUser?.uid else {
+            throw NSError(domain: "auth_missing_uid", code: 0)
+        }
+        let doc = try await db
+            .collection(FirestorePaths.userRunsRoot)
+            .document(uid)
+            .collection(FirestorePaths.perUserRunRecords)
+            .document(id)
+            .getDocument()
         guard let data = doc.data() else { throw NSError(domain: "no_doc", code: 0) }
         return try RunDetailModel.fromFirestoreData(id: doc.documentID, data: data)
     }

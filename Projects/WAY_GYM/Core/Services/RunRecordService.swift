@@ -10,6 +10,7 @@ import FirebaseFirestoreSwift
 import Combine
 import SwiftUI
 import MapKit
+import FirebaseAuth
 
 class RunRecordService: ObservableObject {
     @Published var runRecords: [RunRecordModel] = []
@@ -19,13 +20,19 @@ class RunRecordService: ObservableObject {
     @Published var distance: Double?
     @Published var duration: TimeInterval?
     @Published var calories: Double?
-    
+
     private var db = Firestore.firestore()
 
     // MARK: - Rewards Prereq: 누적 거리/면적 합계 (Unlock 조건 계산)
     // 서버에서 달린 거리의 합 가져오기
-    func getTotalDistanceForRewards(completion: @escaping (Double) -> Void) {
-        db.collection("RunRecordModels")
+    func getTotalDistanceForRewards(completion: @escaping (Double?) -> Void) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            print("⚠️ 로그인된 사용자 UID를 가져올 수 없습니다.")
+            completion(nil)
+            return
+        }
+        
+        db.collection("RunRecordModels").document(uid).collection("runRecords")
             .getDocuments { [weak self] snapshot, error in
                 guard let documents = snapshot?.documents else {
                     print("⚠️ 런닝 총거리 불러오기 실패: \(error?.localizedDescription ?? "")")

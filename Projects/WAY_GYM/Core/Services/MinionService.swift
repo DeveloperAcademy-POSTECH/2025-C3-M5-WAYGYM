@@ -8,6 +8,7 @@
 import Foundation
 import FirebaseFirestore
 import FirebaseFirestoreSwift
+import FirebaseAuth
 
 final class MinionService: ObservableObject {
     private var db = Firestore.firestore()
@@ -56,8 +57,13 @@ final class MinionService: ObservableObject {
         }
 
         // 2) 서버에서 최신 기록 로드(Firestore)
+        guard let uid = Auth.auth().currentUser?.uid else {
+            print("⚠️ 로그인된 사용자 UID를 가져올 수 없습니다.")
+            completion(nil)
+            return
+        }
         let db = Firestore.firestore()
-        db.collection("RunRecordModels")
+        db.collection("RunRecordModels").document(uid).collection("runRecords")
             .getDocuments { snapshot, error in
                 guard let documents = snapshot?.documents else {
                     print("⚠️ 기록 불러오기 실패: \(error?.localizedDescription ?? "")")
@@ -94,8 +100,13 @@ final class MinionService: ObservableObject {
 
     // MARK: - 런닝 직후: 새로 획득한 미니언 확인
     func checkMinionUnlockOnStop(completion: @escaping ([MinionDefinitionModel]) -> Void) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            print("⚠️ 로그인된 사용자 UID를 가져올 수 없습니다.")
+            completion([])
+            return
+        }
         let db = Firestore.firestore()
-        db.collection("RunRecordModels")
+        db.collection("RunRecordModels").document(uid).collection("runRecords")
             .getDocuments { snapshot, error in
                 guard let documents = snapshot?.documents else {
                     print("⚠️ 기록 불러오기 실패: \(error?.localizedDescription ?? "")")
@@ -149,7 +160,7 @@ final class MinionService: ObservableObject {
                                     completion: @escaping ([(minion: MinionDefinitionModel, acquisitionDate: Date)]) -> Void) {
         runRecordService.getTotalDistanceForRewards { total in
             let unlockedMinions = MinionModel.allMinions.filter {
-                self.isUnlocked($0, with: Int(total))
+                self.isUnlocked($0, with: Int(total ?? 0))
             }
             let sorted = unlockedMinions
                 .sorted { Int($0.id) ?? 0 < Int($1.id) ?? 0 }
@@ -164,7 +175,7 @@ final class MinionService: ObservableObject {
     func fetchRecentUnlockedMinions() {
         runRecordService.getTotalDistanceForRewards { total in
             let unlocked = MinionModel.allMinions.filter {
-                self.isUnlocked($0, with: Int(total))
+                self.isUnlocked($0, with: Int(total ?? 0))
             }
             // 정렬 기준을 unlockNumber(요구 km) 오름차순으로 정렬
             let sorted = unlocked.sorted { $0.unlockNumber < $1.unlockNumber }

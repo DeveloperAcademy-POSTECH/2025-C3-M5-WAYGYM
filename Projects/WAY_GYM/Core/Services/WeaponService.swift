@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import FirebaseFirestore
 import FirebaseFirestoreSwift
+import FirebaseAuth
 
 final class WeaponService: ObservableObject {
     @Published var currentRewardWeapon: WeaponDefinitionModel? = nil
@@ -23,8 +24,14 @@ final class WeaponService: ObservableObject {
     
     // 런닝 직후 - 새로 획득한 무기 확인 함수
     func checkWeaponUnlockOnStop(completion: @escaping ([WeaponDefinitionModel]) -> Void) {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            print("⚠️ 로그인된 사용자 UID를 가져올 수 없습니다.")
+            completion([])
+            return
+        }
+        
         // 최신 기록 포함한 모든 런닝 기록 가져옴
-        db.collection("RunRecordModels")
+        db.collection("RunRecordModels").document(uid).collection("runRecords")
             .getDocuments { [weak self] snapshot, error in
                 guard let documents = snapshot?.documents else {
                     print("⚠️ 기록 불러오기 실패: \(error?.localizedDescription ?? "")")

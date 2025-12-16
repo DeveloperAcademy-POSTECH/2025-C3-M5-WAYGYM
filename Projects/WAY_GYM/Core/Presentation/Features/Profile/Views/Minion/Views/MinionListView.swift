@@ -113,7 +113,9 @@ struct MinionListView: View {
             .padding(.horizontal, 14)
         }
         .onAppear {
-            runrecordVM.getTotalDistanceForRewards(completion: vm.fetchUnlockedMinions)
+            runrecordVM.getTotalDistanceForRewards { total in
+                vm.fetchUnlockedMinions(total ?? 0)
+            }
         }
         .navigationBarBackButtonHidden(true)
     }

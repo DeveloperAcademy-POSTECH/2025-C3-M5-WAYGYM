@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import FirebaseFirestore
 import FirebaseFirestoreSwift
+import FirebaseAuth
 
 final class ProfileViewModel: ObservableObject {
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
@@ -34,7 +35,14 @@ final class ProfileViewModel: ObservableObject {
     private var db = Firestore.firestore()
     // 서버에서 총 딴 면적 가져오기
     func getTotalCapturedArea() {
-        db.collection("RunRecordModels")
+        
+        guard let uid = Auth.auth().currentUser?.uid else {
+            print("⚠️ 로그인된 사용자 UID를 가져올 수 없습니다.")
+            self.totalCapturedAreaValue = 0
+            return
+        }
+        
+        db.collection("RunRecordModels").document(uid).collection("runRecords")
             .getDocuments { [weak self] snapshot, error in
                 guard let documents = snapshot?.documents else {
                     print("⚠️ 런닝 딴 땅 불러오기 실패: \(error?.localizedDescription ?? "")")

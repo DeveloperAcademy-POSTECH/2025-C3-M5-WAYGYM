@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 import FirebaseFirestore
 import FirebaseFirestoreSwift
+import FirebaseAuth
 
 final class RunResultModalViewModel: ObservableObject {
     @Published var latestRecord: RunRecordModel?
@@ -26,6 +27,9 @@ final class RunResultModalViewModel: ObservableObject {
     private let minionService = MinionService()
     private let weaponService = WeaponService()
     
+    private var currentUID: String? {
+        Auth.auth().currentUser?.uid
+    }
     private var db = Firestore.firestore()
 
     // MARK: - 서버에서 최신 1건 가져오기
@@ -57,7 +61,8 @@ final class RunResultModalViewModel: ObservableObject {
     }
     
     func getLatestCapturedArea(completion: @escaping (Double?) -> Void) {
-        db.collection("RunRecordModels")
+        guard let uid = currentUID else { return }
+        db.collection("RunRecordModels").document(uid).collection("runRecords")
             .order(by: "start_time", descending: true)
             .limit(to: 1)
             .getDocuments { snapshot, error in
@@ -87,7 +92,8 @@ final class RunResultModalViewModel: ObservableObject {
     
     // 최신 경로 이미지 URL 로드
     func getLatestRouteImage(completion: @escaping (String?) -> Void) {
-        db.collection("RunRecordModels")
+        guard let uid = currentUID else { return }
+        db.collection("RunRecordModels").document(uid).collection("runRecords")
             .order(by: "start_time", descending: true)
             .limit(to: 1)
             .getDocuments { snapshot, error in
@@ -115,7 +121,8 @@ final class RunResultModalViewModel: ObservableObject {
     
     // 최신 거리, 시간(여기서 계산), 칼로리(여기서 계산) 가져오기
     func getLatestRunStats(completion: @escaping (_ distance: Double, _ duration: TimeInterval, _ calories: Double) -> Void) {
-        db.collection("RunRecordModels")
+        guard let uid = currentUID else { return }
+        db.collection("RunRecordModels").document(uid).collection("runRecords")
             .order(by: "start_time", descending: true)
             .limit(to: 1)
             .getDocuments { [weak self] snapshot, error in

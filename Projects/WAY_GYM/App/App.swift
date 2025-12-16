@@ -11,6 +11,19 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         print("Firebase 초기화 완료")
         return true
     }
+    
+    // 전화번호 가입 관련 함수
+    func application(_ application: UIApplication,
+                         didReceiveRemoteNotification userInfo: [AnyHashable : Any],
+                     fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
+        // FirebaseAuth가 처리해야 하는 푸시 알림이면 여기서 핸들링
+        if Auth.auth().canHandleNotification(userInfo) {
+            completionHandler(.noData)
+            return
+        }
+        // 만약 다른 알림 로직 있으면 여기서 처리 (없으면 아래 코드는 유지)
+        completionHandler(.newData)
+    }
 }
 
 @main
@@ -23,44 +36,7 @@ struct WAY_GYMApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
-            
-//            ProfileView()
-//                .environmentObject(MinionOperation())
-//                .environmentObject(WeaponOperation())
-//                .environmentObject(AppRouter())
-//                .environmentObject(RunRecordViewModel())
-//                .font(.text01)
-//                .foregroundColor(Color.gang_text_2)
+                .environmentObject(router)
         }
     }
 } 
-
-struct RootView: View {
-    @StateObject private var router = AppRouter()
-    @StateObject private var locationManager = LocationManager()
-    
-    var body: some View {
-        NavigationStack {
-            switch router.currentScreen {
-            case .main(let id):
-                        MainView(locationManager: locationManager)
-                            .id(id)
-                            .environmentObject(router)
-                            .environmentObject(LocationManager())
-
-            case .profile:
-                AnyView( ProfileView()
-                        .environmentObject(router)
-                        .environmentObject(RunRecordService())
-                        .font(.text01)
-                        .foregroundColor(Color("gang_text_2"))
-                         .navigationBarHidden(true)
-                )
-            }
-        }
-    }
-}
-
-//#Preview {
-//    RootView()
-//}
