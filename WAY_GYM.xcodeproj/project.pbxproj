@@ -13,9 +13,6 @@
 		8B05370E2F10E2C000A61DFD /* CountdownOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B05370D2F10E2C000A61DFD /* CountdownOverlay.swift */; };
 		8B0537122F10E91000A61DFD /* RunPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B0537112F10E91000A61DFD /* RunPhase.swift */; };
 		8B0537152F10E93200A61DFD /* MainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B0537142F10E93200A61DFD /* MainViewModel.swift */; };
-		8B2758F62F0F537F00153F33 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B2758F52F0F537F00153F33 /* GoogleService-Info.plist */; };
-		8B2758F72F0F537F00153F33 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B2758F52F0F537F00153F33 /* GoogleService-Info.plist */; };
-		8B2758F82F0F537F00153F33 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B2758F52F0F537F00153F33 /* GoogleService-Info.plist */; };
 		8B5C08712F0FB35D008A7F68 /* AppCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B5C08702F0FB35D008A7F68 /* AppCoordinator.swift */; };
 		8B5C08732F0FB3FB008A7F68 /* ModuleFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B5C08722F0FB3FB008A7F68 /* ModuleFactory.swift */; };
 		8BF0776B2F07B7B8004D9277 /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077312F07B7B8004D9277 /* AppRouter.swift */; };
@@ -82,7 +79,6 @@
 		8B05370D2F10E2C000A61DFD /* CountdownOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownOverlay.swift; sourceTree = "<group>"; };
 		8B0537112F10E91000A61DFD /* RunPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunPhase.swift; sourceTree = "<group>"; };
 		8B0537142F10E93200A61DFD /* MainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewModel.swift; sourceTree = "<group>"; };
-		8B2758F52F0F537F00153F33 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		8B5C08702F0FB35D008A7F68 /* AppCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppCoordinator.swift; sourceTree = "<group>"; };
 		8B5C08722F0FB3FB008A7F68 /* ModuleFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleFactory.swift; sourceTree = "<group>"; };
 		8BF077312F07B7B8004D9277 /* AppRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
@@ -347,7 +343,6 @@
 				8BF077402F07B7B8004D9277 /* Common */,
 				8BF077652F07B7B8004D9277 /* Core */,
 				8BF077362F07B7B8004D9277 /* WAY_GYM.entitlements */,
-				8B2758F52F0F537F00153F33 /* GoogleService-Info.plist */,
 			);
 			path = WAY_GYM;
 			sourceTree = "<group>";
@@ -511,7 +506,6 @@
 			files = (
 				8BF0778D2F07B7B8004D9277 /* Assets.xcassets in Resources */,
 				8BF0778E2F07B7B8004D9277 /* NeoDunggeunmoPro-Regular.ttf in Resources */,
-				8B2758F82F0F537F00153F33 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -519,7 +513,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8B2758F62F0F537F00153F33 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -527,7 +520,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8B2758F72F0F537F00153F33 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
