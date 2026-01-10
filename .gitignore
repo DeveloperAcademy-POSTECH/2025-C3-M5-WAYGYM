@@ -139,3 +139,4 @@ iOSInjectionProject/
 WAY_GYM.xcodeproj/project.xcworkspace/xcuserdata/judy.xcuserdatad/UserInterfaceState.xcuserstate
 *.xcodeproj/project.xcworkspace/xcuserdata/.DS_Store
 .DS_Store
+GoogleService-Info.plist
