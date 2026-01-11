@@ -33,17 +33,16 @@ final class MainViewModel: ObservableObject {
     // MARK: - ControlPanel
     func tapPlay(locationManager: LocationManager) {
         guard runPhase == .root else { return }
-        startCountdown(locationManager: locationManager)
-    }
-
-    private func startCountdown(locationManager: LocationManager) {
         countdownTimer?.invalidate()
 
         var remaining = 3
         runPhase = .countingDown(remaining)
 
         countdownTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
-            guard let self else { return }
+            guard let self else {
+                timer.invalidate()
+                return
+            }
             remaining -= 1
 
             if remaining <= 0 {

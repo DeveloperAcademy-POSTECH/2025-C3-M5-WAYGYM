@@ -8,28 +8,36 @@ import FirebaseStorage
 import Photos
 import FirebaseCore
 
-// 센서, 지도 데이터만 책임지도록.
+// - CLLocationManager에게 사용자 위치를 받아서, 앱에서 쓰기 좋은 상태(@Published)로 가공한다.
+// - 러닝(시뮬레이션) 중: 경로 좌표를 누적하고 폴리라인/폴리곤 오버레이 데이터를 만든다.
 final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
-    @Published var region = MKCoordinateRegion()
+    private let clManager = CLLocationManager() /// GPS 위치를 받아오는 시스템 객체
+    @Published var region = MKCoordinateRegion() // 지도가 보여줄 영역 (센터+줌)
+    @Published var currentLocation: CLLocationCoordinate2D? // 현재 위치 표시하는 캐릭터 좌표
+    
     @Published var polylines: [MKPolyline] = []
     @Published var polygons: [MKPolygon] = []
-    @Published var isSimulating = false // 화면 상태가 아닌, LocationManager 내부에서 위치 업데이트/타이머를 돌릴지 말지 결정하는 플래그
-    @Published var currentLocation: CLLocationCoordinate2D?
+    
+    @Published var isSimulating = false /// 러닝(경로 추적) 중인지 여부. (UI 표시 상태가 아니라, 좌표 누적/경로 생성 로직을 켤지 말지 결정)
+    
+    /// 서버에서 가져오거나 보낼 런닝 기록 모델
     @Published var runRecord: RunRecordModels?
-    @Published var runRecordList: [RunRecordModels] = []
-    @Published var capturedAreas: [CoordinatePairWithGroup] = []
+    @Published var runRecordList: [RunRecordModels] = [] /// 서버에서 받아온 모든 런닝 기록
+    
+    private var coordinates: [CLLocationCoordinate2D] = [] /// 러닝 중 누적된 좌표 원본 (모든 이동 좌표)
+    /// 폴리곤을 더 세부 데이터로 저장하는 용도
+    @Published var capturedAreas: [CoordinatePairWithGroup] = [] // 닫힌 영역의 꼭짓점들을 모아서 저장한 배열
     @Published var isAreaActive = false
     
-    private let clManager = CLLocationManager()
-    private var coordinates: [CLLocationCoordinate2D] = []
-    private var simulationTimer: Timer?
-    private var lastIntersectionIndex: Int?
+    
+    private var simulationTimer: Timer? /// 1초마다 위치를 읽어오는 타이머
+    private var lastIntersectionIndex: Int? /// 폴리곤이 만들어진 지점 이후부터 새 선을 만들기 위한 기준 인덱스
+
     private var startTime: Date?
     private var endTime: Date?
-    private let healthStore = HKHealthStore()
+    
     private let db = Firestore.firestore()
     private let storage = Storage.storage()
-    private weak var mapView: MKMapView?
     private var firestoreListener: ListenerRegistration?
 
     override init() {
@@ -39,49 +47,48 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         clManager.requestWhenInUseAuthorization()
     }
 
-    private func updateRunRecord(imageURL: String? = nil) {
-        guard let start = startTime else {
-            print("⚠️ 시작 시간이 설정되지 않았습니다")
-            return
-        }
+    func updateRunRecord(imageURL: String? = nil) {
+    guard let start = startTime else {
+        print("⚠️ 시작 시간이 설정되지 않았습니다")
+        return
+    }
 
-        let coordinatesArray = coordinates.map { [$0.latitude, $0.longitude] }
-        let capturedAreas: [CoordinatePairWithGroup] = polygons.enumerated().flatMap { (index, polygon) in
-            let points = polygon.points()
-            let count = polygon.pointCount
-            return (0..<count).map {
-                let coordinate = points[$0].coordinate
-                return CoordinatePairWithGroup(latitude: coordinate.latitude, longitude: coordinate.longitude, groupId: index + 1)
-            }
-        }
-
-        let newData = RunRecordModels(
-            id: nil,
-            distance: calculateTotalDistance(),
-            startTime: start,
-            endTime: endTime,
-            routeImage: imageURL,
-            coordinates: coordinates.map { CoordinatePair(latitude: $0.latitude, longitude: $0.longitude) },
-            capturedAreas: capturedAreas,
-            capturedAreaValue: 0
-        )
-
-        do {
-            let ref = db.collection("RunRecordModels").document()
-            try ref.setData(from: newData) { error in
-                if let error = error {
-                    print("Firestore 저장 실패: \(error.localizedDescription)")
-                } else {
-                    print("Firestore에 데이터 저장 성공")
-                    DispatchQueue.main.async {
-                        self.runRecord = newData
-                    }
-                }
-            }
-        } catch {
-            print("Firestore 인코딩 실패: \(error.localizedDescription)")
+    let capturedAreas: [CoordinatePairWithGroup] = polygons.enumerated().flatMap { (index, polygon) in
+        let points = polygon.points()
+        let count = polygon.pointCount
+        return (0..<count).map {
+            let coordinate = points[$0].coordinate
+            return CoordinatePairWithGroup(latitude: coordinate.latitude, longitude: coordinate.longitude, groupId: index + 1)
         }
     }
+
+    let newData = RunRecordModels(
+        id: nil,
+        distance: calculateTotalDistance(),
+        startTime: start,
+        endTime: endTime,
+        routeImage: imageURL,
+        coordinates: coordinates.map { CoordinatePair(latitude: $0.latitude, longitude: $0.longitude) },
+        capturedAreas: capturedAreas,
+        capturedAreaValue: 0
+    )
+
+    do {
+        let ref = db.collection("RunRecordModels").document()
+        try ref.setData(from: newData) { error in
+            if let error = error {
+                print("Firestore 저장 실패: \(error.localizedDescription)")
+            } else {
+                print("Firestore에 데이터 저장 성공")
+                DispatchQueue.main.async {
+                    self.runRecord = newData
+                }
+            }
+        }
+    } catch {
+        print("Firestore 인코딩 실패: \(error.localizedDescription)")
+    }
+}
 
     /// 서버에서 런닝 기록 가져오기
     func fetchRunRecordsFromFirestore() {
@@ -105,6 +112,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             }
     }
 
+    // MARK: - 런닝 중
     func startSimulation() {
         guard clManager.authorizationStatus == .authorizedWhenInUse || clManager.authorizationStatus == .authorizedAlways else {
             clManager.requestWhenInUseAuthorization()
@@ -130,10 +138,10 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             guard let self = self else { return }
             if let lastLocation = self.clManager.location {
                 if self.isSimulating {
-                    self.updateCoordinates(newCoordinate: lastLocation.coordinate)
+                    self.updateRunCoordinateIfValid(newCoordinate: lastLocation.coordinate)
                 }
                 self.currentLocation = lastLocation.coordinate
-                self.updateRegion(coordinate: lastLocation.coordinate)
+                self.centerMap(on: lastLocation.coordinate)
             }
         }
     }
@@ -142,36 +150,33 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         isSimulating = false
         endTime = Date()
         simulationTimer?.invalidate()
-        clManager.stopUpdatingLocation()
+        simulationTimer = nil
         self.updateRunRecord()
-    }
-    
-    /// 사용자의 현위치로 지도 이동
-    func moveToCurrentLocation() {
-        clManager.requestWhenInUseAuthorization()
-        if let currentLocation = clManager.location {
-            print("📍 Current location available: \(currentLocation.coordinate)")
-            updateRegion(coordinate: currentLocation.coordinate)
-            self.currentLocation = currentLocation.coordinate
-        } else {
-            print("⏳ No current location available yet.")
-            clManager.startUpdatingLocation()
+        
+        DispatchQueue.main.async {
+            self.polylines.removeAll()
+            self.polygons.removeAll()
+            self.capturedAreas.removeAll()
         }
+        coordinates.removeAll()
+        lastIntersectionIndex = nil
     }
     
-    private func updateCoordinates(newCoordinate: CLLocationCoordinate2D) {
+    /// 런닝 시: 좌표가 유효한지 확인
+    private func updateRunCoordinateIfValid(newCoordinate: CLLocationCoordinate2D) {
         guard isValidCoordinate(newCoordinate, lastCoordinate: coordinates.last) else {
             print("좌표 업데이트 무시: \(newCoordinate.latitude), \(newCoordinate.longitude)")
             return
         }
         
         coordinates.append(newCoordinate)
-        updateMapOverlays()
-        checkForPolygon()
-        updateRegion(coordinate: newCoordinate)
+                drawPolylines()
+        checkAndDrawPolygon()
+        centerMap(on: newCoordinate)
     }
     
-    private func updateMapOverlays() {
+    /// 최근 좌표들을 기반으로 MKPolyline 만들기
+    private func drawPolylines() {
         let startIdx = (lastIntersectionIndex ?? -1) + 1
         guard startIdx + 1 < coordinates.count else { return }
         
@@ -185,14 +190,8 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         }
     }
     
-    private func updateRegion(coordinate: CLLocationCoordinate2D) {
-        region = MKCoordinateRegion(
-            center: coordinate,
-            span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
-        )
-    }
-    
-    private func checkForPolygon() {
+    /// 새 선분이 이전에 그렸던 선분들과 교차하는지 검사해서 교차하면 닫힌 영역(폴리곤)을 만든다
+    private func checkAndDrawPolygon() {
         guard coordinates.count >= 4 else { return }
         
         let newLineStart = coordinates[coordinates.count - 2]
@@ -229,7 +228,29 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             }
         }
     }
+
+    /// 두 선분이 교차하는지 수학적으로 판단
+    private func linesIntersect(
+        line1Start: CLLocationCoordinate2D,
+        line1End: CLLocationCoordinate2D,
+        line2Start: CLLocationCoordinate2D,
+        line2End: CLLocationCoordinate2D
+    ) -> Bool {
+        let p1 = CGPoint(x: line1Start.longitude, y: line1Start.latitude)
+        let p2 = CGPoint(x: line1End.longitude, y: line1End.latitude)
+        let p3 = CGPoint(x: line2Start.longitude, y: line2Start.latitude)
+        let p4 = CGPoint(x: line2End.longitude, y: line2End.latitude)
+        
+        let denominator = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x)*(p2.y - p1.y)
+        if denominator == 0 { return false }
+        
+        let ua = ((p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x)) / denominator
+        let ub = ((p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x)) / denominator
+        
+        return ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1
+    }
     
+     /// 교차한다면 “정확히 어디서 교차하는지” 좌표를 계산
     private func intersectionPoint(
         line1Start: CLLocationCoordinate2D,
         line1End: CLLocationCoordinate2D,
@@ -254,26 +275,43 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         return CLLocationCoordinate2D(latitude: py, longitude: px)
     }
     
-    private func linesIntersect(
-        line1Start: CLLocationCoordinate2D,
-        line1End: CLLocationCoordinate2D,
-        line2Start: CLLocationCoordinate2D,
-        line2End: CLLocationCoordinate2D
+    /// 새 좌표가 현실적인 러닝 좌표인지 검사
+    private func isValidCoordinate(
+        _ newCoordinate: CLLocationCoordinate2D,
+        lastCoordinate: CLLocationCoordinate2D? = nil,
+        maxDistanceMeters: Double = 50,
+        maxSpeedMps: Double = 5.56,
+        sampleIntervalSeconds: Double = 1.0
     ) -> Bool {
-        let p1 = CGPoint(x: line1Start.longitude, y: line1Start.latitude)
-        let p2 = CGPoint(x: line1End.longitude, y: line1End.latitude)
-        let p3 = CGPoint(x: line2Start.longitude, y: line2Start.latitude)
-        let p4 = CGPoint(x: line2End.longitude, y: line2End.latitude)
-        
-        let denominator = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x)*(p2.y - p1.y)
-        if denominator == 0 { return false }
-        
-        let ua = ((p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x)) / denominator
-        let ub = ((p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x)) / denominator
-        
-        return ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1
+        // 1) 범위 체크
+        guard (-90...90).contains(newCoordinate.latitude),
+              (-180...180).contains(newCoordinate.longitude) else {
+            print("유효하지 않은 좌표 범위: \(newCoordinate)")
+            return false
+        }
+
+        // last가 없으면 범위만 통과시키고 끝
+        guard let last = lastCoordinate else { return true }
+
+        // 2) 거리/속도 체크
+        let lastLoc = CLLocation(latitude: last.latitude, longitude: last.longitude)
+        let newLoc  = CLLocation(latitude: newCoordinate.latitude, longitude: newCoordinate.longitude)
+        let distance = lastLoc.distance(from: newLoc)
+
+        guard distance < maxDistanceMeters else {
+            print("비현실적 거리 감지: \(distance)m")
+            return false
+        }
+
+        let speed = distance / sampleIntervalSeconds
+        guard speed < maxSpeedMps else {
+            print("비현실적 속도 감지: \(speed)m/s (약 \(speed * 3.6)km/h)")
+            return false
+        }
+
+        return true
     }
-    
+     
     func calculateTotalDistance() -> Double {
         guard coordinates.count >= 2 else { return 0.0 }
         
@@ -286,9 +324,33 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         return totalDistance
     }
     
+    // MARK: - 기본 지도 앱 기능
+    /// 사용자의 현위치로 지도 이동
+    func moveToCurrentLocation() {
+        clManager.requestWhenInUseAuthorization()
+        if let currentLocation = clManager.location {
+            print("📍 Current location available: \(currentLocation.coordinate)")
+            centerMap(on: currentLocation.coordinate)
+            self.currentLocation = currentLocation.coordinate
+        } else {
+            print("⏳ No current location available yet.")
+            clManager.startUpdatingLocation()
+        }
+    }
+    
+    /// 이 좌표를 중심으로 지도 화면을 이동함
+    private func centerMap(on coordinate: CLLocationCoordinate2D) {
+        region = MKCoordinateRegion(
+            center: coordinate,
+            span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+        )
+    }
+    
+    /// 사용자의 전체 런닝 기록 중 영역만 가져옴
     func loadCapturedPolygons(from records: [RunRecordModels]) {
         var result: [MKPolygon] = []
         for record in records {
+            /// 러닝 경로 전체 좌표로 폴리곤 만들기
             let coords = record.coordinates.map {
                 CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
             }
@@ -305,47 +367,14 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         self.polygons = result
     }
     
-    private func isValidCoordinate(_ newCoordinate: CLLocationCoordinate2D, lastCoordinate: CLLocationCoordinate2D?) -> Bool {
-        // 1. 좌표 범위 검사
-        guard newCoordinate.latitude >= -90 && newCoordinate.latitude <= 90 &&
-                newCoordinate.longitude >= -180 && newCoordinate.longitude <= 180 else {
-            print("유효하지 않은 좌표 범위: \(newCoordinate)")
-            return false
-        }
-        
-        guard let last = lastCoordinate else { return true }
-        
-        // 2. 거리와 속도 검사
-        let lastLocation = CLLocation(latitude: last.latitude, longitude: last.longitude)
-        let newLocation = CLLocation(latitude: newCoordinate.latitude, longitude: newCoordinate.longitude)
-        let distance = lastLocation.distance(from: newLocation)
-        
-        // 50m 이상 이동한 경우 무시
-        guard distance < 50 else {
-            print("비현실적 거리 감지: \(distance)m")
-            return false
-        }
-        
-        // 20km/h (약 5.56m/s) 이상의 속도는 무시
-        let speed = distance / 1.0  // 1초당 속도
-        guard speed < 5.56 else {
-            print("비현실적 속도 감지: \(speed)m/s (약 \(speed * 3.6)km/h)")
-            return false
-        }
-        return true
-    }
-    
-    private func isValidCoordinate(_ coordinate: CLLocationCoordinate2D) -> Bool {
-        return coordinate.latitude >= -90 && coordinate.latitude <= 90 &&
-               coordinate.longitude >= -180 && coordinate.longitude <= 180
-    }
-    
+    /// 권한이 바뀔 때 호출되는 delegate.
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == .authorizedWhenInUse || status == .authorizedAlways {
             clManager.startUpdatingLocation()
         }
     }
     
+    /// GPS에서 “새 위치”가 들어올 때마다 호출되는 delegate.
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         
@@ -366,8 +395,8 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         
         // 시뮬레이션 중일 때만 위치 업데이트 및 유효성 검사 수행
         if isSimulating {
-            updateCoordinates(newCoordinate: newCoordinate)
+            updateRunCoordinateIfValid(newCoordinate: newCoordinate)
         }
-        updateRegion(coordinate: newCoordinate)
+        centerMap(on: newCoordinate)
     }
 }
