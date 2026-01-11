@@ -24,7 +24,6 @@ class RunRecordService: ObservableObject {
     private var db = Firestore.firestore()
     private var isDistanceLoaded = false
     
-    
     // 서버에서 런닝 기록 가져오기
     func fetchRunRecordsFromFirestore() {
         db.collection("RunRecordModels")

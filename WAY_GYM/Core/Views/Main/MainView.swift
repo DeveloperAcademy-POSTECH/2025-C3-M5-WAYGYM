@@ -22,7 +22,8 @@ struct MainView: View {
                 polylines: locationManager.polylines,
                 polygons: locationManager.polygons,
                 currentLocation: $locationManager.currentLocation,
-                selectedWeaponId: selectedWeaponId
+                selectedWeaponId: selectedWeaponId,
+                shouldRenderPolylines: locationManager.isSimulating
             )
             .edgesIgnoringSafeArea(.all)
             
