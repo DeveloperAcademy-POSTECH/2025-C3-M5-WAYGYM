@@ -1,6 +1,5 @@
 //
-//  MinionSingleViewModel.swift
-//  Ch3Personal
+//  RewardService.swift
 //
 //  Created by 이주현 on 6/1/25.
 //
@@ -10,11 +9,16 @@ import SwiftUI
 import FirebaseFirestore
 import FirebaseFirestoreSwift
 
-final class MinionService: ObservableObject {
+final class RewardService: ObservableObject {
     @Published var allMinions: [MinionDefinitionModel] = []
     @Published var selectedMinion: MinionDefinitionModel? = nil
     @Published var currentRewardMinion: MinionDefinitionModel? = nil
+    @Published var currentRewardWeapon: WeaponDefinitionModel? = nil
+    @StateObject private var runRecordVM = RunRecordService()
+    @Published var weaponModel = WeaponModel()
+    private var db = Firestore.firestore()
     
+    // MARK: - 미니언
     private var minionModel = MinionModel()
        init() {
            self.allMinions = minionModel.allMinions
@@ -47,7 +51,7 @@ final class MinionService: ObservableObject {
                     completion([])
                     return
                 }
-
+                
                 let records: [(distance: Double, startTime: Timestamp)] = documents.compactMap { doc in
                     let data = doc.data()
                     guard let distance = data["distance"] as? Double,
@@ -57,45 +61,38 @@ final class MinionService: ObservableObject {
                     }
                     return (distance, startTime)
                 }
-
+                
                 let sorted = records.sorted { $0.startTime.dateValue() > $1.startTime.dateValue() }
-
+                
                 guard let latestRecord = sorted.first else {
                     print("⚠️ 기록 없음")
                     completion([])
                     return
                 }
-
+                
                 let currentTotal = records.map { $0.distance }.reduce(0, +)
                 let prevTotal = currentTotal - latestRecord.distance
-
+                
                 print("거리 📏 총: \(currentTotal), 총-최신 기록: \(prevTotal)")
-
+                
                 var newlyUnlockedMinions: [MinionDefinitionModel] = []
-
+                
                 for minion in self?.allMinions ?? [] {
                     let unlock = minion.unlockNumber * 1000
-
+                    
                     let wasLockedBefore = prevTotal < unlock
                     let isUnlockedNow = currentTotal >= unlock
-
+                    
                     if wasLockedBefore && isUnlockedNow {
                         newlyUnlockedMinions.append(minion)
                     }
                 }
-
+                
                 completion(newlyUnlockedMinions)
             }
     }
     
-}
-
-final class WeaponService: ObservableObject {
-    // @Published var allWeapons: [WeaponDefinitionModel] = []
-    @Published var currentRewardWeapon: WeaponDefinitionModel? = nil
-    @StateObject private var runRecordVM = RunRecordService()
-    
-    @Published var weaponModel = WeaponModel()
+    // MARK: - 무기
     var allWeapons: [WeaponDefinitionModel] {
             weaponModel.allWeapons
         }
@@ -122,8 +119,6 @@ final class WeaponService: ObservableObject {
         }
         return nil
     }
-    
-    private var db = Firestore.firestore()
     
     // 새로 획득한 무기 확인 함수
     func checkWeaponUnlockOnStop(completion: @escaping ([WeaponDefinitionModel]) -> Void) {
@@ -179,5 +174,7 @@ final class WeaponService: ObservableObject {
                 completion(newlyUnlockedWeapons)
             }
     }
+    
+    
     
 }

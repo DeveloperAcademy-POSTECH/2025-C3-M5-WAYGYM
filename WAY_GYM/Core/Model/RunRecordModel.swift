@@ -33,9 +33,10 @@ struct RunRecordModels: Identifiable, Codable, Equatable {
     let coordinates: [CoordinatePair]  // 경로 좌표 [[latitude, longitude]] - 사용자의 전체 경로
     let capturedAreas: [CoordinatePairWithGroup]  // 면적을 형성한 좌표들 (groupId로 도형 구분)
     let capturedAreaValue: Int // 유저가 차지한 면적 (숫자 데이터)
+    let capturedCellIds: [String]  // 이 런으로 획득한 셀 id들 ("lat,lng")
     
     enum CodingKeys: String, CodingKey {
-        case id
+        // case id  // removed as per instructions
         case distance
         // case stepCount = "step_count"
         // case caloriesBurned = "calories_burned"
@@ -45,20 +46,22 @@ struct RunRecordModels: Identifiable, Codable, Equatable {
         case coordinates
         case capturedAreas = "captured_areas"
         case capturedAreaValue
+        case capturedCellIds = "capturedCellIds"
     }
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decodeIfPresent(String.self, forKey: .id)
+        // id = try container.decodeIfPresent(String.self, forKey: .id)  // removed as per instructions
         distance = try container.decode(Double.self, forKey: .distance)
         // stepCount = try container.decode(Double.self, forKey: .stepCount)
         // caloriesBurned = try container.decode(Double.self, forKey: .caloriesBurned)
         startTime = try container.decode(Date.self, forKey: .startTime)
         endTime = try container.decodeIfPresent(Date.self, forKey: .endTime)
         routeImage = try container.decodeIfPresent(String.self, forKey: .routeImage)
-        coordinates = try container.decode([CoordinatePair].self, forKey: .coordinates)
-        capturedAreas = try container.decode([CoordinatePairWithGroup].self, forKey: .capturedAreas)
+        coordinates = (try? container.decode([CoordinatePair].self, forKey: .coordinates)) ?? []
+        capturedAreas = (try? container.decode([CoordinatePairWithGroup].self, forKey: .capturedAreas)) ?? []
         capturedAreaValue = try container.decodeIfPresent(Int.self, forKey: .capturedAreaValue) ?? 0
+        capturedCellIds = (try? container.decode([String].self, forKey: .capturedCellIds)) ?? []
     }
     
     init(id: String? = nil,
@@ -70,7 +73,8 @@ struct RunRecordModels: Identifiable, Codable, Equatable {
          routeImage: String?,
          coordinates: [CoordinatePair],
          capturedAreas: [CoordinatePairWithGroup],
-         capturedAreaValue: Int) {
+         capturedAreaValue: Int,
+         capturedCellIds: [String]) {
         self.id = id
         self.distance = distance
         // self.stepCount = stepCount
@@ -81,6 +85,7 @@ struct RunRecordModels: Identifiable, Codable, Equatable {
         self.coordinates = coordinates
         self.capturedAreas = capturedAreas
         self.capturedAreaValue = capturedAreaValue
+        self.capturedCellIds = capturedCellIds
     }
     
     // 좌표를 CLLocationCoordinate2D로 변환
@@ -107,7 +112,7 @@ struct RunSummary: Identifiable {
     let startTime: Date
     let coordinates: [CoordinatePair]
     let capturedAreas: [CoordinatePairWithGroup]
-    }
+}
 
 // running list view에서
 struct RunSummaryProfile: Identifiable {
@@ -118,4 +123,4 @@ struct RunSummaryProfile: Identifiable {
     let calories: Double
     let capturedArea: Double
     let startTime: Date
-    }
+}

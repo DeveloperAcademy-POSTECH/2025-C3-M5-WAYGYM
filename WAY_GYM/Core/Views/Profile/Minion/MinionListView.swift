@@ -4,7 +4,7 @@ import FirebaseFirestore
 // minion = distance, 5000단위
 struct MinionListView: View {
     @StateObject private var minionModel = MinionModel()
-    @StateObject private var minionVM = MinionService()
+    @StateObject private var rewardService = RewardService()
     @State private var selectedMinion: MinionDefinitionModel? = nil
     
     @StateObject private var runRecordVM = RunRecordService()
@@ -94,7 +94,7 @@ struct MinionListView: View {
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(minionModel.allMinions) { minion in
                             
-                            let isUnlocked = minionVM.isUnlocked(minion, with: Int(runRecordVM.totalDistance))
+                            let isUnlocked = rewardService.isUnlocked(minion, with: Int(runRecordVM.totalDistance))
                             
                             if isUnlocked {
                                 Button(action: {

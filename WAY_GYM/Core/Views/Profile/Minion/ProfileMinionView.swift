@@ -3,7 +3,7 @@ import FirebaseFirestore
 
 struct ProfileMinionView: View {
     @StateObject var minionModel = MinionModel()
-    @StateObject var minionVM = MinionService()
+    @StateObject var rewardService = RewardService()
     @ObservedObject var runRecordVM = RunRecordService()
     
     @State private var recentMinions: [(minion: MinionDefinitionModel, acquisitionDate: Date)] = []
@@ -70,7 +70,7 @@ struct ProfileMinionView: View {
                 print("📏 총 거리(콜백): \(total)")
 
                 let unlockedMinions = minionModel.allMinions.filter { minion in
-                    minionVM.isUnlocked(minion, with: Int(total))
+                    rewardService.isUnlocked(minion, with: Int(total))
                 }
 
                 let sortedMinions = unlockedMinions

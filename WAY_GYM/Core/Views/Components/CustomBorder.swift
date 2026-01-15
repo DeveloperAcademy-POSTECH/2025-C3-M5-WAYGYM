@@ -8,31 +8,54 @@
 import SwiftUI
 
 struct CustomBorderModifier: ViewModifier {
-    var cornerRadius: CGFloat = 16
+    let color: Color
+    let lineWidth: CGFloat
+    let cornerRadius: CGFloat
+    
+    init(
+        color: Color = .black,
+        lineWidth: CGFloat = 2,
+        cornerRadius: CGFloat = 16
+    ) {
+        self.color = color
+        self.lineWidth = lineWidth
+        self.cornerRadius = cornerRadius
+    }
 
     func body(content: Content) -> some View {
         content
             .overlay(
                 VStack(spacing: 0) {
                     Rectangle()
-                        .fill(Color.black)
-                        .frame(height: 2)
+                        .fill(color)
+                        .frame(height: lineWidth)
                     Spacer()
                     Rectangle()
-                        .fill(Color.black)
-                        .frame(height: 4)
+                        .fill(color)
+                        .frame(height: lineWidth*2)
                 }
-                .padding(.horizontal, 2)
+                .padding(.horizontal, lineWidth)
             )
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .strokeBorder(Color.black, lineWidth: 2)
+                    .strokeBorder(color, lineWidth: lineWidth)
             )
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
     }
 }
+
 extension View {
-    func customBorder(cornerRadius: CGFloat = 16) -> some View {
-        self.modifier(CustomBorderModifier(cornerRadius: cornerRadius))
+    func customBorder(
+        color: Color = .black,
+        lineWidth: CGFloat = 2,
+        cornerRadius: CGFloat = 16
+    ) -> some View {
+        modifier(
+            CustomBorderModifier(
+                color: color,
+                lineWidth: lineWidth,
+                cornerRadius: cornerRadius
+            )
+        )
     }
 }

@@ -8,11 +8,8 @@
 import Foundation
 import SwiftUI
 
-//class AppRouter: ObservableObject {
-//    @Published var currentScreen: AppScreen = .main(id: UUID())
-//}
-
 enum AppRouter: Hashable {
     case main
     case profile
+    case setting
 }

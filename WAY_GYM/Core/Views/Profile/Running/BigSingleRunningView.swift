@@ -18,8 +18,6 @@ struct BigSingleRunningView: View {
     )
     
     @State private var overlays: [MKOverlay] = []
-    let viewModel = RunRecordService()
-    
     
     var body: some View {
         ZStack {
@@ -90,8 +88,8 @@ struct BigSingleRunningView: View {
                 CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
             }
 
-            let polys = viewModel.makePolygons(from: summary.capturedAreas)
-            let lines = viewModel.makePolylines(from: summary.coordinates)
+            let polys = makePolygons(from: summary.capturedAreas)
+            let lines = makePolylines(from: summary.coordinates)
             self.overlays = polys + lines
 
             if coords.count >= 2 {
@@ -118,6 +116,29 @@ struct BigSingleRunningView: View {
         .navigationBarBackButtonHidden(true)
     }
     
+    // MARK: - 지도 오버레이 생성 (임시: 나중에 별도 ViewModel로 이동)
+    private func makePolylines(from coordinates: [CoordinatePair]) -> [MKPolyline] {
+        guard coordinates.count >= 2 else { return [] }
+
+        let locationCoords = coordinates.map {
+            CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+        }
+        let polyline = MKPolyline(coordinates: locationCoords, count: locationCoords.count)
+        return [polyline]
+    }
+
+    private func makePolygons(from areas: [CoordinatePairWithGroup]) -> [MKPolygon] {
+        let grouped = Dictionary(grouping: areas, by: { $0.groupId })
+
+        return grouped.values.compactMap { group in
+            let coords = group.map {
+                CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
+            }
+            return MKPolygon(coordinates: coords, count: coords.count)
+        }
+    }
+    
+    // MARK: View 조각들
     struct customLabel: View {
         let value: String
         let title: String

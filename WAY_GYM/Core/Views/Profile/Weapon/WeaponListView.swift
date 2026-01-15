@@ -9,7 +9,7 @@ struct WeaponListView: View {
         weaponModel.allWeapons.first(where: { $0.id == selectedWeaponId })
     }
     
-    @EnvironmentObject var weaponVM: WeaponService
+    @EnvironmentObject var rewardService: RewardService
     
     @StateObject private var runRecordVM = RunRecordService()
     @State private var acquisitionDate: Date? = nil
@@ -95,7 +95,7 @@ struct WeaponListView: View {
                 } // 진한 박스 zstack
                 .frame(height: UIScreen.main.bounds.height * 0.5)
                 
-                //                Text("나의 총 땅: \(Int(weaponVM.totalCaptureArea(from: userStats.runRecords)))m²")
+                //                Text("나의 총 땅: \(Int(rewardService.totalCaptureArea(from: userStats.runRecords)))m²")
                 //                    .font(.subheadline)
                 
                 ScrollView {
@@ -107,7 +107,7 @@ struct WeaponListView: View {
                     LazyVGrid(columns: columns, spacing: 30) {
                         ForEach(weaponModel.allWeapons) { weapon in
                             // let isUnlocked = Double(runRecordVM.totalCapturedAreaValue) >= weapon.unlockNumber
-                            let isUnlocked = weaponVM.isUnlocked(weapon, with: runRecordVM.totalCapturedAreaValue)
+                            let isUnlocked = rewardService.isUnlocked(weapon, with: runRecordVM.totalCapturedAreaValue)
                             
                             if isUnlocked {
                                 Button(action: {
@@ -177,13 +177,13 @@ struct WeaponListView: View {
 }
 
 let runRecordVM = RunRecordService()
-let weaponVM = WeaponService()
+let rewardService = RewardService()
 
 #Preview {
     StatefulPreviewWrapper(nil as WeaponDefinitionModel?) { binding in
         WeaponListView()
             .environmentObject(runRecordVM)
-            .environmentObject(weaponVM)
+            .environmentObject(rewardService)
             .font(.text01)
             .foregroundColor(Color.gang_text_2)
     }

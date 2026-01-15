@@ -12,8 +12,7 @@ struct MainView: View {
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     
     @ObservedObject var locationManager: LocationManager
-    @StateObject private var runRecordService = RunRecordService()
-    @StateObject private var weaponService = WeaponService()
+    @StateObject private var rewardService = RewardService()
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -80,9 +79,8 @@ struct MainView: View {
                     Color.gang_black_opacity
                         .ignoresSafeArea()
 
-                    RunResultModalView(onComplete: { viewModel.dismissRunResult() })
-                        .environmentObject(runRecordService)
-                        .environmentObject(weaponService)
+                    RunResultModalView(viewModel: viewModel, onComplete: { viewModel.dismissRunResult() })
+                        .environmentObject(rewardService)
                 }
             }
         }
