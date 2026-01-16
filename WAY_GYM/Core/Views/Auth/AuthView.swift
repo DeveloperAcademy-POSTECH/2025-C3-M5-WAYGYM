@@ -30,6 +30,13 @@ struct AuthView: View {
 
             VStack(spacing: 16) {
                 header
+                
+                Button {
+                    coordinator.replaceRoot(.main)
+                } label: {
+                    Text("main으로 가기")
+                }
+
 
                 InputCard {
                     VStack(alignment: .leading, spacing: 12) {

@@ -9,11 +9,6 @@ import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
 
-enum AppEntryState {
-    case auth
-    case profileSetup
-    case main
-}
 
 struct RootView: View {
     @EnvironmentObject
@@ -27,12 +22,11 @@ struct RootView: View {
     }
 
     @State private var authListener: AuthStateDidChangeListenerHandle?
-    @State private var entryState: AppEntryState = .auth
 
     var body: some View {
         NavigationStack(path: $coordinator.path) {
             Group {
-                switch entryState {
+                switch coordinator.root {
                 case .auth:
                     moduleFactory.makeAuthView {
                         Task { await decideEntryAfterAuth() }
@@ -43,6 +37,12 @@ struct RootView: View {
 
                 case .main:
                     moduleFactory.makeMainView()
+
+                case .profile:
+                    moduleFactory.makeProfileView()
+
+                case .setting:
+                    moduleFactory.makeSettingView()
                 }
             }
             .navigationDestination(for: AppRouter.self) { route in
@@ -83,7 +83,6 @@ struct RootView: View {
     @MainActor
     func decideEntryAfterAuth() async {
         guard let uid = Auth.auth().currentUser?.uid else {
-            entryState = .auth
             coordinator.replaceRoot(.auth)
             return
         }
@@ -92,15 +91,12 @@ struct RootView: View {
         do {
             let snapshot = try await doc.getDocument()
             if snapshot.exists {
-                entryState = .main
                 coordinator.replaceRoot(.main)
             } else {
-                entryState = .profileSetup
                 coordinator.replaceRoot(.profileSetup)
             }
         } catch {
             // 조회 실패 시: 일단 프로필 세팅으로 보내고, 이후 저장/재시도 UX로 처리
-            entryState = .profileSetup
             coordinator.replaceRoot(.profileSetup)
         }
     }
