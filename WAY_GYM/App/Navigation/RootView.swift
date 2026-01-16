@@ -69,7 +69,7 @@ struct RootView: View {
                 authListener = Auth.auth().addStateDidChangeListener { _, _ in
                     Task { await decideEntryAfterAuth() }
                 }
-                Task { await decideEntryAfterAuth() } // 앱 시작 직후 1회
+                Task { await decideEntryAfterAuth() }
             }
             .onDisappear {
                 if let authListener {

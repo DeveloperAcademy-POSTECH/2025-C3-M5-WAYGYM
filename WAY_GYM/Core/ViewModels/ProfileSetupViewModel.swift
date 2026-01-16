@@ -12,7 +12,6 @@ import FirebaseFirestore
 
 
 final class ProfileSetupViewModel: ObservableObject {
-    // Input
     enum Sex: String, CaseIterable {
         case male
         case female
@@ -33,16 +32,16 @@ final class ProfileSetupViewModel: ObservableObject {
     @Published var nickname: String = ""
     @Published var userId: String = ""
 
-    // Address
     @Published var sido: String = ""
     @Published var sigungu: String = ""
     @Published var dong: String = ""
+    let addressData: [SidoNode]
+    private let locationService = LocationAddressService()
 
     enum AddressMode: String, CaseIterable { case current = "현위치", manual = "직접 선택" }
     @Published var addressMode: AddressMode = .current
     @Published var isAddressPickerPresented: Bool = false
 
-    // Validation states
     @Published var nicknameError: String? = nil
     @Published var userIdError: String? = nil
     @Published var addressError: String? = nil
@@ -54,13 +53,7 @@ final class ProfileSetupViewModel: ObservableObject {
     @Published var isSavingProfile: Bool = false
     @Published var saveProfileError: String? = nil
 
-    // Data
-    let addressData: [SidoNode]
-
-    private let locationService = LocationAddressService()
-
     init() {
-        print("🔥 ProfileSetupViewModel init")
         self.addressData = (try? AddressLoader.load3DepthJSON()) ?? []
     }
 
@@ -90,7 +83,6 @@ final class ProfileSetupViewModel: ObservableObject {
         if trimmed.isEmpty { userIdError = "아이디를 입력해주세요."; return }
         if trimmed.count < 6 || trimmed.count > 20 { userIdError = "6~20자 범위로 입력해주세요."; return }
 
-        // Instagram-ish: letters/digits/._- (특수문자 범위를 늘리고 싶으면 여기 수정)
         let pattern = "^[A-Za-z0-9._-]+$"
         if trimmed.range(of: pattern, options: .regularExpression) == nil {
             userIdError = "영문/숫자/특수문자(._-)만 사용할 수 있습니다."
@@ -209,7 +201,6 @@ extension ProfileSetupViewModel {
         
         validateNickname()
         validateSex()
-        // validateUserId()
         validateAddress()
         
         guard canSubmit else {

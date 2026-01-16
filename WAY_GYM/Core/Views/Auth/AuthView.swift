@@ -107,7 +107,6 @@ struct AuthView: View {
                         }
                     }
                 }
-
                 Spacer(minLength: 10)
             }
             .padding(.horizontal, 18)
@@ -121,7 +120,6 @@ struct AuthView: View {
         }
         .sheet(isPresented: $viewModel.showCountrySheet) {
             CountryPickerSheet(selected: viewModel.country) { selected in
-                // 닫기 버튼으로 현재 선택 유지하는 케이스도 있으니 방어
                 viewModel.selectCountry(selected)
             }
         }

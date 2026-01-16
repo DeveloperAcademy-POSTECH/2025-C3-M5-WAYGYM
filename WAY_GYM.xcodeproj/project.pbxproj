@@ -59,7 +59,7 @@
 		8BF0778B2F07B7B8004D9277 /* RunResultModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077622F07B7B8004D9277 /* RunResultModalView.swift */; };
 		8BF0778D2F07B7B8004D9277 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8BF077662F07B7B8004D9277 /* Assets.xcassets */; };
 		8BF0778E2F07B7B8004D9277 /* NeoDunggeunmoPro-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8BF077672F07B7B8004D9277 /* NeoDunggeunmoPro-Regular.ttf */; };
-		8BF9200F2F1A077D00E8B04C /* SwipeBackUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF9200E2F1A077D00E8B04C /* SwipeBackUtils.swift */; };
+		8BF9200F2F1A077D00E8B04C /* View+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF9200E2F1A077D00E8B04C /* View+.swift */; };
 		8BF920112F1A07D400E8B04C /* HapticUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF920102F1A07D400E8B04C /* HapticUtils.swift */; };
 		8BF920152F1A090C00E8B04C /* InputCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF920142F1A090C00E8B04C /* InputCard.swift */; };
 		B36066862DEECF4200863D7F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B36066852DEECF4200863D7F /* FirebaseAuth */; };
@@ -136,7 +136,7 @@
 		8BF077622F07B7B8004D9277 /* RunResultModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunResultModalView.swift; sourceTree = "<group>"; };
 		8BF077662F07B7B8004D9277 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8BF077672F07B7B8004D9277 /* NeoDunggeunmoPro-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "NeoDunggeunmoPro-Regular.ttf"; sourceTree = "<group>"; };
-		8BF9200E2F1A077D00E8B04C /* SwipeBackUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeBackUtils.swift; sourceTree = "<group>"; };
+		8BF9200E2F1A077D00E8B04C /* View+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+.swift"; sourceTree = "<group>"; };
 		8BF920102F1A07D400E8B04C /* HapticUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticUtils.swift; sourceTree = "<group>"; };
 		8BF920142F1A090C00E8B04C /* InputCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputCard.swift; sourceTree = "<group>"; };
 		B34B7A9E2DE54FDB00B14CAB /* WAY_GYM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WAY_GYM.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -261,7 +261,7 @@
 			isa = PBXGroup;
 			children = (
 				8BF0773E2F07B7B8004D9277 /* FormatDate.swift */,
-				8BF9200E2F1A077D00E8B04C /* SwipeBackUtils.swift */,
+				8BF9200E2F1A077D00E8B04C /* View+.swift */,
 				8BF920102F1A07D400E8B04C /* HapticUtils.swift */,
 			);
 			path = Utils;
@@ -600,7 +600,7 @@
 				8BF077722F07B7B8004D9277 /* FormatDate.swift in Sources */,
 				8B0537082F10DC0100A61DFD /* MapView.swift in Sources */,
 				8BF077732F07B7B8004D9277 /* MinionModel.swift in Sources */,
-				8BF9200F2F1A077D00E8B04C /* SwipeBackUtils.swift in Sources */,
+				8BF9200F2F1A077D00E8B04C /* View+.swift in Sources */,
 				8BF077742F07B7B8004D9277 /* RunRecordModel.swift in Sources */,
 				8B2ED1E42F1787BA008AE661 /* ProfileSetupView.swift in Sources */,
 				8B0537122F10E91000A61DFD /* RunPhase.swift in Sources */,

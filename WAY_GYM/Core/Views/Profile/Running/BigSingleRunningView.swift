@@ -116,7 +116,7 @@ struct BigSingleRunningView: View {
         .navigationBarBackButtonHidden(true)
     }
     
-    // MARK: - 지도 오버레이 생성 (임시: 나중에 별도 ViewModel로 이동)
+    // TODO: - 지도 오버레이 생성 (임시: 나중에 별도 ViewModel로 이동)
     private func makePolylines(from coordinates: [CoordinatePair]) -> [MKPolyline] {
         guard coordinates.count >= 2 else { return [] }
 

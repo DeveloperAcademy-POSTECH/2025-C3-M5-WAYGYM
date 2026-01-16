@@ -21,7 +21,6 @@ struct RunResultModalView: View {
     @State private var showRewardQueue: Bool = false
 
     var body: some View {
-        //        NavigationStack {
         ZStack {
             Color.clear
             
@@ -30,7 +29,6 @@ struct RunResultModalView: View {
                     .font(.custom("NeoDunggeunmoPro-Regular", size: 30))
                     .bold()
                     .padding(.top, 26)
-                // .padding(.bottom, -20)
                     .foregroundColor(.white)
                 
                 if let routeImage = viewModel.latestRunRecord?.routeImage,
@@ -127,32 +125,32 @@ struct RunResultModalView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .onAppear {
-                viewModel.loadLatestRunResult()
-                // 해금된 무기/똘마니 하나의 리워드 배열로 넣기
-                var collectedRewards: [RewardItem] = []
-                // 해금된 무기 찾기
-                rewardService.checkWeaponUnlockOnStop { unlocked in
-                    let weaponRewards = unlocked.map { RewardItem.weapon($0) }
-                    collectedRewards.append(contentsOf: weaponRewards)
-                    print("해금된 무기: \(unlocked.map {$0.id})")
+        .onAppear {
+            viewModel.loadLatestRunResult()
+            // 해금된 무기/똘마니 하나의 리워드 배열로 넣기
+            var collectedRewards: [RewardItem] = []
+            // 해금된 무기 찾기
+            rewardService.checkWeaponUnlockOnStop { unlocked in
+                let weaponRewards = unlocked.map { RewardItem.weapon($0) }
+                collectedRewards.append(contentsOf: weaponRewards)
+                print("해금된 무기: \(unlocked.map {$0.id})")
 
-                    // 해금된 똘마니 찾기
-                    rewardService.checkMinionUnlockOnStop { unlockedMinions in
-                        let minionRewards = unlockedMinions.map { RewardItem.minion($0)}
-                        print("해금된 미니언: \(unlockedMinions.map {$0.id})")
+                // 해금된 똘마니 찾기
+                rewardService.checkMinionUnlockOnStop { unlockedMinions in
+                    let minionRewards = unlockedMinions.map { RewardItem.minion($0)}
+                    print("해금된 미니언: \(unlockedMinions.map {$0.id})")
 
-                        // 해금된 똘마니/무기 배열에 넣을때, 미니언부터 앞으로 넣음
-                        collectedRewards.insert(contentsOf: minionRewards, at: 0)
+                    // 해금된 똘마니/무기 배열에 넣을때, 미니언부터 앞으로 넣음
+                    collectedRewards.insert(contentsOf: minionRewards, at: 0)
 
-                        // 리워드가 있다면 배열로 저장하고, 버튼이 '보상 확인하기'로 바뀜
-                        if !collectedRewards.isEmpty {
-                            rewardQueue = collectedRewards
-                            hasReward = true
-                        }
+                    // 리워드가 있다면 배열로 저장하고, 버튼이 '보상 확인하기'로 바뀜
+                    if !collectedRewards.isEmpty {
+                        rewardQueue = collectedRewards
+                        hasReward = true
                     }
                 }
             }
+        }
     }
 }
 

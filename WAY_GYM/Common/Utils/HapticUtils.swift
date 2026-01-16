@@ -13,7 +13,6 @@ final class HapticManager {
     private init() {}
     
     // MARK: - Impact Feedback (충격 피드백)
-    
     /// 가벼운 충격 피드백 (버튼 탭 등)
     func light() {
         let generator = UIImpactFeedbackGenerator(style: .light)
@@ -45,7 +44,6 @@ final class HapticManager {
     }
     
     // MARK: - Notification Feedback (알림 피드백)
-    
     /// 성공 알림 피드백
     func success() {
         let generator = UINotificationFeedbackGenerator()
@@ -65,7 +63,6 @@ final class HapticManager {
     }
     
     // MARK: - Selection Feedback (선택 피드백)
-    
     /// 선택 변경 피드백 (피커, 토글 등)
     func selection() {
         let generator = UISelectionFeedbackGenerator()
@@ -73,7 +70,6 @@ final class HapticManager {
     }
     
     // MARK: - Custom Impact with Intensity
-    
     /// 커스텀 강도의 충격 피드백 (iOS 13+)
     /// - Parameter intensity: 0.0 ~ 1.0 사이의 값
     func impact(intensity: CGFloat) {

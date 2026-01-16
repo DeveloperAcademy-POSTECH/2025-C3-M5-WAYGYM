@@ -3,7 +3,6 @@ import FirebaseFirestore
 import FirebaseFirestoreSwift
 
 struct ProfileView: View {
-    // MARK: - Dependencies & State
     @EnvironmentObject var coordinator: AppCoordinator
     
     @StateObject private var minionModel = MinionModel()

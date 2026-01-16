@@ -172,7 +172,7 @@ struct RunningListView: View {
         .navigationBarBackButtonHidden(true)
     }
     
-    // 임시: RunningListView에서만 쓰는 fetch (나중에 ViewModel/Repository로 이동)
+    // TODO: - RunningListView에서만 쓰는 fetch (나중에 ViewModel/Repository로 이동)
     private func fetchAllRunSummaries(completion: @escaping ([RunSummary]) -> Void) {
         db.collection("RunRecordModels")
             .order(by: "start_time", descending: true)
