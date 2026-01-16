@@ -10,23 +10,26 @@ import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
 
-protocol UserIdAvailabilityChecking {
-    /// true면 사용 가능(중복 아님)
-    func isAvailable(userId: String) async throws -> Bool
-}
 
-// Mock (나중에 API로 교체)
-struct MockUserIdChecker: UserIdAvailabilityChecking {
-    func isAvailable(userId: String) async throws -> Bool {
-        try await Task.sleep(nanoseconds: 500_000_000)
-        let blocked = ["admin", "root", "test", "judy", "gang"]
-        return !blocked.contains(userId.lowercased())
-    }
-}
-
-@MainActor
 final class ProfileSetupViewModel: ObservableObject {
     // Input
+    enum Sex: String, CaseIterable {
+        case male
+        case female
+        case other
+
+        var displayName: String {
+            switch self {
+            case .male: return "남성"
+            case .female: return "여성"
+            case .other: return "이외"
+            }
+        }
+    }
+
+    @Published var sex: Sex? = nil
+    @Published var sexError: String? = nil
+
     @Published var nickname: String = ""
     @Published var userId: String = ""
 
@@ -54,11 +57,10 @@ final class ProfileSetupViewModel: ObservableObject {
     // Data
     let addressData: [SidoNode]
 
-    private let checker: UserIdAvailabilityChecking
     private let locationService = LocationAddressService()
 
-    init(checker: UserIdAvailabilityChecking = MockUserIdChecker()) {
-        self.checker = checker
+    init() {
+        print("🔥 ProfileSetupViewModel init")
         self.addressData = (try? AddressLoader.load3DepthJSON()) ?? []
     }
 
@@ -74,14 +76,19 @@ final class ProfileSetupViewModel: ObservableObject {
         nicknameError = nil
     }
 
-    func validateUserId() {
-        userIdChecked = false
-        userIdAvailable = false
+    func validateSex() {
+        if sex == nil {
+            sexError = "성별을 선택해주세요."
+        } else {
+            sexError = nil
+        }
+    }
 
+    func validateUserIdFormat() {
         let trimmed = userId.trimmingCharacters(in: .whitespacesAndNewlines)
 
         if trimmed.isEmpty { userIdError = "아이디를 입력해주세요."; return }
-        if trimmed.count < 3 || trimmed.count > 20 { userIdError = "3~20자 범위로 입력해주세요."; return }
+        if trimmed.count < 6 || trimmed.count > 20 { userIdError = "6~20자 범위로 입력해주세요."; return }
 
         // Instagram-ish: letters/digits/._- (특수문자 범위를 늘리고 싶으면 여기 수정)
         let pattern = "^[A-Za-z0-9._-]+$"
@@ -112,9 +119,11 @@ final class ProfileSetupViewModel: ObservableObject {
             nicknameError == nil,
             userIdError == nil,
             addressError == nil,
+            sexError == nil,
             !nickname.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             !userId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
             !fullAddressText.isEmpty,
+            sex != nil,
             userIdChecked,
             userIdAvailable,
             !isCheckingUserId
@@ -130,50 +139,92 @@ extension ProfileSetupViewModel {
             do {
                 let loc = try await locationService.requestOneShotLocation()
                 let addr = try await locationService.reverseGeocode(loc)
-                sido = addr.sido
-                sigungu = addr.sigungu
-                dong = addr.dong
-                validateAddress()
+                await MainActor.run {
+                    self.sido = addr.sido
+                    self.sigungu = addr.sigungu
+                    self.dong = addr.dong
+                    self.validateAddress()
+                }
             } catch {
-                addressError = "현위치 주소를 불러오지 못했습니다. 직접 선택으로 설정해주세요."
+                await MainActor.run {
+                    self.addressError = "현위치 주소를 불러오지 못했습니다. 직접 선택으로 설정해주세요."
+                }
             }
         }
     }
 
     func tapCheckUserId() {
-        validateUserId()
+        validateUserIdFormat()
         guard userIdError == nil else { return }
 
         let candidate = userId.trimmingCharacters(in: .whitespacesAndNewlines)
+
         isCheckingUserId = true
         userIdChecked = false
         userIdAvailable = false
 
         Task {
             do {
-                let available = try await checker.isAvailable(userId: candidate)
-                userIdAvailable = available
-                userIdChecked = true
-                userIdError = available ? nil : "이미 사용 중인 아이디입니다."
+                let db = Firestore.firestore()
+                let snapshot = try await db
+                    .collection("Users")
+                    .whereField("friendCode", isEqualTo: candidate)
+                    .limit(to: 1)
+                    .getDocuments()
+
+                let available = snapshot.documents.isEmpty
+
+                await MainActor.run {
+                    self.userIdAvailable = available
+                    self.userIdChecked = true
+                    self.userIdError = available ? nil : "이미 사용 중인 아이디입니다."
+                    self.isCheckingUserId = false
+                }
             } catch {
-                userIdChecked = false
-                userIdAvailable = false
-                userIdError = "중복 확인에 실패했습니다. 다시 시도해주세요."
+                await MainActor.run {
+                    self.userIdChecked = false
+                    self.userIdAvailable = false
+                    self.userIdError = "중복 확인에 실패했습니다. 다시 시도해주세요."
+                    self.isCheckingUserId = false
+                }
             }
-            isCheckingUserId = false
         }
     }
     
-    func saveProfileToFirestore() {
+    func saveProfileToFirestore(onSuccess: (() -> Void)? = nil) {
+        guard !isSavingProfile else { return }
+        
+        print(
+            "canSubmit:",
+            "nicknameError:", nicknameError as Any,
+            "userIdError:", userIdError as Any,
+            "addressError:", addressError as Any,
+            "sexError:", sexError as Any,
+            "userIdChecked:", userIdChecked,
+            "userIdAvailable:", userIdAvailable,
+            "isCheckingUserId:", isCheckingUserId
+        )
+        
         saveProfileError = nil
-
+        
+        validateNickname()
+        validateSex()
+        // validateUserId()
+        validateAddress()
+        
         guard canSubmit else {
+            isSavingProfile = false
             saveProfileError = "입력값을 다시 확인해주세요."
             return
         }
 
         guard let uid = Auth.auth().currentUser?.uid else {
             saveProfileError = "로그인 정보가 없습니다. 다시 로그인해주세요."
+            return
+        }
+
+        guard let sex else {
+            saveProfileError = "성별을 선택해주세요."
             return
         }
 
@@ -188,6 +239,7 @@ extension ProfileSetupViewModel {
 
         let data: [String: Any] = [
             "displayName": displayName,
+            "sex": sex.rawValue,
             "homeArea": homeArea,
             "createdAt": FieldValue.serverTimestamp(),
             "friendCode": friendCode
@@ -195,11 +247,12 @@ extension ProfileSetupViewModel {
 
         doc.setData(data, merge: true) { [weak self] error in
             guard let self else { return }
-            Task { @MainActor in
+            DispatchQueue.main.async {
                 if let error {
                     self.saveProfileError = "저장에 실패했습니다: \(error.localizedDescription)"
                 } else {
                     self.saveProfileError = nil
+                    onSuccess?()
                 }
                 self.isSavingProfile = false
             }

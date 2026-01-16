@@ -9,6 +9,9 @@ import SwiftUI
 
 struct AddressPickerSheet: View {
     let data: [SidoNode]
+    let initialSido: String
+    let initialSigungu: String
+    let initialDong: String
     let onConfirm: (String, String, String) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -16,6 +19,33 @@ struct AddressPickerSheet: View {
     @State private var sidoIndex: Int = 0
     @State private var sigunguIndex: Int = 0
     @State private var dongIndex: Int = 0
+
+    private func applyInitialSelectionIfPossible() {
+        guard !data.isEmpty else { return }
+
+        // 1) 시/도
+        if !initialSido.isEmpty, let sIdx = data.firstIndex(where: { $0.sido == initialSido }) {
+            sidoIndex = sIdx
+        } else {
+            sidoIndex = 0
+        }
+
+        // 2) 구/군
+        let sigunguList = data[sidoIndex].sigungu
+        if !initialSigungu.isEmpty, let gIdx = sigunguList.firstIndex(where: { $0.name == initialSigungu }) {
+            sigunguIndex = gIdx
+        } else {
+            sigunguIndex = 0
+        }
+
+        // 3) 동
+        let dongList = sigunguList.indices.contains(sigunguIndex) ? sigunguList[sigunguIndex].dong : []
+        if !initialDong.isEmpty, let dIdx = dongList.firstIndex(of: initialDong) {
+            dongIndex = dIdx
+        } else {
+            dongIndex = 0
+        }
+    }
 
     var body: some View {
         ZStack {
@@ -88,6 +118,9 @@ struct AddressPickerSheet: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 16)
             }
+            .onAppear {
+                applyInitialSelectionIfPossible()
+            }
             .presentationDetents([.medium])
         }
     }
@@ -153,7 +186,12 @@ private extension Array {
         )
     ]
 
-        AddressPickerSheet(data: mockData) { s, g, d in
+        AddressPickerSheet(
+            data: mockData,
+            initialSido: "서울특별시",
+            initialSigungu: "마포구",
+            initialDong: "합정동"
+        ) { s, g, d in
             print("Selected: \(s) \(g) \(d)")
         }
     .font(.text01)

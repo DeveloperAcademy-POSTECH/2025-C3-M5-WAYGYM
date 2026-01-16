@@ -16,8 +16,8 @@ enum CustomButtonStyle {
 struct CustomButton: View {
     let title: String
     let action: () -> Void
-    
     var style: CustomButtonStyle = .regular
+    
     var isDisabled: Bool = false
     var isLoading: Bool = false
     var systemImage: String? = nil

@@ -19,6 +19,7 @@ final class AuthViewModel: ObservableObject {
 
     @Published var isSending: Bool = false
     @Published var isVerifying: Bool = false
+    @Published var isCompletingAuth: Bool = false
     @Published var errorMessage: String? = nil
 
     private let onAuthed: () -> Void
@@ -124,7 +125,10 @@ final class AuthViewModel: ObservableObject {
 
     func verifyCode() async {
         guard let verificationID else { return }
+
         errorMessage = nil
+
+        // 로딩 플래그 초기화/정리: 어떤 경로로 빠져나가도 spinner가 내려가도록 보장
         isVerifying = true
         defer { isVerifying = false }
 
@@ -135,6 +139,8 @@ final class AuthViewModel: ObservableObject {
 
         do {
             _ = try await Auth.auth().signIn(with: credential)
+
+            isCompletingAuth = true
             onAuthed()
         } catch {
             errorMessage = "인증번호가 올바르지 않아요. 다시 확인해 주세요."

@@ -9,6 +9,9 @@ import SwiftUI
 import FirebaseAuth
 
 struct SettingView: View {
+    @EnvironmentObject private var coordinator: AppCoordinator
+    @AppStorage("selectedWeaponId") private var selectedWeaponId: String = "0"
+
     var body: some View {
         ZStack {
             Color.gang_bg_profile
@@ -23,6 +26,8 @@ struct SettingView: View {
                     .onTapGesture {
                         do {
                             try Auth.auth().signOut()
+                            selectedWeaponId = "0"
+                            coordinator.replaceRoot(.auth)
                         } catch {
                             print("[Logout Error]", error.localizedDescription)
                         }

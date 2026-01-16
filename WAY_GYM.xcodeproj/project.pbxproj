@@ -30,7 +30,6 @@
 		8B9130952F1365D100C6ABE6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */; };
 		8B9130962F1365D100C6ABE6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */; };
 		8B9130972F1365D100C6ABE6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */; };
-		8BF0776B2F07B7B8004D9277 /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077312F07B7B8004D9277 /* AppRouter.swift */; };
 		8BF0776D2F07B7B8004D9277 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077332F07B7B8004D9277 /* RootView.swift */; };
 		8BF0776E2F07B7B8004D9277 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077352F07B7B8004D9277 /* App.swift */; };
 		8BF0776F2F07B7B8004D9277 /* RunRecordDummyData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077382F07B7B8004D9277 /* RunRecordDummyData.swift */; };
@@ -60,6 +59,9 @@
 		8BF0778B2F07B7B8004D9277 /* RunResultModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077622F07B7B8004D9277 /* RunResultModalView.swift */; };
 		8BF0778D2F07B7B8004D9277 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8BF077662F07B7B8004D9277 /* Assets.xcassets */; };
 		8BF0778E2F07B7B8004D9277 /* NeoDunggeunmoPro-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8BF077672F07B7B8004D9277 /* NeoDunggeunmoPro-Regular.ttf */; };
+		8BF9200F2F1A077D00E8B04C /* SwipeBackUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF9200E2F1A077D00E8B04C /* SwipeBackUtils.swift */; };
+		8BF920112F1A07D400E8B04C /* HapticUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF920102F1A07D400E8B04C /* HapticUtils.swift */; };
+		8BF920152F1A090C00E8B04C /* InputCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF920142F1A090C00E8B04C /* InputCard.swift */; };
 		B36066862DEECF4200863D7F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B36066852DEECF4200863D7F /* FirebaseAuth */; };
 		B360668A2DEECF4200863D7F /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = B36066892DEECF4200863D7F /* FirebaseDatabase */; };
 		B360668C2DEECF4200863D7F /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = B360668B2DEECF4200863D7F /* FirebaseFirestore */; };
@@ -104,7 +106,6 @@
 		8B6CD05A2F18F53C002B993F /* ProfileSetupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSetupViewModel.swift; sourceTree = "<group>"; };
 		8B6CD05C2F18F56B002B993F /* AddressPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressPickerSheet.swift; sourceTree = "<group>"; };
 		8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
-		8BF077312F07B7B8004D9277 /* AppRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
 		8BF077332F07B7B8004D9277 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		8BF077352F07B7B8004D9277 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		8BF077362F07B7B8004D9277 /* WAY_GYM.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WAY_GYM.entitlements; sourceTree = "<group>"; };
@@ -135,6 +136,9 @@
 		8BF077622F07B7B8004D9277 /* RunResultModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunResultModalView.swift; sourceTree = "<group>"; };
 		8BF077662F07B7B8004D9277 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		8BF077672F07B7B8004D9277 /* NeoDunggeunmoPro-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "NeoDunggeunmoPro-Regular.ttf"; sourceTree = "<group>"; };
+		8BF9200E2F1A077D00E8B04C /* SwipeBackUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeBackUtils.swift; sourceTree = "<group>"; };
+		8BF920102F1A07D400E8B04C /* HapticUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticUtils.swift; sourceTree = "<group>"; };
+		8BF920142F1A090C00E8B04C /* InputCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputCard.swift; sourceTree = "<group>"; };
 		B34B7A9E2DE54FDB00B14CAB /* WAY_GYM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WAY_GYM.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B34B7AAB2DE54FDD00B14CAB /* WAY_GYMTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WAY_GYMTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B34B7AB52DE54FDD00B14CAB /* WAY_GYMUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WAY_GYMUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -212,7 +216,6 @@
 		8BF077342F07B7B8004D9277 /* Navigation */ = {
 			isa = PBXGroup;
 			children = (
-				8BF077312F07B7B8004D9277 /* AppRouter.swift */,
 				8B5C08702F0FB35D008A7F68 /* AppCoordinator.swift */,
 				8BF077332F07B7B8004D9277 /* RootView.swift */,
 				8B5C08722F0FB3FB008A7F68 /* ModuleFactory.swift */,
@@ -258,6 +261,8 @@
 			isa = PBXGroup;
 			children = (
 				8BF0773E2F07B7B8004D9277 /* FormatDate.swift */,
+				8BF9200E2F1A077D00E8B04C /* SwipeBackUtils.swift */,
+				8BF920102F1A07D400E8B04C /* HapticUtils.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -298,6 +303,7 @@
 				8BF0774A2F07B7B8004D9277 /* CustomBorder.swift */,
 				8BF0774B2F07B7B8004D9277 /* CustomNavigationBar.swift */,
 				8B2ED1DE2F176D15008AE661 /* CustomButton.swift */,
+				8BF920142F1A090C00E8B04C /* InputCard.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -357,9 +363,9 @@
 		8BF077642F07B7B8004D9277 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				8BF0774C2F07B7B8004D9277 /* Components */,
 				8B6CD0572F18F4E4002B993F /* Setting */,
 				8B2ED1D42F1764B2008AE661 /* Auth */,
-				8BF0774C2F07B7B8004D9277 /* Components */,
 				8BF077502F07B7B8004D9277 /* Main */,
 				8BF0775C2F07B7B8004D9277 /* Profile */,
 			);
@@ -371,8 +377,8 @@
 			children = (
 				8BF077452F07B7B8004D9277 /* Model */,
 				8BF077642F07B7B8004D9277 /* Views */,
-				8B2ED1D72F1764ED008AE661 /* ViewModels */,
 				8BF077492F07B7B8004D9277 /* Service */,
+				8B2ED1D72F1764ED008AE661 /* ViewModels */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -580,7 +586,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8BF0776B2F07B7B8004D9277 /* AppRouter.swift in Sources */,
 				8B05370C2F10DC5200A61DFD /* ControlPanel.swift in Sources */,
 				8BF0776D2F07B7B8004D9277 /* RootView.swift in Sources */,
 				8BF0776E2F07B7B8004D9277 /* App.swift in Sources */,
@@ -595,6 +600,7 @@
 				8BF077722F07B7B8004D9277 /* FormatDate.swift in Sources */,
 				8B0537082F10DC0100A61DFD /* MapView.swift in Sources */,
 				8BF077732F07B7B8004D9277 /* MinionModel.swift in Sources */,
+				8BF9200F2F1A077D00E8B04C /* SwipeBackUtils.swift in Sources */,
 				8BF077742F07B7B8004D9277 /* RunRecordModel.swift in Sources */,
 				8B2ED1E42F1787BA008AE661 /* ProfileSetupView.swift in Sources */,
 				8B0537122F10E91000A61DFD /* RunPhase.swift in Sources */,
@@ -615,12 +621,14 @@
 				8B2ED1E12F178478008AE661 /* SettingView.swift in Sources */,
 				8BF077842F07B7B8004D9277 /* RunningListView.swift in Sources */,
 				8BF077852F07B7B8004D9277 /* WeaponListView.swift in Sources */,
+				8BF920152F1A090C00E8B04C /* InputCard.swift in Sources */,
 				8B5C08712F0FB35D008A7F68 /* AppCoordinator.swift in Sources */,
 				8B5C08732F0FB3FB008A7F68 /* ModuleFactory.swift in Sources */,
 				8B6CD05D2F18F56B002B993F /* AddressPickerSheet.swift in Sources */,
 				8BF077862F07B7B8004D9277 /* ProfileView.swift in Sources */,
 				8BF077872F07B7B8004D9277 /* MinionRewardView.swift in Sources */,
 				8BF077882F07B7B8004D9277 /* RewardQueueView.swift in Sources */,
+				8BF920112F1A07D400E8B04C /* HapticUtils.swift in Sources */,
 				8B6CD0592F18F51C002B993F /* AddressLoader.swift in Sources */,
 				8BF077892F07B7B8004D9277 /* WeaponRewardView.swift in Sources */,
 				8B05370A2F10DC4800A61DFD /* RouteMapView.swift in Sources */,

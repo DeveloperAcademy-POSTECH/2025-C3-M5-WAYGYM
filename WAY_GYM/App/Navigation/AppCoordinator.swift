@@ -6,10 +6,20 @@
 //
 
 import Combine
+import Foundation
 import SwiftUI
+
+enum AppRouter: Hashable {
+    case auth
+    case profileSetup
+    case main
+    case profile
+    case setting
+}
 
 @MainActor
 final class AppCoordinator: ObservableObject {
+    @Published var root: AppRouter = .auth
     @Published var path: [AppRouter] = []
 
     /// 다음 화면
@@ -29,11 +39,9 @@ final class AppCoordinator: ObservableObject {
         path.removeLast(path.count)
     }
 
-    /// 현재 화면을 새로운 화면으로 바꿀 때
-    func replaceLast(with route: AppRouter) {
-        if !path.isEmpty {
-            path.removeLast()
-        }
-        path.append(route)
+    /// path에 쌓인 모든 화면을 지우고, 지정한 route 화면을 새로운 루트 화면으로 교체
+    func replaceRoot(_ route: AppRouter) {
+        root = route
+        path.removeAll()
     }
 }

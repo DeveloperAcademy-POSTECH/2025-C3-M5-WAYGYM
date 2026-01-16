@@ -76,7 +76,6 @@ enum AddressLoader {
     }
 }
 
-@MainActor
 final class LocationAddressService: NSObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
     private var continuation: CheckedContinuation<CLLocation, Error>?
