@@ -11,7 +11,6 @@
 		8B05370A2F10DC4800A61DFD /* RouteMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B0537092F10DC4800A61DFD /* RouteMapView.swift */; };
 		8B05370C2F10DC5200A61DFD /* ControlPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B05370B2F10DC5200A61DFD /* ControlPanel.swift */; };
 		8B05370E2F10E2C000A61DFD /* CountdownOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B05370D2F10E2C000A61DFD /* CountdownOverlay.swift */; };
-		8B0537122F10E91000A61DFD /* RunPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B0537112F10E91000A61DFD /* RunPhase.swift */; };
 		8B0537152F10E93200A61DFD /* MainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B0537142F10E93200A61DFD /* MainViewModel.swift */; };
 		8B2ED1D62F1764B8008AE661 /* AuthView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B2ED1D52F1764B8008AE661 /* AuthView.swift */; };
 		8B2ED1D92F176508008AE661 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B2ED1D82F176508008AE661 /* AuthViewModel.swift */; };
@@ -91,7 +90,6 @@
 		8B0537092F10DC4800A61DFD /* RouteMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteMapView.swift; sourceTree = "<group>"; };
 		8B05370B2F10DC5200A61DFD /* ControlPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlPanel.swift; sourceTree = "<group>"; };
 		8B05370D2F10E2C000A61DFD /* CountdownOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownOverlay.swift; sourceTree = "<group>"; };
-		8B0537112F10E91000A61DFD /* RunPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunPhase.swift; sourceTree = "<group>"; };
 		8B0537142F10E93200A61DFD /* MainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewModel.swift; sourceTree = "<group>"; };
 		8B2ED1D52F1764B8008AE661 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
 		8B2ED1D82F176508008AE661 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
@@ -311,7 +309,6 @@
 		8BF077502F07B7B8004D9277 /* Main */ = {
 			isa = PBXGroup;
 			children = (
-				8B0537112F10E91000A61DFD /* RunPhase.swift */,
 				8BF0774E2F07B7B8004D9277 /* MainView.swift */,
 				8B0537142F10E93200A61DFD /* MainViewModel.swift */,
 				8B0537132F10E92400A61DFD /* Component */,
@@ -353,6 +350,7 @@
 			children = (
 				8BF0775B2F07B7B8004D9277 /* ProfileView.swift */,
 				8B2ED1E02F178478008AE661 /* SettingView.swift */,
+				8B6CD0572F18F4E4002B993F /* Setting */,
 				8BF077542F07B7B8004D9277 /* Minion */,
 				8BF077582F07B7B8004D9277 /* Running */,
 				8BF0775A2F07B7B8004D9277 /* Weapon */,
@@ -364,7 +362,6 @@
 			isa = PBXGroup;
 			children = (
 				8BF0774C2F07B7B8004D9277 /* Components */,
-				8B6CD0572F18F4E4002B993F /* Setting */,
 				8B2ED1D42F1764B2008AE661 /* Auth */,
 				8BF077502F07B7B8004D9277 /* Main */,
 				8BF0775C2F07B7B8004D9277 /* Profile */,
@@ -603,7 +600,6 @@
 				8BF9200F2F1A077D00E8B04C /* View+.swift in Sources */,
 				8BF077742F07B7B8004D9277 /* RunRecordModel.swift in Sources */,
 				8B2ED1E42F1787BA008AE661 /* ProfileSetupView.swift in Sources */,
-				8B0537122F10E91000A61DFD /* RunPhase.swift in Sources */,
 				8B2ED1DF2F176D15008AE661 /* CustomButton.swift in Sources */,
 				8BF077762F07B7B8004D9277 /* WeaponModel.swift in Sources */,
 				8BF077772F07B7B8004D9277 /* RewardService.swift in Sources */,

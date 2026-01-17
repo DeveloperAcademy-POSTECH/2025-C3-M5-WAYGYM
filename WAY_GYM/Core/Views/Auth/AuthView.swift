@@ -30,13 +30,6 @@ struct AuthView: View {
 
             VStack(spacing: 16) {
                 header
-                
-                Button {
-                    coordinator.replaceRoot(.main)
-                } label: {
-                    Text("main으로 가기")
-                }
-
 
                 InputCard {
                     VStack(alignment: .leading, spacing: 12) {
@@ -114,7 +107,7 @@ struct AuthView: View {
                         }
                     }
                 }
-                Spacer(minLength: 10)
+                Spacer()
             }
             .padding(.horizontal, 18)
             .padding(.top, 22)
@@ -154,12 +147,7 @@ struct AuthView: View {
                     .foregroundStyle(Color.gangText2)
             }
             .padding(12)
-            .background(Color.white.opacity(0.06))
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .stroke(Color.gangBlackOpacity, lineWidth: 1)
-            )
+            .customBorder(color: Color.gangBlackOpacity)
         }
     }
 }

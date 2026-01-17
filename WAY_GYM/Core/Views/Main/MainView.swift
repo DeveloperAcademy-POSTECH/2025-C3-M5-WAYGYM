@@ -5,13 +5,20 @@ import FirebaseFirestoreSwift
 import FirebaseStorage
 import FirebaseCore
 
+enum RunPhase: Equatable {
+    case root /// 기본, 결과 모달 닫았을 때 활성화
+    case countingDown(Int) // countingDown - 런닝 재생 시 뜨는 3,2,1 화면. 재생 버튼 탭할 시, isCountingDown == true일 때 활성화
+    case running // 런닝 중
+    case finishing(progress: CGFloat) /// 길게 눌러 런닝 종료 중일 때. 정지 버튼 길게 누르기 시작했을때  활성화.
+    case runResult /// 길게 누른 후 손 땠을 때 활성화
+}
+
 struct MainView: View {
     @EnvironmentObject var coordinator: AppCoordinator
-    @StateObject var viewModel: MainViewModel
-    
+    @StateObject var vm: MainViewModel
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
-    
     @ObservedObject var locationManager: LocationManager
+    
     @StateObject private var rewardService = RewardService()
     
     var body: some View {
@@ -27,7 +34,7 @@ struct MainView: View {
             .edgesIgnoringSafeArea(.all)
             
             // 내 나와바리 이동 버튼
-            if viewModel.runPhase == .root {
+            if vm.runPhase == .root {
                 HStack{
                     VStack(spacing: 6) {
                         Button {
@@ -54,32 +61,32 @@ struct MainView: View {
                 Spacer()
                 VStack {
                     ControlPanel(
-                        runPhase: viewModel.runPhase,
-                        onTapStartRun: { viewModel.tapPlay(locationManager: locationManager) },
-                        onBeginFinishHold: { viewModel.beginFinishHold(locationManager: locationManager) },
-                        onEndFinishHold: { viewModel.cancelFinishHold() },
-                        onTapMyLocation: { viewModel.tapMyLocation(locationManager: locationManager) },
-                        onTapToggleCapturedArea: { viewModel.toggleCapturedArea(locationManager: locationManager) },
-                        isAreaActive: viewModel.isAreaActive
+                        runPhase: vm.runPhase,
+                        onTapStartRun: { vm.tapPlay(locationManager: locationManager) },
+                        onBeginFinishHold: { vm.beginFinishHold(locationManager: locationManager) },
+                        onEndFinishHold: { vm.cancelFinishHold() },
+                        onTapMyLocation: { vm.tapMyLocation(locationManager: locationManager) },
+                        onTapToggleCapturedArea: { vm.toggleCapturedArea(locationManager: locationManager) },
+                        isAreaActive: vm.isAreaActive
                     )
                     Spacer()
                 }
             }
             
-            if case .countingDown(let n) = viewModel.runPhase {
+            if case .countingDown(let n) = vm.runPhase {
                 CountdownOverlay(countdown: n)
             }
         }
         .task {
-            viewModel.onTask(locationManager: locationManager)
+            vm.onTask(locationManager: locationManager)
         }
         .overlay {
-            if viewModel.runPhase == .runResult {
+            if vm.runPhase == .runResult {
                 ZStack {
                     Color.gang_black_opacity
                         .ignoresSafeArea()
 
-                    RunResultModalView(viewModel: viewModel, onComplete: { viewModel.dismissRunResult() })
+                    RunResultModalView(viewModel: vm, onComplete: { vm.dismissRunResult() })
                         .environmentObject(rewardService)
                 }
             }
