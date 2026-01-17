@@ -9,7 +9,7 @@ struct WeaponListView: View {
         weaponModel.allWeapons.first(where: { $0.id == selectedWeaponId })
     }
     
-    @EnvironmentObject var weaponVM: WeaponService
+    @EnvironmentObject var rewardService: RewardService
     
     @StateObject private var runRecordVM = RunRecordService()
     @State private var acquisitionDate: Date? = nil
@@ -27,7 +27,6 @@ struct WeaponListView: View {
                     Color.gang_bg_primary_4
                     
                     VStack {
-                        // 사용자 이미지
                         ZStack {
                             Image("Flash")
                                 .resizable()
@@ -39,7 +38,7 @@ struct WeaponListView: View {
                                 .frame(width: 230)
                                 .padding(.bottom, -15)
                                 .padding(.leading, -7)
-                        } // 사용자 이미지 zstack
+                        }
                         .padding(.vertical, 15)
                         
                         VStack {
@@ -82,7 +81,7 @@ struct WeaponListView: View {
                         }
                         .font(.title01)
                         .frame(maxWidth: .infinity)
-                        .padding(16) // 박스 내부 여백
+                        .padding(16)
                         .overlay(
                             RoundedRectangle(cornerRadius: 16)
                                 .stroke(Color.black, lineWidth: 3)
@@ -92,11 +91,8 @@ struct WeaponListView: View {
                         
                         
                     }
-                } // 진한 박스 zstack
+                }
                 .frame(height: UIScreen.main.bounds.height * 0.5)
-                
-                //                Text("나의 총 땅: \(Int(weaponVM.totalCaptureArea(from: userStats.runRecords)))m²")
-                //                    .font(.subheadline)
                 
                 ScrollView {
                     let columns = [
@@ -106,8 +102,7 @@ struct WeaponListView: View {
                     ]
                     LazyVGrid(columns: columns, spacing: 30) {
                         ForEach(weaponModel.allWeapons) { weapon in
-                            // let isUnlocked = Double(runRecordVM.totalCapturedAreaValue) >= weapon.unlockNumber
-                            let isUnlocked = weaponVM.isUnlocked(weapon, with: runRecordVM.totalCapturedAreaValue)
+                            let isUnlocked = rewardService.isUnlocked(weapon, with: runRecordVM.totalCapturedAreaValue)
                             
                             if isUnlocked {
                                 Button(action: {
@@ -129,7 +124,6 @@ struct WeaponListView: View {
                                                 .frame(width: 90)
                                         }
                                     }
-                                    // .frame(width: 100, height: 120)
                                     .cornerRadius(8)
                                     .shadow(radius: 2)
                                     .overlay {
@@ -162,7 +156,7 @@ struct WeaponListView: View {
         .onAppear {
             runRecordVM.fetchAndSumCapturedValue()
         }
-        .onChange(of: selectedWeapon) { newWeapon in
+        .onChange(of: selectedWeapon) { _, newWeapon in
             if let weapon = newWeapon {
                 runRecordVM.fetchRunRecordsAndCalculateWeaponAcquisitionDate(for: weapon.unlockNumber) { date in
                     print("선택 무기 변경, 획득 날짜: \(String(describing: date))")
@@ -177,13 +171,13 @@ struct WeaponListView: View {
 }
 
 let runRecordVM = RunRecordService()
-let weaponVM = WeaponService()
+let rewardService = RewardService()
 
 #Preview {
     StatefulPreviewWrapper(nil as WeaponDefinitionModel?) { binding in
         WeaponListView()
             .environmentObject(runRecordVM)
-            .environmentObject(weaponVM)
+            .environmentObject(rewardService)
             .font(.text01)
             .foregroundColor(Color.gang_text_2)
     }

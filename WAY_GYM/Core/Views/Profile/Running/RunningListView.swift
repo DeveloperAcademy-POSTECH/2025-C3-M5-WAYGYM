@@ -1,9 +1,9 @@
 import SwiftUI
+import FirebaseFirestore
 
 struct RunningListView: View {
     @State private var summaries: [RunSummary] = []
-    @EnvironmentObject private var runRecordVM: RunRecordService
-    
+    private let db = Firestore.firestore()
     private var groupedSummaries: [String: [RunSummary]] {
         Dictionary(grouping: summaries) { summary in
             let formatter = DateFormatter()
@@ -165,11 +165,104 @@ struct RunningListView: View {
             }
         }
         .onAppear {
-            runRecordVM.fetchAllRunSummaries { loadedSummaries in
+            fetchAllRunSummaries { loadedSummaries in
                 self.summaries = loadedSummaries
             }
         }
         .navigationBarBackButtonHidden(true)
+    }
+    
+    // TODO: - RunningListView에서만 쓰는 fetch (나중에 ViewModel/Repository로 이동)
+    private func fetchAllRunSummaries(completion: @escaping ([RunSummary]) -> Void) {
+        db.collection("RunRecordModels")
+            .order(by: "start_time", descending: true)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("❌ 전체 요약 가져오기 실패: \(error.localizedDescription)")
+                    completion([])
+                    return
+                }
+
+                guard let documents = snapshot?.documents else {
+                    print("❌ 문서 없음")
+                    completion([])
+                    return
+                }
+
+                print("🔥 서버에서 받은 문서 개수: \(documents.count)")
+
+                let summaries: [RunSummary] = documents.compactMap { doc -> RunSummary? in
+                    let data = doc.data()
+
+                    let distance = data["distance"] as? Double ?? 0
+                    let startTimestamp = data["start_time"] as? Timestamp
+                    let endTimestamp = data["end_time"] as? Timestamp
+
+                    guard let start = startTimestamp?.dateValue(), let end = endTimestamp?.dateValue() else {
+                        print("⛔️ 시간 필드 누락 혹은 변환 실패 - 문서ID: \(doc.documentID)")
+                        return nil
+                    }
+
+                    let duration = end.timeIntervalSince(start)
+                    let calories = duration / 60 * 7.4
+
+                    let area: Double = {
+                        if let value = data["capturedAreaValue"] as? Double {
+                            return value
+                        } else if let valueInt = data["capturedAreaValue"] as? Int {
+                            return Double(valueInt)
+                        } else {
+                            return 0
+                        }
+                    }()
+
+                    let routeImageURL: URL? = {
+                        if let urlString = data["routeImage"] as? String {
+                            return URL(string: urlString)
+                        }
+                        return nil
+                    }()
+
+                    let coordinatesData = data["coordinates"] as? [Any] ?? []
+                    let coordinates: [CoordinatePair] = coordinatesData.compactMap {
+                        if let coordDict = $0 as? [String: Any],
+                           let lat = coordDict["latitude"] as? Double,
+                           let lon = coordDict["longitude"] as? Double {
+                            return CoordinatePair(latitude: lat, longitude: lon)
+                        }
+                        return nil
+                    }
+
+                    let capturedAreasData = data["captured_areas"] as? [Any] ?? []
+                    let capturedAreas: [CoordinatePairWithGroup] = capturedAreasData.compactMap {
+                        if let dict = $0 as? [String: Any],
+                           let lat = dict["latitude"] as? Double,
+                           let lon = dict["longitude"] as? Double,
+                           let groupId = dict["groupId"] as? Int {
+                            return CoordinatePairWithGroup(latitude: lat, longitude: lon, groupId: groupId)
+                        }
+                        return nil
+                    }
+
+                    return RunSummary(
+                        id: doc.documentID,
+                        routeImageURL: routeImageURL,
+                        distance: distance,
+                        duration: duration,
+                        calories: calories,
+                        capturedArea: area,
+                        startTime: start,
+                        coordinates: coordinates,
+                        capturedAreas: capturedAreas
+                    )
+                }
+
+                print("✅ 가공된 summaries 개수: \(summaries.count)")
+
+                DispatchQueue.main.async {
+                    completion(summaries)
+                }
+            }
     }
 }
 
@@ -190,7 +283,6 @@ struct InfoItem: View {
 
 #Preview {
     RunningListView()
-        .environmentObject(RunRecordService())
         .foregroundColor(Color.gang_text_2)
         .font(.title01)
 }

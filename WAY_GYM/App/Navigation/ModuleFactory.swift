@@ -8,13 +8,25 @@
 import SwiftUI
 
 protocol ModuleFactoryProtocol {
+    func makeAuthView(onAuthed: @escaping () -> Void) -> AnyView
+    func makeProfileSetupView() -> ProfileSetupView
     func makeMainView() -> MainView
     func makeProfileView() -> ProfileView
+    func makeSettingView() -> SettingView
 }
 
 final class ModuleFactory: ModuleFactoryProtocol {
     static let shared = ModuleFactory()
     private init() {}
+    
+    func makeAuthView(onAuthed: @escaping () -> Void) -> AnyView {
+        AnyView(AuthView(onAuthed: onAuthed))
+    }
+    
+    func makeProfileSetupView() -> ProfileSetupView {
+        let view = ProfileSetupView()
+        return view
+    }
 
     func makeMainView() -> MainView {
         let viewModel = MainViewModel()
@@ -24,6 +36,11 @@ final class ModuleFactory: ModuleFactoryProtocol {
 
     func makeProfileView() -> ProfileView {
         let view = ProfileView()
+        return view
+    }
+    
+    func makeSettingView() -> SettingView {
+        let view = SettingView()
         return view
     }
 }
