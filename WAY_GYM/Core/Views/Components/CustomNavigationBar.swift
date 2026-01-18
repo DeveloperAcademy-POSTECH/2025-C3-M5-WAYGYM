@@ -7,8 +7,8 @@
 import SwiftUI
 
 struct CustomNavigationBar: View {
+    @EnvironmentObject var coordinator: AppCoordinator
     let title: String
-    @Environment(\.dismiss) var dismiss
 
     var body: some View {
         ZStack {
@@ -16,7 +16,7 @@ struct CustomNavigationBar: View {
                 .ignoresSafeArea()
             
             HStack {
-                Button(action: { dismiss() }) {
+                Button(action: { coordinator.pop() }) {
                     Image(systemName: "chevron.left")
                         .foregroundColor(.white)
                         .font(.system(size: 20, weight: .bold))

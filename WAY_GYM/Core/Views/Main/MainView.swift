@@ -15,11 +15,10 @@ enum RunPhase: Equatable {
 
 struct MainView: View {
     @EnvironmentObject var coordinator: AppCoordinator
+    @EnvironmentObject var runRecordService: RunRecordService
     @StateObject var vm: MainViewModel
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     @ObservedObject var locationManager: LocationManager
-    
-    @StateObject private var rewardService = RewardService()
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -62,7 +61,8 @@ struct MainView: View {
                 VStack {
                     ControlPanel(
                         runPhase: vm.runPhase,
-                        onTapStartRun: { vm.tapPlay(locationManager: locationManager) },
+                        onTapStartRun: {
+                            vm.tapPlay(locationManager: locationManager, currentTotalDistanceM: runRecordService.totalDistance) },
                         onBeginFinishHold: { vm.beginFinishHold(locationManager: locationManager) },
                         onEndFinishHold: { vm.cancelFinishHold() },
                         onTapMyLocation: { vm.tapMyLocation(locationManager: locationManager) },
@@ -87,7 +87,6 @@ struct MainView: View {
                         .ignoresSafeArea()
 
                     RunResultModalView(viewModel: vm, onComplete: { vm.dismissRunResult() })
-                        .environmentObject(rewardService)
                 }
             }
         }

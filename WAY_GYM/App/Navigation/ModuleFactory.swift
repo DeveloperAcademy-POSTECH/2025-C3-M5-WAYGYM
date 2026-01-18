@@ -7,40 +7,49 @@
 
 import SwiftUI
 
+enum AppRouter: Hashable {
+    case auth
+    case profileSetup
+    case main
+    case profile
+    case setting
+    
+    case weaponList
+    case minionList
+    case runningList
+    case runningDetail(String)
+}
+
 protocol ModuleFactoryProtocol {
-    func makeAuthView(onAuthed: @escaping () -> Void) -> AnyView
-    func makeProfileSetupView() -> ProfileSetupView
-    func makeMainView() -> MainView
-    func makeProfileView() -> ProfileView
-    func makeSettingView() -> SettingView
+    func make(_ route: AppRouter, onAuthed: @escaping () -> Void) -> AnyView
 }
 
 final class ModuleFactory: ModuleFactoryProtocol {
     static let shared = ModuleFactory()
     private init() {}
     
-    func makeAuthView(onAuthed: @escaping () -> Void) -> AnyView {
-        AnyView(AuthView(onAuthed: onAuthed))
-    }
-    
-    func makeProfileSetupView() -> ProfileSetupView {
-        let view = ProfileSetupView()
-        return view
-    }
-
-    func makeMainView() -> MainView {
-        let viewModel = MainViewModel()
-        let view = MainView(viewModel: viewModel, locationManager: LocationManager())
-        return view
-    }
-
-    func makeProfileView() -> ProfileView {
-        let view = ProfileView()
-        return view
-    }
-    
-    func makeSettingView() -> SettingView {
-        let view = SettingView()
-        return view
+    func make(_ route: AppRouter, onAuthed: @escaping () -> Void) -> AnyView {
+        switch route {
+        case .auth:
+            return AnyView(AuthView(onAuthed: onAuthed))
+        case .profileSetup:
+            return AnyView(ProfileSetupView())
+        case .main:
+            let viewModel = MainViewModel()
+            let view = MainView(vm: viewModel, locationManager: LocationManager())
+            return AnyView(view)
+        case .profile:
+            return AnyView(ProfileView())
+        case .setting:
+            return AnyView(SettingView())
+        case .weaponList:
+            return AnyView(WeaponListView())
+        case .minionList:
+            return AnyView(MinionListView())
+        case .runningList:
+            return AnyView(RunningListView())
+        case .runningDetail(let runId):
+            return AnyView(BigSingleRunningView(runId: runId))
+        }
     }
 }

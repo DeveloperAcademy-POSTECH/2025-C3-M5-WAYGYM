@@ -10,7 +10,6 @@ struct WeaponRewardView: View {
     let weapon: WeaponDefinitionModel
     let onDismiss: () -> Void
     let isLast: Bool
-    @EnvironmentObject var coordinator: AppCoordinator
 
     var body: some View {
         ZStack {

@@ -21,24 +21,29 @@ struct MapView: UIViewRepresentable {
         let mapView = MKMapView()
         mapView.delegate = context.coordinator
         mapView.showsUserLocation = false
-        mapView.showsPointsOfInterest = false
+        mapView.pointOfInterestFilter = .excludingAll
         mapView.mapType = .mutedStandard
         mapView.overrideUserInterfaceStyle = .dark
         return mapView
     }
     
     func updateUIView(_ mapView: MKMapView, context: Context) {
+        context.coordinator.parent = self
+        context.coordinator.isProgrammaticRegionChange = true
         mapView.setRegion(region, animated: true)
-        
+        DispatchQueue.main.async {
+            context.coordinator.isProgrammaticRegionChange = false
+        }
+
         mapView.removeOverlays(mapView.overlays)
         polygons.forEach { mapView.addOverlay($0) }
-        
+
         if shouldRenderPolylines {
             // 유효한 폴리라인만 그리기
             let validPolylines = polylines.filter { polyline in
                 let points = polyline.points()
                 let count = polyline.pointCount
-                
+
                 // 폴리라인의 모든 좌표가 유효한지 확인
                 for i in 0..<count {
                     let coordinate = points[i].coordinate
@@ -52,7 +57,7 @@ struct MapView: UIViewRepresentable {
             print("Rendering valid polylines: \(validPolylines.count) / \(polylines.count)")
             validPolylines.forEach { mapView.addOverlay($0) }
         }
-        
+
         mapView.removeAnnotations(mapView.annotations)
         if let currentLocation = currentLocation {
             let annotation = MKPointAnnotation()
@@ -68,9 +73,20 @@ struct MapView: UIViewRepresentable {
     
     class Coordinator: NSObject, MKMapViewDelegate {
         var parent: MapView
+        var isProgrammaticRegionChange: Bool = false
         
         init(_ parent: MapView) {
             self.parent = parent
+        }
+
+        func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+            // User-driven pan/zoom should update the SwiftUI binding.
+            guard !isProgrammaticRegionChange else { return }
+
+            let newRegion = mapView.region
+            DispatchQueue.main.async {
+                self.parent.region = newRegion
+            }
         }
         
         func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
@@ -78,9 +94,10 @@ struct MapView: UIViewRepresentable {
                 let renderer = MKPolylineRenderer(polyline: polyline)
                 renderer.strokeColor = UIColor(Color.green)
                 renderer.lineWidth = 2
+                
                 return renderer
             }
-            
+
             if let polygon = overlay as? MKPolygon {
                 let renderer = MKPolygonRenderer(polygon: polygon)
                 renderer.fillColor = UIColor(Color.green).withAlphaComponent(0.5)
@@ -88,31 +105,33 @@ struct MapView: UIViewRepresentable {
                 renderer.lineWidth = 2
                 return renderer
             }
-            
+
             return MKOverlayRenderer()
         }
         
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             guard !(annotation is MKUserLocation) else { return nil }
-            
+
             let identifier = "CurrentLocation"
-            var annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier)
-            
-            if annotationView == nil {
-                annotationView = MKAnnotationView(annotation: annotation, reuseIdentifier: identifier)
-                let imageName = "main_\(parent.selectedWeaponId)"
-                annotationView?.image = UIImage(named: imageName) ?? UIImage(named: "H")
-                if UIImage(named: imageName) == nil {
-                    print("이미지 로드 실패: \(imageName)")
-                }
-                let imageSize = CGSize(width: 80, height: 80)
-                annotationView?.frame = CGRect(origin: .zero, size: imageSize)
-                annotationView?.centerOffset = CGPoint(x: 0, y: -imageSize.height / 2)
-            } else {
-                annotationView?.annotation = annotation
+            let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKAnnotationView
+                ?? MKAnnotationView(annotation: annotation, reuseIdentifier: identifier)
+
+            annotationView.annotation = annotation
+
+            // Always update image on reuse as well, so weapon changes reflect immediately.
+            let imageName = "main_\(parent.selectedWeaponId)"
+            let resolvedImage = UIImage(named: imageName) ?? UIImage(named: "H")
+            annotationView.image = resolvedImage
+
+            if UIImage(named: imageName) == nil {
+                print("이미지 로드 실패: \(imageName)")
             }
-            
-            annotationView?.canShowCallout = true
+
+            let imageSize = CGSize(width: 80, height: 80)
+            annotationView.frame = CGRect(origin: .zero, size: imageSize)
+            annotationView.centerOffset = CGPoint(x: 0, y: -imageSize.height / 2)
+            annotationView.canShowCallout = true
+
             return annotationView
         }
     }

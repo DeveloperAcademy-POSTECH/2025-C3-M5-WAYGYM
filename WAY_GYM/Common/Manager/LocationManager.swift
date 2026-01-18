@@ -7,6 +7,7 @@ import FirebaseFirestoreSwift
 import FirebaseStorage
 import Photos
 import FirebaseCore
+import FirebaseAuth
 
 // - CLLocationManager에게 사용자 위치를 받아서, 앱에서 쓰기 좋은 상태(@Published)로 가공한다.
 // - 러닝(시뮬레이션) 중: 경로 좌표를 누적하고 폴리라인/폴리곤 오버레이 데이터를 만든다.
@@ -17,12 +18,15 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     
     @Published var polylines: [MKPolyline] = []
     @Published var polygons: [MKPolygon] = []
+
+    /// 최초로 위치를 받았을 때(또는 currentLocation이 처음 잡혔을 때) 1회만 지도를 그 위치로 센터링하기 위한 플래그
+    private var didCenterOnFirstLocation = false
     
     @Published var isSimulating = false /// 러닝(경로 추적) 중인지 여부. (UI 표시 상태가 아니라, 좌표 누적/경로 생성 로직을 켤지 말지 결정)
     
     /// 서버에서 가져오거나 보낼 런닝 기록 모델
-    @Published var runRecord: RunRecordModels?
-    @Published var runRecordList: [RunRecordModels] = [] /// 서버에서 받아온 모든 런닝 기록
+    @Published var runRecord: RunRecordModel?
+    @Published var runRecordList: [RunRecordModel] = [] /// 서버에서 받아온 모든 런닝 기록
     
     private var coordinates: [CLLocationCoordinate2D] = [] /// 러닝 중 누적된 좌표 원본 (모든 이동 좌표)
     /// 폴리곤을 더 세부 데이터로 저장하는 용도
@@ -31,6 +35,8 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     
     private let gridSize: Double = 0.0005 // 셀 한 변 크기
     @Published private(set) var capturedCellIds: Set<String> = [] /// 닫힌 영역 내, 사용자가 획득한 셀의 좌표
+    /// 지도에 이미 그려둔(overlay로 추가한) 셀 id들 (중복 overlay 추가 방지)
+    private var renderedCellIds: Set<String> = []
     
     private var simulationTimer: Timer? /// 1초마다 위치를 읽어오는 타이머
 
@@ -42,87 +48,80 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     private var mockRouteIndex: Int = 0
     private var mockDriftStep: Int = 0
 
+    /// 재현 가능한(시드 기반) 랜덤을 위한 RNG
+    private struct SeededGenerator: RandomNumberGenerator {
+        private var state: UInt64
+        init(seed: UInt64) {
+            self.state = seed == 0 ? 0xdeadbeef : seed
+        }
+        mutating func next() -> UInt64 {
+            // LCG (simple, fast)
+            state = state &* 6364136223846793005 &+ 1
+            return state
+        }
+    }
+
     /// 기준 좌표 주변으로 "되돌아가며 교차"하는 경로를 만든다.
     /// - 목표: gridSize(0.001) 셀을 실제로 덮을 수 있을 만큼(> 0.001도) 큰 루프를 만든다.
     /// - 단, 1초마다 이동할 때 speed limit(5.56m/s)을 넘지 않도록 한 step은 약 5~6m로 유지.
-    private func buildMockRoute(around base: CLLocationCoordinate2D) -> [CLLocationCoordinate2D] {
-        // 목표
-        // - 사방팔방(곡선/사선/지그재그)으로 움직이되
-        // - 1초 step은 약 4~5m로 유지해서 speed limit(5.56m/s) 아래
-        // - 중간에 과거 지점으로 "서서히" 되돌아가 교차를 만들어 루프 감지 트리거
-        // - gridSize(0.0005)보다 충분히 큰 영역을 커버
+    private func buildMockRoute(around base: CLLocationCoordinate2D, seed: UInt64) -> [CLLocationCoordinate2D] {
+        // ✅ 사람이 실제로 달리는 것처럼 "크게 빙 둘러" 한 바퀴 도는 루프를 만든다.
+        // - 지그재그/왕복을 줄이고, 부드러운 타원(oval) 궤적으로 이동
+        // - 마지막에 시작점 근처로 자연스럽게 복귀하면서 폐구간(교차) 트리거
 
-        // 위도 0.000045 ≈ 5m 내외 (경도는 위도에 따라 m가 더 작아져서 약간 더 크게 잡아도 안전)
-        let stepLat: Double = 0.00004
-        let stepLng: Double = 0.00005
-
-        func add(_ arr: inout [CLLocationCoordinate2D], _ c: CLLocationCoordinate2D) {
-            arr.append(c)
+        var rng = SeededGenerator(seed: seed)
+        func rand(_ range: ClosedRange<Double>) -> Double {
+            Double.random(in: range, using: &rng)
         }
 
-        func moveToward(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> CLLocationCoordinate2D {
-            // to 방향으로 한 step만큼 이동 (대각선이라도 step 크기 자체를 제한)
-            let dLat = to.latitude - from.latitude
-            let dLng = to.longitude - from.longitude
-            let len = max(1e-12, sqrt(dLat * dLat + dLng * dLng))
-            let nLat = dLat / len
-            let nLng = dLng / len
-            return CLLocationCoordinate2D(
-                latitude: from.latitude + nLat * stepLat,
-                longitude: from.longitude + nLng * stepLng
-            )
-        }
+        // ✅ 15초 내 폐구간을 만들기 위해, "큰 원"보단 "중간 원"을 더 적은 포인트로 크게 점프한다.
+        // (위도/경도 m 환산 차이는 디버그 목적엔 충분)
+        let radiusLat = rand(0.0018...0.0032)   // 대략 200~350m
+        let radiusLng = rand(0.0022...0.0038)   // 대략 200~350m(한국 위도 기준)
+
+        // 매번 약간 다른 방향으로
+        let phase = rand(0...Double.pi * 2)
+
+        // ✅ 1초에 1포인트 소비하므로, 전체 길이를 ~15초로 맞춘다.
+        // 타원 1바퀴를 10~13포인트로 그리면 1초당 이동거리가 커져서 "더 멀리" 움직이는 느낌이 난다.
+        let points = Int(rand(10...13))
+
+        // 흔들림(너무 크면 왕복처럼 보이니 아주 작게)
+        let jitterLat = gridSize * rand(0.02...0.08)
+        let jitterLng = gridSize * rand(0.02...0.08)
 
         var route: [CLLocationCoordinate2D] = []
-        var pos = base
-        add(&route, pos)
+        route.reserveCapacity(points + 20)
 
-        // 1) 사방팔방 곡선 이동(결정론적 패턴): angle이 계속 변하면서 지그재그/곡선이 됨
-        //    - 순수 random 대신 sin/cos 혼합으로 재현 가능
-        let total = 180
-        for i in 1...total {
-            let t = Double(i)
-            // 각도가 천천히 돌면서, 중간중간 방향이 튀는 느낌(사선/곡선)
-            let angle = (t * 0.22)
-                + sin(t * 0.11) * 1.15
-                + cos(t * 0.07) * 0.85
+        // 1) 타원 루프 1바퀴
+        for i in 0..<points {
+            let t = (Double(i) / Double(points)) * (Double.pi * 2) + phase
 
-            let dLat = sin(angle) * stepLat
-            let dLng = cos(angle) * stepLng
+            // 약한 비틀림(단조로움 방지, but 과하게 튀지 않게)
+            let wobble = sin(t * 2) * rand(-0.08...0.08)
 
-            pos = CLLocationCoordinate2D(latitude: pos.latitude + dLat, longitude: pos.longitude + dLng)
-            add(&route, pos)
+            let lat = base.latitude + sin(t + wobble) * radiusLat + rand(-jitterLat...jitterLat)
+            let lng = base.longitude + cos(t - wobble) * radiusLng + rand(-jitterLng...jitterLng)
+
+            route.append(.init(latitude: lat, longitude: lng))
         }
 
-        // 2) 교차를 강제로 만들기: 과거의 한 지점을 목표로 "서서히" 접근
-        //    - 큰 점프가 아니라 여러 step으로 이동해서 speed check를 통과
-        if route.count > 60 {
-            let target = route[40] // 충분히 과거 지점
-            for _ in 0..<35 {
-                pos = moveToward(from: pos, to: target)
-                add(&route, pos)
+        // 2) 시작점 근처로 자연스럽게 닫히도록 tail 추가 (교차 트리거 확률↑)
+        if let first = route.first, let last = route.last {
+            // 닫힘을 보장하기 위한 짧은 tail (전체 15초 목표)
+            let tailSteps = Int(rand(2...3))
+            var pos = last
+            for _ in 0..<tailSteps {
+                let dLat = first.latitude - pos.latitude
+                let dLng = first.longitude - pos.longitude
+                pos = .init(
+                    latitude: pos.latitude + dLat * 0.35 + rand(-jitterLat...jitterLat),
+                    longitude: pos.longitude + dLng * 0.35 + rand(-jitterLng...jitterLng)
+                )
+                route.append(pos)
             }
-        }
-
-        // 3) 다시 사방팔방으로 한 번 더 돌아서 루프가 닫힐 확률 증가
-        let total2 = 120
-        for i in 1...total2 {
-            let t = Double(i) + 1000 // phase shift
-            let angle = (t * 0.18)
-                + sin(t * 0.09) * 1.25
-                + cos(t * 0.05) * 0.95
-
-            let dLat = sin(angle) * stepLat
-            let dLng = cos(angle) * stepLng
-
-            pos = CLLocationCoordinate2D(latitude: pos.latitude + dLat, longitude: pos.longitude + dLng)
-            add(&route, pos)
-        }
-
-        // 4) 시작점 근처로 천천히 복귀(되돌아가기)해서 폐구간 생성 확률을 더 올림
-        for _ in 0..<45 {
-            pos = moveToward(from: pos, to: base)
-            add(&route, pos)
+            // 확실히 닫기
+            route.append(first)
         }
 
         return route
@@ -140,12 +139,12 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             mockRouteIndex = 0
             mockDriftStep += 1
 
-            // 몇 사이클마다 기준점을 살짝 이동해서 "같은 곳만 돈다" 느낌 제거
-            let driftLat = Double(mockDriftStep % 5) * 0.00015 // ~15~20m씩 누적 느낌
-            let driftLng = Double(mockDriftStep % 5) * 0.00015
+            // 매 사이클마다 기준점을 랜덤으로 살짝 이동(같은 구역만 도는 느낌 제거)
+            let driftLat = Double.random(in: -0.0030...0.0030) // 대략 -300m ~ +300m
+            let driftLng = Double.random(in: -0.0030...0.0030)
 
             let base = CLLocationCoordinate2D(latitude: coord.latitude + driftLat, longitude: coord.longitude + driftLng)
-            mockRoute = buildMockRoute(around: base)
+            mockRoute = buildMockRoute(around: base, seed: UInt64(mockDriftStep) ^ UInt64(Date().timeIntervalSince1970))
             print("🧪 Mock route rebuilt. driftStep=\(mockDriftStep) points=\(mockRoute.count)")
         }
 
@@ -167,54 +166,41 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         clManager.desiredAccuracy = kCLLocationAccuracyBest
         clManager.requestWhenInUseAuthorization()
     }
-
+    
     func updateRunRecord(imageURL: String? = nil) {
         guard let start = startTime else {
             print("⚠️ 시작 시간이 설정되지 않았습니다")
             return
         }
 
-        let capturedAreas: [CoordinatePairWithGroup] = polygons.enumerated().flatMap { (index, polygon) in
-            let points = polygon.points()
-            let count = polygon.pointCount
-            return (0..<count).map {
-                let coordinate = points[$0].coordinate
-                return CoordinatePairWithGroup(latitude: coordinate.latitude, longitude: coordinate.longitude, groupId: index + 1)
-            }
+        guard let uid = Auth.auth().currentUser?.uid else {
+            print("⚠️ 로그인된 사용자가 없습니다. RunRecord 저장 중단")
+            return
         }
 
-        let newData = RunRecordModels(
+        let routeEncoded = PolylineEncoder.encode(coordinates)
+        let routeFrame = computeRouteFrame(from: coordinates)
+
+        let newData = RunRecordModel(
             id: nil,
-            distance: calculateTotalDistance(),
             startTime: start,
             endTime: endTime,
-            routeImage: imageURL,
-            coordinates: coordinates.map { CoordinatePair(latitude: $0.latitude, longitude: $0.longitude) },
-            capturedAreas: capturedAreas,
-            capturedAreaValue: 0,
-            capturedCellIds: Array(self.capturedCellIds)
+            distanceM: calculateTotalDistance(),
+            routeEncoded: routeEncoded,
+            capturedCellIds: Array(self.capturedCellIds),
+            routeFrame: routeFrame
         )
 
         do {
-            let ref = db.collection("RunRecordModels").document()
-            try ref.setData(from: newData) { error in
+            // Firestore path: RunRecords/{userId}/runs/{runId}
+            let ref = db.collection("RunRecords").document(uid).collection("runs").document()
+            try ref.setData(from: newData) { [weak self] error in
                 if let error = error {
                     print("Firestore 저장 실패: \(error.localizedDescription)")
                 } else {
-                    print("Firestore에 데이터 저장 성공")
-
-                    // ✅ 셀 점령 결과도 같은 문서에 저장 (merge)
-                    let cellsArray = Array(self.capturedCellIds)
-                    ref.setData(["capturedCellIds": cellsArray], merge: true) { err in
-                        if let err = err {
-                            print("capturedCellIds 저장 실패: \(err.localizedDescription)")
-                        } else {
-                            print("capturedCellIds 저장 성공: \(cellsArray.count)개")
-                        }
-                    }
-
+                    print("Firestore에 RunRecord 저장 성공 (uid=\(uid), runId=\(ref.documentID))")
                     DispatchQueue.main.async {
-                        self.runRecord = newData
+                        self?.runRecord = newData
                     }
                 }
             }
@@ -226,8 +212,15 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     /// 서버에서 런닝 기록 가져오기
     func fetchRunRecordsFromFirestore() {
         firestoreListener?.remove()
-        
-        firestoreListener = db.collection("RunRecordModels")
+
+        guard let uid = Auth.auth().currentUser?.uid else {
+            print("⚠️ 로그인된 사용자가 없습니다. RunRecords fetch 중단")
+            return
+        }
+
+        firestoreListener = db.collection("RunRecords")
+            .document(uid)
+            .collection("runs")
             .order(by: "start_time", descending: true)
             .addSnapshotListener { [weak self] snapshot, error in
                 guard let self = self else { return }
@@ -236,7 +229,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
                     return
                 }
 
-                let dataList = documents.compactMap { try? $0.data(as: RunRecordModels.self) }
+                let dataList = documents.compactMap { try? $0.data(as: RunRecordModel.self) }
                 DispatchQueue.main.async {
                     self.runRecordList = dataList
                     self.runRecord = dataList.first
@@ -263,6 +256,8 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         endTime = nil
         polylines.removeAll()
         polygons.removeAll()
+        capturedCellIds.removeAll()
+        renderedCellIds.removeAll()
         lastIntersectionIndex = nil
 
         // mock 모드에서는 실제 GPS 업데이트를 꺼서 state 덮어쓰기를 방지
@@ -280,7 +275,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             let base = self.currentLocation
                 ?? self.clManager.location?.coordinate
                 ?? CLLocationCoordinate2D(latitude: 37.3317, longitude: -122.0301)
-            self.mockRoute = buildMockRoute(around: base)
+            self.mockRoute = buildMockRoute(around: base, seed: UInt64(Date().timeIntervalSince1970))
             self.mockRouteIndex = 0
             print("🧪 Mock route enabled. points=\(mockRoute.count)")
         }
@@ -295,6 +290,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
                 if let mock = self.nextMockCoordinate() {
                     self.updateRunCoordinateIfValid(newCoordinate: mock)
                     self.currentLocation = mock
+                    self.centerMapOnceOnFirstLocationIfNeeded(mock)
                     self.centerMap(on: mock)
                 }
                 return
@@ -304,6 +300,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             if let lastLocation = self.clManager.location {
                 self.updateRunCoordinateIfValid(newCoordinate: lastLocation.coordinate)
                 self.currentLocation = lastLocation.coordinate
+                self.centerMapOnceOnFirstLocationIfNeeded(lastLocation.coordinate)
                 self.centerMap(on: lastLocation.coordinate)
             }
         }
@@ -326,20 +323,33 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             self.polygons.removeAll()
             self.capturedAreas.removeAll()
             self.capturedCellIds.removeAll()
+            self.renderedCellIds.removeAll()
         }
         coordinates.removeAll()
         lastIntersectionIndex = nil
+        didCenterOnFirstLocation = false
     }
     
     /// 런닝 시: 좌표가 유효한지 확인
     private func updateRunCoordinateIfValid(newCoordinate: CLLocationCoordinate2D) {
+        #if DEBUG
+        // 🧪 Mock route는 테스트 편의상 큰 step을 쓰므로, 유효성 검사를 잠깐 우회
+        if useMockRoute {
+            coordinates.append(newCoordinate)
+            drawPolylines()
+            checkAndDrawPolygon()
+            centerMap(on: newCoordinate)
+            return
+        }
+        #endif
+
         guard isValidCoordinate(newCoordinate, lastCoordinate: coordinates.last) else {
             print("좌표 업데이트 무시: \(newCoordinate.latitude), \(newCoordinate.longitude)")
             return
         }
         
         coordinates.append(newCoordinate)
-                drawPolylines()
+        drawPolylines()
         checkAndDrawPolygon()
         centerMap(on: newCoordinate)
     }
@@ -369,7 +379,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         for i in 0..<coordinates.count - 3 {
             let existingLineStart = coordinates[i]
             let existingLineEnd = coordinates[i + 1]
-            
+
             if linesIntersect(
                 line1Start: existingLineStart,
                 line1End: existingLineEnd,
@@ -384,14 +394,22 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
                 ) {
                     let polygonCoordinates: [CLLocationCoordinate2D] =
                         [x] + coordinates[(i+1)...(coordinates.count - 2)] + [x]
-                    let polygon = MKPolygon(coordinates: polygonCoordinates, count: polygonCoordinates.count)
-                    polygons.append(polygon)
-                    
-                    let areaCoordinatePairs = polygonCoordinates.map {
-                        CoordinatePairWithGroup(latitude: $0.latitude, longitude: $0.longitude, groupId: polygons.count)
+
+                    // ✅ 폴리곤 내부 셀 점령 계산 (하지만 '폐구간 자체'는 채우지 않고, 셀(사각형)만 색칠한다)
+                    let newlyCaptured = capturedCells(in: polygonCoordinates)
+                    let diff = newlyCaptured.subtracting(self.renderedCellIds)
+
+                    self.capturedCellIds.formUnion(newlyCaptured)
+
+                    // 새로 점령된 셀만 overlay(사각형 polygon)로 추가
+                    for id in diff {
+                        guard let origin = parseCellId(id) else { continue }
+                        let cellPolygon = makeCellPolygon(originLat: origin.lat, originLng: origin.lng)
+                        self.polygons.append(cellPolygon)
                     }
-                    capturedAreas.append(contentsOf: areaCoordinatePairs)
-                    lastIntersectionIndex = coordinates.count - 2
+                    self.renderedCellIds.formUnion(diff)
+
+                    print("🟩 Captured cells +\(diff.count) (total=\(self.capturedCellIds.count))")
                 }
                 break
             }
@@ -444,6 +462,68 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         return CLLocationCoordinate2D(latitude: py, longitude: px)
     }
     
+    // MARK: - Route encoding & frame
+    /// routeFrame: [minLat, minLng, maxLat, maxLng]
+    private func computeRouteFrame(from coords: [CLLocationCoordinate2D]) -> [Double] {
+        guard let first = coords.first else { return [0, 0, 0, 0] }
+
+        var minLat = first.latitude
+        var maxLat = first.latitude
+        var minLng = first.longitude
+        var maxLng = first.longitude
+
+        for c in coords.dropFirst() {
+            minLat = min(minLat, c.latitude)
+            maxLat = max(maxLat, c.latitude)
+            minLng = min(minLng, c.longitude)
+            maxLng = max(maxLng, c.longitude)
+        }
+        return [minLat, minLng, maxLat, maxLng]
+    }
+
+    /// Google Encoded Polyline Algorithm Format (1e5)
+    private enum PolylineEncoder {
+        static func encode(_ coords: [CLLocationCoordinate2D]) -> String {
+            guard !coords.isEmpty else { return "" }
+
+            var output = ""
+            var lastLat = 0
+            var lastLng = 0
+
+            for c in coords {
+                let lat = Int((c.latitude * 1e5).rounded())
+                let lng = Int((c.longitude * 1e5).rounded())
+
+                let dLat = lat - lastLat
+                let dLng = lng - lastLng
+
+                output.append(encodeValue(dLat))
+                output.append(encodeValue(dLng))
+
+                lastLat = lat
+                lastLng = lng
+            }
+
+            return output
+        }
+
+        private static func encodeValue(_ value: Int) -> String {
+            var v = value
+            v = v << 1
+            if value < 0 { v = ~v }
+
+            var encoded = ""
+            while v >= 0x20 {
+                let char = (0x20 | (v & 0x1f)) + 63
+                encoded.append(Character(UnicodeScalar(char)!))
+                v >>= 5
+            }
+            let lastChar = v + 63
+            encoded.append(Character(UnicodeScalar(lastChar)!))
+            return encoded
+        }
+    }
+    
     // MARK: - Capture cells inside a closed polygon
     /// 셀 id는 셀의 원점(lat, lng)을 "lat,lng" 문자열로 저장
     private func cellId(lat: Double, lng: Double) -> String {
@@ -461,6 +541,32 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     private func cellCenter(lat: Double, lng: Double) -> CLLocationCoordinate2D {
         let half = gridSize / 2
         return CLLocationCoordinate2D(latitude: lat + half, longitude: lng + half)
+    }
+
+    /// 셀이 "완전히" 폴리곤 내부인지 확인하기 위한 4 코너(모서리) 좌표를 만든다.
+    /// - floating error로 경계선 위 판정이 흔들릴 수 있으니, 아주 작은 epsilon만큼 안쪽으로 inset한다.
+    private func cellInsetCorners(lat: Double, lng: Double) -> [CLLocationCoordinate2D] {
+        let eps = gridSize * 0.001
+        let minLat = lat + eps
+        let minLng = lng + eps
+        let maxLat = (lat + gridSize) - eps
+        let maxLng = (lng + gridSize) - eps
+
+        return [
+            .init(latitude: minLat, longitude: minLng),
+            .init(latitude: minLat, longitude: maxLng),
+            .init(latitude: maxLat, longitude: maxLng),
+            .init(latitude: maxLat, longitude: minLng)
+        ]
+    }
+
+    /// 셀의 4 코너가 모두 폴리곤 내부면, 셀은 "온전히" 내부에 있다고 판단한다.
+    private func isCellFullyInsidePolygon(cellLat: Double, cellLng: Double, polygon: [CLLocationCoordinate2D]) -> Bool {
+        let corners = cellInsetCorners(lat: cellLat, lng: cellLng)
+        for c in corners {
+            if !containsPoint(c, in: polygon) { return false }
+        }
+        return true
     }
 
     /// 폴리곤 좌표들의 바운딩 박스(최소 사각형 범위)
@@ -509,7 +615,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     }
 
     /// 닫힌 폴리곤 내부에 들어가는 모든 셀 id를 계산한다.
-    /// 구현: 폴리곤 바운딩 박스를 gridSize 격자로 훑고, 각 셀 중심점이 폴리곤 내부면 점령
+    /// 구현: 폴리곤 바운딩 박스를 gridSize 격자로 훑고, 각 셀의 4 코너가 폴리곤 내부면 점령
     private func capturedCells(in polygon: [CLLocationCoordinate2D]) -> Set<String> {
         guard let b = polygonBounds(polygon) else { return [] }
 
@@ -524,8 +630,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         while lat <= endLat {
             var lng = startLng
             while lng <= endLng {
-                let center = cellCenter(lat: lat, lng: lng)
-                if containsPoint(center, in: polygon) {
+                if isCellFullyInsidePolygon(cellLat: lat, cellLng: lng, polygon: polygon) {
                     result.insert(cellId(lat: lat, lng: lng))
                 }
                 lng += gridSize
@@ -588,43 +693,99 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     /// 사용자의 현위치로 지도 이동
     func moveToCurrentLocation() {
         clManager.requestWhenInUseAuthorization()
-        if let currentLocation = clManager.location {
-            print("📍 Current location available: \(currentLocation.coordinate)")
-            centerMap(on: currentLocation.coordinate)
-            self.currentLocation = currentLocation.coordinate
-        } else {
+
+        guard let location = clManager.location else {
             print("⏳ No current location available yet.")
             clManager.startUpdatingLocation()
+            return
+        }
+
+        let coord = location.coordinate
+        print("📍 Current location available: \(coord)")
+
+        DispatchQueue.main.async {
+            let span = MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+            self.region = MKCoordinateRegion(center: coord, span: span)
+            self.currentLocation = coord
         }
     }
     
+    /// currentLocation이 "처음" 잡히는 순간에만 region을 해당 위치로 세팅한다.
+    /// - 사용자가 이후에 줌/이동을 했다면 그 상태를 존중하기 위해 1회만 실행.
+    private func centerMapOnceOnFirstLocationIfNeeded(_ coordinate: CLLocationCoordinate2D) {
+        guard !didCenterOnFirstLocation else { return }
+        didCenterOnFirstLocation = true
+
+        // 최초 진입에서는 span이 0일 수 있으니 안전한 기본 span으로 세팅
+        let fallbackSpan = MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+        region = MKCoordinateRegion(center: coordinate, span: fallbackSpan)
+    }
+
     /// 이 좌표를 중심으로 지도 화면을 이동함
     private func centerMap(on coordinate: CLLocationCoordinate2D) {
-        region = MKCoordinateRegion(
-            center: coordinate,
-            span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
-        )
+        // ✅ center만 따라가고, 사용자가 줌인/줌아웃한 span은 유지한다.
+        let currentSpan = region.span
+        let fallbackSpan = MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+
+        let spanToUse: MKCoordinateSpan
+        if currentSpan.latitudeDelta > 0, currentSpan.longitudeDelta > 0 {
+            spanToUse = currentSpan
+        } else {
+            spanToUse = fallbackSpan
+        }
+
+        region = MKCoordinateRegion(center: coordinate, span: spanToUse)
     }
     
-    /// 사용자의 전체 런닝 기록 중 영역만 가져옴
-    func loadCapturedPolygons(from records: [RunRecordModels]) {
-        var result: [MKPolygon] = []
-        for record in records {
-            /// 러닝 경로 전체 좌표로 폴리곤 만들기
-            let coords = record.coordinates.map {
-                CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
-            }
-            if coords.count >= 3 && coords.allSatisfy({ isValidCoordinate($0) }) {
-                var closedCoords = coords
-                if closedCoords.first?.latitude != closedCoords.last?.latitude ||
-                   closedCoords.first?.longitude != closedCoords.last?.longitude {
-                    closedCoords.append(closedCoords.first!)
-                }
-                let polygon = MKPolygon(coordinates: closedCoords, count: closedCoords.count)
-                result.append(polygon)
-            }
+    /// 사용자의 전체 런닝 기록 중 "점유한 셀"을 지도에 표시하기 위한 MKPolygon 배열을 만든다.
+    /// - records 안의 모든 capturedCellIds를 합쳐서, 각 셀을 사각형 폴리곤으로 변환한다.
+    func loadCapturedPolygons(from records: [RunRecordModel]) {
+        // 1) 모든 기록의 capturedCellIds 합치기
+        var allCellIds: Set<String> = []
+        for r in records {
+            allCellIds.formUnion(r.capturedCellIds)
         }
+
+        // 2) 각 셀을 사각형 MKPolygon으로 변환
+        var result: [MKPolygon] = []
+        result.reserveCapacity(allCellIds.count)
+
+        for id in allCellIds {
+            guard let origin = parseCellId(id) else { continue }
+            let polygon = makeCellPolygon(originLat: origin.lat, originLng: origin.lng)
+            result.append(polygon)
+        }
+
         self.polygons = result
+    }
+
+    /// "lat,lng" 형태의 셀 id를 파싱
+    private func parseCellId(_ id: String) -> (lat: Double, lng: Double)? {
+        let parts = id.split(separator: ",", omittingEmptySubsequences: true)
+        guard parts.count == 2,
+              let lat = Double(parts[0].trimmingCharacters(in: .whitespacesAndNewlines)),
+              let lng = Double(parts[1].trimmingCharacters(in: .whitespacesAndNewlines)) else {
+            return nil
+        }
+        return (lat, lng)
+    }
+
+    /// 셀의 원점(lat,lng)과 gridSize를 이용해 셀 사각형 폴리곤을 만든다.
+    private func makeCellPolygon(originLat: Double, originLng: Double) -> MKPolygon {
+        let minLat = originLat
+        let minLng = originLng
+        let maxLat = originLat + gridSize
+        let maxLng = originLng + gridSize
+
+        let coords: [CLLocationCoordinate2D] = [
+            .init(latitude: minLat, longitude: minLng),
+            .init(latitude: minLat, longitude: maxLng),
+            .init(latitude: maxLat, longitude: maxLng),
+            .init(latitude: maxLat, longitude: minLng),
+            .init(latitude: minLat, longitude: minLng) // close
+        ]
+
+        return MKPolygon(coordinates: coords, count: coords.count)
     }
     
     /// 권한이 바뀔 때 호출되는 delegate.
@@ -664,6 +825,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         let newCoordinate = location.coordinate
         print("유효 좌표 수신: \(newCoordinate.latitude), \(newCoordinate.longitude)")
         currentLocation = newCoordinate
+        centerMapOnceOnFirstLocationIfNeeded(newCoordinate)
         
         // 시뮬레이션 중일 때만 위치 업데이트 및 유효성 검사 수행
         if isSimulating {

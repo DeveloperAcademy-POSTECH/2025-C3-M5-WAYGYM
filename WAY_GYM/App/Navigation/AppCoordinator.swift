@@ -9,14 +9,6 @@ import Combine
 import Foundation
 import SwiftUI
 
-enum AppRouter: Hashable {
-    case auth
-    case profileSetup
-    case main
-    case profile
-    case setting
-}
-
 @MainActor
 final class AppCoordinator: ObservableObject {
     @Published var root: AppRouter = .auth

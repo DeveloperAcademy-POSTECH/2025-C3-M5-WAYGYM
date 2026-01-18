@@ -9,10 +9,9 @@ import SwiftUI
 import FirebaseFirestore
 
 struct MinionSingleView: View {
+    @EnvironmentObject var coordinator: AppCoordinator
     @ObservedObject var minionModel: MinionModel
     let minionIndex: Int
-    
-    @Environment(\.dismiss) var dismiss
     @State private var acquisitionDate: Date? = nil
     @StateObject private var runRecordVM = RunRecordService()
     
@@ -24,7 +23,7 @@ struct MinionSingleView: View {
             VStack {
                 HStack {
                     Button {
-                        dismiss()
+                        coordinator.pop()
                     } label: {
                         Image(systemName: "xmark")
                             .foregroundStyle(Color.gang_text_2)

@@ -9,11 +9,11 @@ import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
 
-
 struct RootView: View {
     @EnvironmentObject
     private var coordinator: AppCoordinator
     private let moduleFactory: ModuleFactoryProtocol
+    @StateObject var runRecordService = RunRecordService()
 
     init(
         moduleFactory: ModuleFactoryProtocol
@@ -26,44 +26,17 @@ struct RootView: View {
     var body: some View {
         NavigationStack(path: $coordinator.path) {
             Group {
-                switch coordinator.root {
-                case .auth:
-                    moduleFactory.makeAuthView {
-                        Task { await decideEntryAfterAuth() }
-                    }
-
-                case .profileSetup:
-                    moduleFactory.makeProfileSetupView()
-
-                case .main:
-                    moduleFactory.makeMainView()
-
-                case .profile:
-                    moduleFactory.makeProfileView()
-
-                case .setting:
-                    moduleFactory.makeSettingView()
+                moduleFactory.make(coordinator.root) {
+                    Task { await decideEntryAfterAuth() }
                 }
             }
             .navigationDestination(for: AppRouter.self) { route in
-                switch route {
-                case .auth:
-                    moduleFactory.makeAuthView {
-                        Task { await decideEntryAfterAuth() }
-                    }
-
-                case .profileSetup:
-                    moduleFactory.makeProfileSetupView()
-
-                case .main:
-                    moduleFactory.makeMainView()
-
-                case .profile:
-                    moduleFactory.makeProfileView()
-
-                case .setting:
-                    moduleFactory.makeSettingView()
+                moduleFactory.make(route) {
+                    Task { await decideEntryAfterAuth() }
                 }
+            }
+            .task {
+                runRecordService.startListeningUserRunRecords()
             }
             .onAppear {
                 authListener = Auth.auth().addStateDidChangeListener { _, _ in
@@ -78,6 +51,7 @@ struct RootView: View {
                 }
             }
         }
+        .environmentObject(runRecordService)
     }
     
     @MainActor

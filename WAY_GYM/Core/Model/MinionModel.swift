@@ -13,14 +13,14 @@ final class MinionModel: ObservableObject {
     @Published var allMinions: [MinionDefinitionModel] = []
 
     init() {
-        loadDummyWeapons()
+        loadMinionsData()
     }
     
     func unlockDistance(for index: Int) -> Double {
         return index == 1 ? 5 : Double((index - 1) * 10)
     }
 
-    func loadDummyWeapons() {
+    func loadMinionsData() {
         allMinions = [
             MinionDefinitionModel(
                 id: "minion_1",

@@ -6,58 +6,48 @@ struct ProfileView: View {
     @EnvironmentObject var coordinator: AppCoordinator
     
     @StateObject private var minionModel = MinionModel()
-    @StateObject private var runRecordVM = RunRecordService()
+    @EnvironmentObject var runRecordService: RunRecordService
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
-    
-    @Environment(\.dismiss) var dismiss
-    
+
     var hasUnlockedMinions: Bool {
         let unlocked = minionModel.allMinions.filter { minion in
-            return RewardService().isUnlocked(minion, with: Int(runRecordVM.totalDistance))
+            return RewardService().isUnlocked(minion, with: Int(runRecordService.totalDistance))
         }
         return !unlocked.isEmpty
     }
     
     var hasRunRecords: Bool {
-        runRecordVM.totalDistance > 0
+        runRecordService.totalDistance > 0
     }
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                Color.gang_bg_profile
-                    .ignoresSafeArea()
-
-                VStack {
-                    ScrollView {
-                        VStack(spacing: 16) {
-                            userSection
-
-                            statsSection
-
-                            minionsSection
-
-                            runningRecordsSection
-                        }
-                        .padding(.top, 70)
+        ZStack {
+            Color.gang_bg_profile
+                .ignoresSafeArea()
+            
+            VStack {
+                ScrollView {
+                    VStack(spacing: 16) {
+                        userSection
+                        
+                        statsSection
+                        
+                        minionsSection
+                        
+                        runningRecordsSection
                     }
-                    .scrollIndicators(.hidden)
-                    .edgesIgnoringSafeArea(.top)
-
-                    CustomButton(title: "구역 확장하러 가기") {
-                        coordinator.popToRoot()
-                    }
+                    .padding(.top, 70)
                 }
-                .padding(.horizontal, 25)
-            }
-            .task {
-                runRecordVM.fetchAndSumDistances { total in
-                    print("총 거리: \(total)")
+                .scrollIndicators(.hidden)
+                .edgesIgnoringSafeArea(.top)
+                
+                CustomButton(title: "구역 확장하러 가기") {
+                    coordinator.popToRoot()
                 }
-                runRecordVM.fetchAndSumCapturedValue()
             }
+            .padding(.horizontal, 25)
         }
-        .navigationBarHidden(true)
+        .backHiddenSwipeEnabled()
         .ignoresSafeArea(.all, edges: .top)
     }
 
@@ -115,24 +105,20 @@ struct ProfileView: View {
                 Spacer()
 
                 VStack {
-                    NavigationLink(
-                        destination: WeaponListView()
-                            .foregroundStyle(Color.gang_text_2)
-                            .environmentObject(RewardService())
-                            .environmentObject(runRecordVM)
-                    ) {
-                        ZStack {
-                            Image("box")
-                                .resizable()
-                                .frame(width: 52, height: 52)
-
-                            Image("weapon_\(selectedWeaponId)")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 40)
-                        }
+                    ZStack {
+                        Image("box")
+                            .resizable()
+                            .frame(width: 52, height: 52)
+                        
+                        Image("weapon_\(selectedWeaponId)")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 40)
                     }
-
+                    .onTapGesture {
+                        coordinator.push(.weaponList)
+                    }
+                    
                     Text("무기")
                         .font(.title02)
                 }
@@ -145,14 +131,14 @@ struct ProfileView: View {
         HStack {
             statCard(
                 title: "총 차지한 영역",
-                value: "\(runRecordVM.totalCapturedAreaValue)m²"
+                value: "\(runRecordService.totalCapturedAreaValue)m²"
             )
 
             Spacer().frame(width: 16)
 
             statCard(
                 title: "총 이동한 거리",
-                value: "\(formatDecimal(runRecordVM.totalDistance / 1000)) km"
+                value: "\(formatDecimal(runRecordService.totalDistance / 1000)) km"
             )
         }
     }
@@ -176,19 +162,16 @@ struct ProfileView: View {
             HStack {
                 Text("나의 똘마니")
                     .font(.title01)
-
+                
                 Spacer()
-
-                NavigationLink(
-                    destination: MinionListView()
-                        .font(.text01)
-                        .foregroundColor(Color.gang_text_2)
-                ) {
-                    Text("모두 보기")
-                        .foregroundStyle(Color.gang_highlight_3)
-                }
-                .opacity(hasUnlockedMinions ? 1 : 0)
-                .disabled(!hasUnlockedMinions)
+                
+                Text("모두 보기")
+                    .foregroundStyle(Color.gang_highlight_3)
+                    .onTapGesture {
+                        coordinator.push(.minionList)
+                    }
+                    .opacity(hasUnlockedMinions ? 1 : 0)
+                    .disabled(!hasUnlockedMinions)
             }
 
             ProfileMinionView()
@@ -205,20 +188,16 @@ struct ProfileView: View {
             HStack {
                 Text("구역순찰 기록")
                     .font(.title01)
-
+                
                 Spacer()
-
-                NavigationLink(
-                    destination: RunningListView()
-                        .environmentObject(runRecordVM)
-                        .foregroundColor(Color.gang_text_2)
-                        .font(.title01)
-                ) {
-                    Text("모두 보기")
-                        .foregroundStyle(Color.gang_highlight_3)
-                }
-                .opacity(hasRunRecords ? 1 : 0)
-                .disabled(!hasRunRecords)
+                
+                Text("모두 보기")
+                    .foregroundStyle(Color.gang_highlight_3)
+                    .onTapGesture {
+                        coordinator.push(.runningList)
+                    }
+                    .opacity(hasRunRecords ? 1 : 0)
+                    .disabled(!hasRunRecords)
             }
 
             ProfileRunningView()
