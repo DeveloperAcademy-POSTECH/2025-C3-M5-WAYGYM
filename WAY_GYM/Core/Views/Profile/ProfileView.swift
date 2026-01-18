@@ -6,7 +6,7 @@ struct ProfileView: View {
     @EnvironmentObject var coordinator: AppCoordinator
     
     @StateObject private var minionModel = MinionModel()
-    @EnvironmentObject var runRecordService: RunRecordService
+    @EnvironmentObject var runRecordService: RunRecordStore
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
 
     var hasUnlockedMinions: Bool {

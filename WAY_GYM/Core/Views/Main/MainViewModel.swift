@@ -9,8 +9,6 @@ import Foundation
 import Combine
 import CoreGraphics
 import MapKit
-import FirebaseFirestore
-import FirebaseFirestoreSwift
 import FirebaseAuth
 
 final class MainViewModel: ObservableObject {
@@ -36,7 +34,7 @@ final class MainViewModel: ObservableObject {
         print("🎬 markRunStart | prevTotal(m)=\(runStartTotalDistanceM)")
     }
     
-    private let db = Firestore.firestore()
+    private let runRecordRepository: RunRecordRepositoryProtocol = RunRecordRepository()
     
     @Published var isAreaActive: Bool = false
     private var backupPolylines: [MKPolyline] = []
@@ -133,17 +131,17 @@ final class MainViewModel: ObservableObject {
         locationManager.moveToCurrentLocation()
     }
 
-    func toggleCapturedArea(locationManager: LocationManager) {
+    func toggleCapturedArea(locationManager: LocationManager, records: [RunRecordModel]) {
         isAreaActive.toggle()
 
         if isAreaActive {
             backupPolylines = locationManager.polylines
             locationManager.polylines.removeAll()
-            locationManager.loadCapturedPolygons(from: locationManager.runRecordList)
+            locationManager.loadCapturedPolygons(from: records)
         } else {
             locationManager.polygons.removeAll()
             locationManager.polylines = backupPolylines
-            locationManager.fetchRunRecordsFromFirestore()
+            locationManager.runRecordList = records
         }
 
         // 기존 LocationManager 플래그도 동기화(프로젝트 내 다른 곳에서 쓸 수 있으니)
@@ -159,97 +157,31 @@ extension MainViewModel {
             return
         }
 
-        db.collection("RunRecords")
-            .document(uid)
-            .collection("runs")
-            .order(by: "start_time", descending: true)
-            .limit(to: 1)
-            .getDocuments(source: .default) { [weak self] snapshot, error in
-                if let error = error {
-                    print("❌ 최신 런닝 결과 불러오기 실패: \(error.localizedDescription)")
-                    return
-                }
-
-                guard let doc = snapshot?.documents.first else {
+        Task {
+            do {
+                guard let latest = try await runRecordRepository.fetchLatestRunRecord(uid: uid) else {
                     print("❌ 최신 런닝 결과 문서 없음")
                     return
                 }
 
-                // 1) UI 빠르게: 문서에서 요약 필드로 lightweight 모델 먼저 세팅
-                let data = doc.data()
+                await MainActor.run {
+                    self.latestRunRecord = latest
 
-                let startTime: Date = {
-                    if let ts = data["start_time"] as? Timestamp { return ts.dateValue() }
-                    if let date = data["start_time"] as? Date { return date }
-                    return Date()
-                }()
-
-                let endTime: Date? = {
-                    if let ts = data["end_time"] as? Timestamp { return ts.dateValue() }
-                    if let date = data["end_time"] as? Date { return date }
-                    return nil
-                }()
-
-                let distanceM: Double = {
-                    if let d = data["distance_m"] as? Double { return d }
-                    if let i = data["distance_m"] as? Int { return Double(i) }
-                    return 0
-                }()
-
-                let routeEncoded: String = (data["route_encoded"] as? String) ?? ""
-
-                let capturedCellIds: [String] = {
-                    if let arr = data["captured_cell_ids"] as? [String] { return arr }
-                    return []
-                }()
-
-                let routeFrame: [Double] = {
-                    if let arr = data["route_frame"] as? [Double] { return arr }
-                    if let arr = data["route_frame"] as? [NSNumber] { return arr.map { $0.doubleValue } }
-                    return [0, 0, 0, 0]
-                }()
-
-                let lightweight = RunRecordModel(
-                    id: doc.documentID,
-                    startTime: startTime,
-                    endTime: endTime,
-                    distanceM: distanceM,
-                    routeEncoded: routeEncoded,
-                    capturedCellIds: capturedCellIds,
-                    routeFrame: routeFrame
-                )
-
-                DispatchQueue.main.async {
-                    guard let self else { return }
-                    self.latestRunRecord = lightweight
-
-                    // "이번 런" 보상(새로 해금된 무기) 계산: 리스너 반영 지연과 무관하게 즉시 계산
+                    // "이번 런" 보상(새로 해금된 무기) 계산
                     self.justUnlockedWeaponIds = self.computeJustUnlockedWeaponIds(
                         prevTotalDistanceM: self.runStartTotalDistanceM,
-                        addedDistanceM: distanceM
+                        addedDistanceM: latest.distanceM
                     )
-                    
-                    let newTotal = self.runStartTotalDistanceM + distanceM
-                    print("🧾 latestRunResult | docId=\(doc.documentID) start=\(startTime) end=\(String(describing: endTime)) distanceM=\(distanceM)")
-                    print("🧮 rewardCalc input | prevTotalDistanceM=\(self.runStartTotalDistanceM) addedDistanceM=\(distanceM) newTotalDistanceM=\(newTotal)")
+
+                    let newTotal = self.runStartTotalDistanceM + latest.distanceM
+                    print("🧾 latestRunResult | docId=\(latest.id ?? "(no id)") start=\(latest.startTime) end=\(String(describing: latest.endTime)) distanceM=\(latest.distanceM)")
+                    print("🧮 rewardCalc input | prevTotalDistanceM=\(self.runStartTotalDistanceM) addedDistanceM=\(latest.distanceM) newTotalDistanceM=\(newTotal)")
                     print("🎁 justUnlockedWeaponIds=\(self.justUnlockedWeaponIds)")
-
-                    print("⚡️ 요약 필드로 최신 런 결과 먼저 표시: \(doc.documentID)")
                 }
-
-                // 2) 백그라운드에서 전체 디코딩 후 교체
-                DispatchQueue.global(qos: .userInitiated).async {
-                    do {
-                        let fullRecord = try doc.data(as: RunRecordModel.self)
-                        DispatchQueue.main.async {
-                            self?.latestRunRecord = fullRecord
-                            print("✅ 최신 런 결과 전체 디코딩 완료: \(fullRecord.id ?? "(no id)")")
-                        }
-                    } catch {
-                        print("❌ 최신 런 결과 전체 디코딩 실패: \(error)")
-                    }
-                }
+            } catch {
+                print("❌ 최신 런닝 결과 불러오기 실패: \(error.localizedDescription)")
             }
+        }
     }
 
     /// prevTotalDistanceM(런 시작 전 누적) + addedDistanceM(이번 런 거리)를 기준으로 "이번 런으로 새로" 해금된 무기 id를 계산

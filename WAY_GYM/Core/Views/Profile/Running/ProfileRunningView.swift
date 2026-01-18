@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ProfileRunningView: View {
-    @EnvironmentObject var runRecordService: RunRecordService
+    @EnvironmentObject var runRecordService: RunRecordStore
     @EnvironmentObject var coordinator: AppCoordinator
     private var topSummaries: [RunRecordModel] {
         Array(runRecordService.runRecords.sorted(by: { $0.startTime > $1.startTime }).prefix(3))
@@ -45,7 +45,7 @@ struct ProfileRunningView: View {
 
 #Preview {
     ProfileRunningView()
-        .environmentObject(RunRecordService())
+        .environmentObject(RunRecordStore())
         .environmentObject(AppCoordinator())
         .foregroundColor(Color.gang_text_2)
         .font(.title01)

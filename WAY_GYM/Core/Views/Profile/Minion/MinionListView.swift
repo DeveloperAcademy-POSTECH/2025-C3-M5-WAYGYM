@@ -1,13 +1,13 @@
 import SwiftUI
 import FirebaseFirestore
 
-// minion = distance, 5000단위
+// minion = 점령전(듀오) 승리 보상, 점령전은 시작한 후 보름 동안 유지된 후 승패가 결정됨
 struct MinionListView: View {
     @StateObject private var minionModel = MinionModel()
     @StateObject private var rewardService = RewardService()
     @State private var selectedMinion: MinionDefinitionModel? = nil
     
-    @StateObject private var runRecordVM = RunRecordService()
+    @StateObject private var runRecordVM = RunRecordStore()
     @State private var acquisitionDate: Date? = nil
     
     var body: some View {

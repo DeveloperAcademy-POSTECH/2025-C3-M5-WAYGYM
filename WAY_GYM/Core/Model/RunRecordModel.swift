@@ -27,15 +27,18 @@ struct RunRecordModel: Identifiable, Codable, Equatable {
         case routeFrame = "route_frame"
     }
 
-    init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-        startTime = try c.decode(Date.self, forKey: .startTime)
-        endTime = try c.decodeIfPresent(Date.self, forKey: .endTime)
-        distanceM = try c.decodeIfPresent(Double.self, forKey: .distanceM) ?? 0
-        routeEncoded = try c.decodeIfPresent(String.self, forKey: .routeEncoded) ?? ""
-        capturedCellIds = (try? c.decode([String].self, forKey: .capturedCellIds)) ?? []
-        routeFrame = (try? c.decode([Double].self, forKey: .routeFrame)) ?? [0, 0, 0, 0]
-    }
+//    init(from decoder: Decoder) throws {
+//        let c = try decoder.container(keyedBy: CodingKeys.self)
+//        if let docId = decoder.userInfo[FirestoreDecodingUserInfoKey.documentID] as? String {
+//            id = docId
+//        }
+//        startTime = try c.decode(Date.self, forKey: .startTime)
+//        endTime = try c.decodeIfPresent(Date.self, forKey: .endTime)
+//        distanceM = try c.decodeIfPresent(Double.self, forKey: .distanceM) ?? 0
+//        routeEncoded = try c.decodeIfPresent(String.self, forKey: .routeEncoded) ?? ""
+//        capturedCellIds = (try? c.decode([String].self, forKey: .capturedCellIds)) ?? []
+//        routeFrame = (try? c.decode([Double].self, forKey: .routeFrame)) ?? [0, 0, 0, 0]
+//    }
 
     init(
         id: String? = nil,

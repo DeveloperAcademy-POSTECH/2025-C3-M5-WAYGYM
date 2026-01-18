@@ -13,7 +13,7 @@ struct MinionSingleView: View {
     @ObservedObject var minionModel: MinionModel
     let minionIndex: Int
     @State private var acquisitionDate: Date? = nil
-    @StateObject private var runRecordVM = RunRecordService()
+    @StateObject private var runRecordVM = RunRecordStore()
     
     var body: some View {
         ZStack {

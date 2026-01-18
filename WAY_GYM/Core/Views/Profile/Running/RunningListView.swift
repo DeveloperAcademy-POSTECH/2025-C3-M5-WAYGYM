@@ -2,7 +2,7 @@ import SwiftUI
 import FirebaseFirestore
 
 struct RunningListView: View {
-    @EnvironmentObject private var runRecordService: RunRecordService
+    @EnvironmentObject private var runRecordService: RunRecordStore
 
     private var summaries: [RunRecordModel] {
         runRecordService.runRecords
@@ -91,7 +91,7 @@ private enum RunRecordFormatters {
     RunningListView()
         .foregroundColor(Color.gang_text_2)
         .font(.title01)
-        .environmentObject(RunRecordService())
+        .environmentObject(RunRecordStore())
 }
 
 extension Date {

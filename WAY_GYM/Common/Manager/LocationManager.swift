@@ -3,7 +3,6 @@ import MapKit
 import CoreLocation
 import HealthKit
 import FirebaseFirestore
-import FirebaseFirestoreSwift
 import FirebaseStorage
 import Photos
 import FirebaseCore
@@ -12,6 +11,8 @@ import FirebaseAuth
 // - CLLocationManager에게 사용자 위치를 받아서, 앱에서 쓰기 좋은 상태(@Published)로 가공한다.
 // - 러닝(시뮬레이션) 중: 경로 좌표를 누적하고 폴리라인/폴리곤 오버레이 데이터를 만든다.
 final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+    weak var runRecordStore: RunRecordStore?
+    
     private let clManager = CLLocationManager() /// GPS 위치를 받아오는 시스템 객체
     @Published var region = MKCoordinateRegion() // 지도가 보여줄 영역 (센터+줌)
     @Published var currentLocation: CLLocationCoordinate2D? // 현재 위치 표시하는 캐릭터 좌표
@@ -156,9 +157,8 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     private var startTime: Date?
     private var endTime: Date?
     
-    private let db = Firestore.firestore()
     private let storage = Storage.storage()
-    private var firestoreListener: ListenerRegistration?
+    private let runRecordRepository: RunRecordRepositoryProtocol = RunRecordRepository()
 
     override init() {
         super.init()
@@ -191,51 +191,28 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             routeFrame: routeFrame
         )
 
-        do {
-            // Firestore path: RunRecords/{userId}/runs/{runId}
-            let ref = db.collection("RunRecords").document(uid).collection("runs").document()
-            try ref.setData(from: newData) { [weak self] error in
-                if let error = error {
-                    print("Firestore 저장 실패: \(error.localizedDescription)")
-                } else {
-                    print("Firestore에 RunRecord 저장 성공 (uid=\(uid), runId=\(ref.documentID))")
-                    DispatchQueue.main.async {
-                        self?.runRecord = newData
-                    }
+        Task {
+            do {
+                let runId = try await runRecordRepository.saveRunRecord(uid: uid, record: newData)
+                print("Firestore에 RunRecord 저장 성공 (uid=\(uid), runId=\(runId))")
+                await MainActor.run {
+                    self.runRecord = newData
                 }
+                if let runRecordStore {
+                    await runRecordStore.refresh()
+                }
+            } catch {
+                print("Firestore 저장 실패: \(error.localizedDescription)")
             }
-        } catch {
-            print("Firestore 인코딩 실패: \(error.localizedDescription)")
         }
     }
 
-    /// 서버에서 런닝 기록 가져오기
+    /// 서버(runRecordStore)에서 런닝 기록 가져오기
     func fetchRunRecordsFromFirestore() {
-        firestoreListener?.remove()
-
-        guard let uid = Auth.auth().currentUser?.uid else {
-            print("⚠️ 로그인된 사용자가 없습니다. RunRecords fetch 중단")
-            return
-        }
-
-        firestoreListener = db.collection("RunRecords")
-            .document(uid)
-            .collection("runs")
-            .order(by: "start_time", descending: true)
-            .addSnapshotListener { [weak self] snapshot, error in
-                guard let self = self else { return }
-                guard let documents = snapshot?.documents else {
-                    print("Firestore에서 데이터 가져오기 실패: \(error?.localizedDescription ?? "No documents")")
-                    return
-                }
-
-                let dataList = documents.compactMap { try? $0.data(as: RunRecordModel.self) }
-                DispatchQueue.main.async {
-                    self.runRecordList = dataList
-                    self.runRecord = dataList.first
-                    self.polylines.removeAll()
-                }
-            }
+        let records = runRecordStore?.runRecords ?? []
+        runRecordList = records
+        runRecord = records.first
+        polylines.removeAll()
     }
 
     // MARK: - 런닝 중
@@ -462,7 +439,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         return CLLocationCoordinate2D(latitude: py, longitude: px)
     }
     
-    // MARK: - Route encoding & frame
+    // MARK: - 루트 인코딩
     /// routeFrame: [minLat, minLng, maxLat, maxLng]
     private func computeRouteFrame(from coords: [CLLocationCoordinate2D]) -> [Double] {
         guard let first = coords.first else { return [0, 0, 0, 0] }
@@ -524,7 +501,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         }
     }
     
-    // MARK: - Capture cells inside a closed polygon
+    // MARK: - 사용자가 획득한 땅 (셀)
     /// 셀 id는 셀의 원점(lat, lng)을 "lat,lng" 문자열로 저장
     private func cellId(lat: Double, lng: Double) -> String {
         "\(lat),\(lng)"

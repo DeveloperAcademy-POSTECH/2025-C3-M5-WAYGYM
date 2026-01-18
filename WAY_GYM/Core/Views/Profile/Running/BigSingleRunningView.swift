@@ -10,7 +10,7 @@ import MapKit
 
 struct BigSingleRunningView: View {
     @EnvironmentObject var coordinator: AppCoordinator
-    @EnvironmentObject private var runRecordService: RunRecordService
+    @EnvironmentObject private var runRecordService: RunRecordStore
 
     private let runId: String?
     private let initialSummary: RunRecordModel?

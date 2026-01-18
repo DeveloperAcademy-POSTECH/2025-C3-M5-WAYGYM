@@ -14,46 +14,31 @@ struct RunResultModalView: View {
     
     @State private var rewardQueue: [WeaponDefinitionModel] = []
     @State private var showRewardQueue: Bool = false
-
-    private let weaponModel = WeaponModel()
-
     private var hasReward: Bool {
         !rewardQueue.isEmpty
     }
+
+    private let weaponModel = WeaponModel()
 
     var body: some View {
         ZStack {
             Color.clear
             
-            VStack(spacing: 20) {
+            VStack(spacing: 24) {
                 Text("이번엔 여기까지...")
                     .font(.custom("NeoDunggeunmoPro-Regular", size: 30))
                     .bold()
                     .padding(.top, 26)
                     .foregroundColor(.white)
+
+                MiniMapThumbnail(
+                    route: PolylineDecoder.decode(routeEncoded: viewModel.latestRunRecord?.routeEncoded ?? ""),
+                    polygons: [],
+                    showsBackground: false
+                )
+                .frame(width: 222, height: 288)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
                 
-//                if let routeImage = viewModel.latestRunRecord?.routeImage,
-//                   let url = URL(string: routeImage) {
-//                    AsyncImage(url: url) { image in
-//                        Image("AppIcon")
-//                            .resizable()
-//                            .scaledToFit()
-//                            .frame(height: 370)
-//                            .shadow(radius: 4)
-//                            .padding(.horizontal, -10)
-//                    } placeholder: {
-//                        ProgressView()
-//                            .frame(height: 370)
-//                    }
-//                } else {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(height: 370)
-                        .cornerRadius(12)
-                        .overlay(Text("이미지 없음").foregroundColor(.gray))
-                // }
-                
-                VStack(spacing: 20) {
                     // TODO: 임시 계산: 셀 1칸 = 100m²
                     let capturedValue = (viewModel.latestRunRecord?.capturedCellIds.count ?? 0) * 100
                     if capturedValue > 0 {
@@ -62,9 +47,7 @@ struct RunResultModalView: View {
                             .foregroundColor(.white)
                             .padding(.top, -20)
                     }
-
-                    Spacer().frame(height: 0)
-
+                
                     if let record = viewModel.latestRunRecord {
                         let duration = record.duration
                         let distance = record.distanceM
@@ -86,9 +69,6 @@ struct RunResultModalView: View {
                         .font(.title03)
                         .foregroundColor(.white)
                     }
-                }
-                
-                Spacer().frame(height: 0)
                 
                 Button(action: {
                     if !rewardQueue.isEmpty {
@@ -155,11 +135,26 @@ private func formatDuration(_ duration: TimeInterval) -> String {
     return formatter.string(from: duration) ?? "00:00:00"
 }
 
-#Preview {
-    RunResultModalView(
-        viewModel: MainViewModel(),
+#Preview("RunResultModalView – Dummy Data") {
+    let vm = MainViewModel()
+
+    // 📌 더미 런 기록 (최근 런 결과)
+    vm.latestRunRecord = RunRecordModel(
+        id: "dummy-run-id",
+        startTime: Date().addingTimeInterval(-30 * 60), // 30분 전
+        endTime: Date(),
+        distanceM: 3200, // 3.2km
+        routeEncoded: "ixb{E{nttWoEMiE]cE@yDOdEF}DG`EAwEEvEFyEItE\\{DStDB_E?dE@aEW`Ef@sEg@`ELoDF|DA{D@rDJcEOpE?uEIdEZiEc@|EP{ECjEVqDk@",
+        capturedCellIds: Array(repeating: "36.064163,129.379981", count: 12),
+        routeFrame: [36.0635, 129.3790, 36.0650, 129.3810]
+    )
+
+    return RunResultModalView(
+        viewModel: vm,
         onComplete: {
-            print("구역 확장 결과 모달 버튼 클릭")
+            print("Preview complete tapped")
         }
     )
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(Color.black)
 }

@@ -98,9 +98,16 @@ private struct RunRecordInfoItem: View {
 }
 
 // MARK: - MiniMap Thumbnail View
-private struct MiniMapThumbnail: View {
+struct MiniMapThumbnail: View {
     let route: [CLPoint]
     let polygons: [[CLPoint]]
+    let showsBackground: Bool
+
+    init(route: [CLPoint], polygons: [[CLPoint]], showsBackground: Bool = true) {
+        self.route = route
+        self.polygons = polygons
+        self.showsBackground = showsBackground
+    }
 
     // 렌더링 여백
     private let paddingRatio: CGFloat = 0.12
@@ -113,8 +120,10 @@ private struct MiniMapThumbnail: View {
             let projector = Projector(bounds: bounds, canvasSize: size, paddingRatio: paddingRatio)
 
             ZStack {
-                MiniMapBackground()
-                    .clipShape(Rectangle())
+                if showsBackground {
+                    MiniMapBackground()
+                        .clipShape(Rectangle())
+                }
 
                 Canvas { context, _ in
                     // 1) polygon fill
@@ -153,16 +162,18 @@ private struct MiniMapThumbnail: View {
                     }
                 }
 
-                LinearGradient(
-                    colors: [
-                        Color.black.opacity(0.20),
-                        Color.black.opacity(0.05),
-                        Color.black.opacity(0.18)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .blendMode(.overlay)
+                if showsBackground {
+                    LinearGradient(
+                        colors: [
+                            Color.black.opacity(0.20),
+                            Color.black.opacity(0.05),
+                            Color.black.opacity(0.18)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .blendMode(.overlay)
+                }
             }
         }
     }
@@ -175,12 +186,12 @@ private struct MiniMapThumbnail: View {
     }
 }
 
-private struct CLPoint: Hashable {
+struct CLPoint: Hashable {
     let latitude: Double
     let longitude: Double
 }
 
-private struct Bounds {
+struct Bounds {
     let minLat: Double
     let minLng: Double
     let maxLat: Double
@@ -211,7 +222,7 @@ private struct Bounds {
     }
 }
 
-private struct Projector {
+struct Projector {
     let bounds: Bounds
     let canvasSize: CGSize
     let paddingRatio: CGFloat
@@ -236,7 +247,7 @@ private struct Projector {
     }
 }
 
-private struct MiniMapBackground: View {
+struct MiniMapBackground: View {
     var body: some View {
         ZStack {
             LinearGradient(
@@ -257,7 +268,7 @@ private struct MiniMapBackground: View {
     }
 }
 
-private struct GridOverlay: View {
+struct GridOverlay: View {
     let spacing: CGFloat
 
     var body: some View {
@@ -285,7 +296,7 @@ private struct GridOverlay: View {
     }
 }
 
-private struct DotsOverlay: View {
+struct DotsOverlay: View {
     var body: some View {
         GeometryReader { _ in
             Canvas { ctx, size in
@@ -306,52 +317,52 @@ private struct DotsOverlay: View {
     }
 }
 
-private enum PolylineDecoder {
-    static func decode(routeEncoded: String) -> [CLPoint] {
-        var coords: [CLPoint] = []
-        coords.reserveCapacity(max(16, routeEncoded.count / 4))
+enum PolylineDecoder {
+static func decode(routeEncoded: String) -> [CLPoint] {
+    var coords: [CLPoint] = []
+    coords.reserveCapacity(max(16, routeEncoded.count / 4))
 
-        let bytes = Array(routeEncoded.utf8)
-        var index = 0
+    let bytes = Array(routeEncoded.utf8)
+    var index = 0
 
-        var lat = 0
-        var lng = 0
+    var lat = 0
+    var lng = 0
 
-        while index < bytes.count {
-            let (dLat, next1) = decodeComponent(bytes, startIndex: index)
-            index = next1
-            let (dLng, next2) = decodeComponent(bytes, startIndex: index)
-            index = next2
+    while index < bytes.count {
+        let (dLat, next1) = decodeComponent(bytes, startIndex: index)
+        index = next1
+        let (dLng, next2) = decodeComponent(bytes, startIndex: index)
+        index = next2
 
-            lat += dLat
-            lng += dLng
+        lat += dLat
+        lng += dLng
 
-            let latitude = Double(lat) * 1e-5
-            let longitude = Double(lng) * 1e-5
-            coords.append(CLPoint(latitude: latitude, longitude: longitude))
-        }
-
-        return coords
+        let latitude = Double(lat) * 1e-5
+        let longitude = Double(lng) * 1e-5
+        coords.append(CLPoint(latitude: latitude, longitude: longitude))
     }
 
-    private static func decodeComponent(_ bytes: [UInt8], startIndex: Int) -> (Int, Int) {
-        var result = 0
-        var shift = 0
-        var index = startIndex
+    return coords
+}
 
-        while index < bytes.count {
-            let b = Int(bytes[index]) - 63
-            index += 1
+private static func decodeComponent(_ bytes: [UInt8], startIndex: Int) -> (Int, Int) {
+    var result = 0
+    var shift = 0
+    var index = startIndex
 
-            result |= (b & 0x1F) << shift
-            shift += 5
+    while index < bytes.count {
+        let b = Int(bytes[index]) - 63
+        index += 1
 
-            if b < 0x20 { break }
-        }
+        result |= (b & 0x1F) << shift
+        shift += 5
 
-        let delta = (result & 1) != 0 ? ~(result >> 1) : (result >> 1)
-        return (delta, index)
+        if b < 0x20 { break }
     }
+
+    let delta = (result & 1) != 0 ? ~(result >> 1) : (result >> 1)
+    return (delta, index)
+}
 }
 
 #Preview {

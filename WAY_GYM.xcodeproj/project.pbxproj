@@ -40,7 +40,7 @@
 		8BF077742F07B7B8004D9277 /* RunRecordModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077422F07B7B8004D9277 /* RunRecordModel.swift */; };
 		8BF077762F07B7B8004D9277 /* WeaponModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077442F07B7B8004D9277 /* WeaponModel.swift */; };
 		8BF077772F07B7B8004D9277 /* RewardService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077462F07B7B8004D9277 /* RewardService.swift */; };
-		8BF077782F07B7B8004D9277 /* RunRecordService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077472F07B7B8004D9277 /* RunRecordService.swift */; };
+		8BF077782F07B7B8004D9277 /* RunRecordStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077472F07B7B8004D9277 /* RunRecordStore.swift */; };
 		8BF0777A2F07B7B8004D9277 /* CustomBorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF0774A2F07B7B8004D9277 /* CustomBorder.swift */; };
 		8BF0777B2F07B7B8004D9277 /* CustomNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF0774B2F07B7B8004D9277 /* CustomNavigationBar.swift */; };
 		8BF0777C2F07B7B8004D9277 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF0774D2F07B7B8004D9277 /* LocationManager.swift */; };
@@ -61,6 +61,9 @@
 		8BF9200F2F1A077D00E8B04C /* View+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF9200E2F1A077D00E8B04C /* View+.swift */; };
 		8BF920112F1A07D400E8B04C /* HapticUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF920102F1A07D400E8B04C /* HapticUtils.swift */; };
 		8BF920152F1A090C00E8B04C /* InputCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF920142F1A090C00E8B04C /* InputCard.swift */; };
+		8C01A0112F2A0001 /* UserRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C01A0012F2A0001 /* UserRepository.swift */; };
+		8C01A0122F2A0001 /* RunRecordRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C01A0022F2A0001 /* RunRecordRepository.swift */; };
+		8C01A0132F2A0001 /* RunRecordModelsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C01A0032F2A0001 /* RunRecordModelsRepository.swift */; };
 		B36066862DEECF4200863D7F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B36066852DEECF4200863D7F /* FirebaseAuth */; };
 		B360668A2DEECF4200863D7F /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = B36066892DEECF4200863D7F /* FirebaseDatabase */; };
 		B360668C2DEECF4200863D7F /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = B360668B2DEECF4200863D7F /* FirebaseFirestore */; };
@@ -116,7 +119,7 @@
 		8BF077422F07B7B8004D9277 /* RunRecordModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunRecordModel.swift; sourceTree = "<group>"; };
 		8BF077442F07B7B8004D9277 /* WeaponModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeaponModel.swift; sourceTree = "<group>"; };
 		8BF077462F07B7B8004D9277 /* RewardService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardService.swift; sourceTree = "<group>"; };
-		8BF077472F07B7B8004D9277 /* RunRecordService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunRecordService.swift; sourceTree = "<group>"; };
+		8BF077472F07B7B8004D9277 /* RunRecordStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunRecordStore.swift; sourceTree = "<group>"; };
 		8BF0774A2F07B7B8004D9277 /* CustomBorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomBorder.swift; sourceTree = "<group>"; };
 		8BF0774B2F07B7B8004D9277 /* CustomNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomNavigationBar.swift; sourceTree = "<group>"; };
 		8BF0774D2F07B7B8004D9277 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
@@ -137,6 +140,9 @@
 		8BF9200E2F1A077D00E8B04C /* View+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+.swift"; sourceTree = "<group>"; };
 		8BF920102F1A07D400E8B04C /* HapticUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticUtils.swift; sourceTree = "<group>"; };
 		8BF920142F1A090C00E8B04C /* InputCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputCard.swift; sourceTree = "<group>"; };
+		8C01A0012F2A0001 /* UserRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserRepository.swift; sourceTree = "<group>"; };
+		8C01A0022F2A0001 /* RunRecordRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunRecordRepository.swift; sourceTree = "<group>"; };
+		8C01A0032F2A0001 /* RunRecordModelsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunRecordModelsRepository.swift; sourceTree = "<group>"; };
 		B34B7A9E2DE54FDB00B14CAB /* WAY_GYM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WAY_GYM.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B34B7AAB2DE54FDD00B14CAB /* WAY_GYMTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WAY_GYMTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B34B7AB52DE54FDD00B14CAB /* WAY_GYMUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WAY_GYMUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -262,8 +268,9 @@
 			isa = PBXGroup;
 			children = (
 				8BF0773C2F07B7B8004D9277 /* Extenstions */,
-				8BF0773D2F07B7B8004D9277 /* Manager */,
 				8BF0773F2F07B7B8004D9277 /* Utils */,
+				8BF0773D2F07B7B8004D9277 /* Manager */,
+				8C01A0202F2A0001 /* Repository */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -282,7 +289,7 @@
 			isa = PBXGroup;
 			children = (
 				8BF077462F07B7B8004D9277 /* RewardService.swift */,
-				8BF077472F07B7B8004D9277 /* RunRecordService.swift */,
+				8BF077472F07B7B8004D9277 /* RunRecordStore.swift */,
 			);
 			path = Service;
 			sourceTree = "<group>";
@@ -404,6 +411,16 @@
 				8BF0775F2F07B7B8004D9277 /* WeaponRewardView.swift */,
 			);
 			path = RunResult;
+			sourceTree = "<group>";
+		};
+		8C01A0202F2A0001 /* Repository */ = {
+			isa = PBXGroup;
+			children = (
+				8C01A0012F2A0001 /* UserRepository.swift */,
+				8C01A0022F2A0001 /* RunRecordRepository.swift */,
+				8C01A0032F2A0001 /* RunRecordModelsRepository.swift */,
+			);
+			path = Repository;
 			sourceTree = "<group>";
 		};
 		B34B7A952DE54FDB00B14CAB = {
@@ -594,7 +611,10 @@
 				8B2ED1DF2F176D15008AE661 /* CustomButton.swift in Sources */,
 				8BF077762F07B7B8004D9277 /* WeaponModel.swift in Sources */,
 				8BF077772F07B7B8004D9277 /* RewardService.swift in Sources */,
-				8BF077782F07B7B8004D9277 /* RunRecordService.swift in Sources */,
+				8BF077782F07B7B8004D9277 /* RunRecordStore.swift in Sources */,
+				8C01A0112F2A0001 /* UserRepository.swift in Sources */,
+				8C01A0122F2A0001 /* RunRecordRepository.swift in Sources */,
+				8C01A0132F2A0001 /* RunRecordModelsRepository.swift in Sources */,
 				8BF0777A2F07B7B8004D9277 /* CustomBorder.swift in Sources */,
 				8BD032F12F1CDA500040FE19 /* FirebaseManager.swift in Sources */,
 				8BF0777B2F07B7B8004D9277 /* CustomNavigationBar.swift in Sources */,

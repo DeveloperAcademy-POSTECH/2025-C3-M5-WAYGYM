@@ -15,7 +15,7 @@ enum RunPhase: Equatable {
 
 struct MainView: View {
     @EnvironmentObject var coordinator: AppCoordinator
-    @EnvironmentObject var runRecordService: RunRecordService
+    @EnvironmentObject var runRecordService: RunRecordStore
     @StateObject var vm: MainViewModel
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     @ObservedObject var locationManager: LocationManager
@@ -66,7 +66,12 @@ struct MainView: View {
                         onBeginFinishHold: { vm.beginFinishHold(locationManager: locationManager) },
                         onEndFinishHold: { vm.cancelFinishHold() },
                         onTapMyLocation: { vm.tapMyLocation(locationManager: locationManager) },
-                        onTapToggleCapturedArea: { vm.toggleCapturedArea(locationManager: locationManager) },
+                        onTapToggleCapturedArea: {
+                            vm.toggleCapturedArea(
+                                locationManager: locationManager,
+                                records: runRecordService.runRecords
+                            )
+                        },
                         isAreaActive: vm.isAreaActive
                     )
                     Spacer()

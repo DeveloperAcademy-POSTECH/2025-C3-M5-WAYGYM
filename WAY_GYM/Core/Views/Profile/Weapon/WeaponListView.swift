@@ -2,7 +2,7 @@ import SwiftUI
 
 // weapon = 총 달린 거리 (꾸준함 보상), km
 struct WeaponListView: View {
-    @EnvironmentObject var runRecordService: RunRecordService
+    @EnvironmentObject var runRecordService: RunRecordStore
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     let weaponModel = WeaponModel()
     var selectedWeapon: WeaponDefinitionModel? {
@@ -155,7 +155,7 @@ struct WeaponListView: View {
 #Preview {
     StatefulPreviewWrapper(nil as WeaponDefinitionModel?) { binding in
         WeaponListView()
-            .environmentObject(RunRecordService())
+            .environmentObject(RunRecordStore())
             .font(.text01)
             .foregroundColor(Color.gang_text_2)
     }
