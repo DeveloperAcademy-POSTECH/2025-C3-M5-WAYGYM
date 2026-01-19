@@ -52,6 +52,12 @@ protocol FirebaseManagerProtocol {
         isEqualTo value: String
     ) async throws -> [T]
 
+    func fetchWhereArrayContains<T: Decodable>(
+        path: String,
+        field: String,
+        value: String
+    ) async throws -> [T]
+
     /// 문서 존재 여부
     func documentExists(path: String) async throws -> Bool
 
@@ -220,6 +226,25 @@ final class FirebaseManager: FirebaseManagerProtocol {
         
         let snapshot = try await query.getDocuments()
         
+        return snapshot.documents.compactMap { document in
+            do {
+                return try document.data(as: T.self)
+            } catch {
+                print("❌ 문서 \(document.documentID) 디코딩 실패: \(error)")
+                return nil
+            }
+        }
+    }
+
+    func fetchWhereArrayContains<T: Decodable>(
+        path: String,
+        field: String,
+        value: String
+    ) async throws -> [T] {
+        let collectionRef = try parseCollectionPath(path)
+        let query: Query = collectionRef.whereField(field, arrayContains: value)
+        let snapshot = try await query.getDocuments()
+
         return snapshot.documents.compactMap { document in
             do {
                 return try document.data(as: T.self)

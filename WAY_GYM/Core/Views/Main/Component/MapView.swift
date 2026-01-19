@@ -113,7 +113,7 @@ struct MapView: UIViewRepresentable {
             guard !(annotation is MKUserLocation) else { return nil }
 
             let identifier = "CurrentLocation"
-            let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKAnnotationView
+            let annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier)
                 ?? MKAnnotationView(annotation: annotation, reuseIdentifier: identifier)
 
             annotationView.annotation = annotation

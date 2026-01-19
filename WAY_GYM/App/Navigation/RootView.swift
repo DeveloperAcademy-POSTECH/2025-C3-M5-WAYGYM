@@ -12,7 +12,9 @@ struct RootView: View {
     @EnvironmentObject
     private var coordinator: AppCoordinator
     private let moduleFactory: ModuleFactoryProtocol
-    @StateObject var runRecordService = RunRecordStore()
+    @StateObject var runRecordStore = RunRecordStore()
+    @StateObject var userStore = UserStore()
+    @StateObject var friendStore = FriendStore()
     private let userRepository: UserRepositoryProtocol = UserRepository()
 
     init(
@@ -36,7 +38,9 @@ struct RootView: View {
                 }
             }
             .task {
-                await runRecordService.refresh()
+                await runRecordStore.refresh()
+                await userStore.refresh()
+                await friendStore.refresh()
             }
             .onAppear {
                 authListener = Auth.auth().addStateDidChangeListener { _, _ in
@@ -51,13 +55,17 @@ struct RootView: View {
                 }
             }
         }
-        .environmentObject(runRecordService)
+        .environmentObject(runRecordStore)
+        .environmentObject(userStore)
+        .environmentObject(friendStore)
     }
     
     @MainActor
     func decideEntryAfterAuth() async {
         guard let uid = Auth.auth().currentUser?.uid else {
-            runRecordService.resetRunRecordStore()
+            runRecordStore.resetRunRecordStore()
+            userStore.resetUserStore()
+            friendStore.resetFriendStore()
             coordinator.replaceRoot(.auth)
             return
         }
@@ -65,15 +73,21 @@ struct RootView: View {
         do {
             let exists = try await userRepository.doesUserExist(uid: uid)
             if exists {
-                await runRecordService.refresh()
+                await runRecordStore.refresh()
+                await userStore.refresh()
+                await friendStore.refresh()
                 coordinator.replaceRoot(.main)
             } else {
-                await runRecordService.refresh()
+                await runRecordStore.refresh()
+                await userStore.refresh()
+                await friendStore.refresh()
                 coordinator.replaceRoot(.profileSetup)
             }
         } catch {
             // 조회 실패 시: 일단 프로필 세팅으로 보내고, 이후 저장/재시도 UX로 처리
-            await runRecordService.refresh()
+            await runRecordStore.refresh()
+            await userStore.refresh()
+            await friendStore.refresh()
             coordinator.replaceRoot(.profileSetup)
         }
     }

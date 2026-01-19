@@ -15,7 +15,7 @@ struct RouteMapView: UIViewRepresentable {
         let mapView = MKMapView()
         mapView.delegate = context.coordinator
         mapView.showsUserLocation = false
-        mapView.showsPointsOfInterest = false
+        mapView.pointOfInterestFilter = .excludingAll
         
         if !coordinates.isEmpty {
             let polyline = MKPolyline(coordinates: coordinates, count: coordinates.count)

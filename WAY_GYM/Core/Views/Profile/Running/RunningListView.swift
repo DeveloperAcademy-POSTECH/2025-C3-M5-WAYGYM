@@ -2,10 +2,10 @@ import SwiftUI
 import FirebaseFirestore
 
 struct RunningListView: View {
-    @EnvironmentObject private var runRecordService: RunRecordStore
+    @EnvironmentObject private var runRecordStore: RunRecordStore
 
     private var summaries: [RunRecordModel] {
-        runRecordService.runRecords
+        runRecordStore.runRecords
     }
 
     private var groupedSummaries: [String: [RunRecordModel]] {

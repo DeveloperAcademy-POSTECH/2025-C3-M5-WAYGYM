@@ -15,7 +15,7 @@ enum RunPhase: Equatable {
 
 struct MainView: View {
     @EnvironmentObject var coordinator: AppCoordinator
-    @EnvironmentObject var runRecordService: RunRecordStore
+    @EnvironmentObject var runRecordStore: RunRecordStore
     @StateObject var vm: MainViewModel
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     @ObservedObject var locationManager: LocationManager
@@ -32,28 +32,46 @@ struct MainView: View {
             )
             .edgesIgnoringSafeArea(.all)
             
-            // 내 나와바리 이동 버튼
+            // 내 활동 구역 이동 버튼
             if vm.runPhase == .root {
-                HStack{
-                    VStack(spacing: 6) {
-                        Button {
-                            coordinator.push(.profile)
-                        } label: {
-                            Image("ProfilIcon")
-                                .resizable()
-                                .frame(width: 40, height: 40)
+                VStack(spacing: 10) {
+                    HStack{
+                        VStack(spacing: 30) {
+                            VStack(spacing: -20) {
+                                Button {
+                                    coordinator.push(.friend)
+                                } label: {
+                                    Image("friendIcon")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(height: 100)
+                                }
+                                Text("접수 대상 찾기")
+                                    .font(.text02)
+                                    .foregroundColor(.white)
+                            }
+                            
+                            VStack {
+                                Button {
+                                    coordinator.push(.profile)
+                                } label: {
+                                    Image("ProfilIcon")
+                                        .resizable()
+                                        .frame(width: 40, height: 40)
+                                }
+                                Text("내 활동 기록")
+                                    .font(.text02)
+                                    .foregroundColor(.white)
+                            }
+                            Spacer()
+                            
                         }
-                        Text("내 나와바리")
-                            .font(.text02)
-                            .foregroundColor(.white)
                         Spacer()
-                        
                     }
+                    .padding(.horizontal, 15)
+                    
                     Spacer()
                 }
-                .padding(20)
-                
-                Spacer()
             }
             
             HStack {
@@ -62,14 +80,14 @@ struct MainView: View {
                     ControlPanel(
                         runPhase: vm.runPhase,
                         onTapStartRun: {
-                            vm.tapPlay(locationManager: locationManager, currentTotalDistanceM: runRecordService.totalDistance) },
+                            vm.tapPlay(locationManager: locationManager, currentTotalDistanceM: runRecordStore.totalDistance) },
                         onBeginFinishHold: { vm.beginFinishHold(locationManager: locationManager) },
                         onEndFinishHold: { vm.cancelFinishHold() },
                         onTapMyLocation: { vm.tapMyLocation(locationManager: locationManager) },
                         onTapToggleCapturedArea: {
                             vm.toggleCapturedArea(
                                 locationManager: locationManager,
-                                records: runRecordService.runRecords
+                                records: runRecordStore.runRecords
                             )
                         },
                         isAreaActive: vm.isAreaActive
@@ -96,4 +114,16 @@ struct MainView: View {
             }
         }
     }
+}
+
+#Preview("MainView") {
+    let coordinator = AppCoordinator()
+    let runRecordStore = RunRecordStore()
+    let locationManager = LocationManager()
+    let vm = MainViewModel()
+    
+    return MainView(vm: vm, locationManager: locationManager)
+        .environmentObject(coordinator)
+        .environmentObject(runRecordStore)
+        .preferredColorScheme(.dark)
 }

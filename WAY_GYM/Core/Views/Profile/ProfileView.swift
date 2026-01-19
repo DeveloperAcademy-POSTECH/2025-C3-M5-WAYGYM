@@ -7,12 +7,13 @@ struct ProfileView: View {
     @EnvironmentObject var coordinator: AppCoordinator
     
     @StateObject private var minionModel = MinionModel()
-    @EnvironmentObject var runRecordService: RunRecordStore
+    @EnvironmentObject var runRecordStore: RunRecordStore
+    @EnvironmentObject var userStore: UserStore
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     @State private var hasUnlockedMinions: Bool = false
     
     var hasRunRecords: Bool {
-        runRecordService.totalDistance > 0
+        runRecordStore.totalDistance > 0
     }
     
     var body: some View {
@@ -70,11 +71,11 @@ struct ProfileView: View {
             .padding(3)
 
             Group {
-                Text("한성인")
+                Text(displayNameText)
                     .font(.title01)
                     .padding(.bottom, 2)
 
-                Text("남구 연일읍 1대손파 형님")
+                Text(addressRankText)
             }
             .foregroundStyle(Color.white)
         }
@@ -131,14 +132,14 @@ struct ProfileView: View {
         HStack {
             statCard(
                 title: "총 차지한 영역",
-                value: "\(runRecordService.totalCapturedAreaValue)m²"
+                value: "\(runRecordStore.totalCapturedAreaValue)m²"
             )
 
             Spacer().frame(width: 16)
 
             statCard(
                 title: "총 이동한 거리",
-                value: "\(formatDecimal(runRecordService.totalDistance / 1000)) km"
+                value: "\(formatDecimal(runRecordStore.totalDistance / 1000)) km"
             )
         }
     }
@@ -228,5 +229,23 @@ struct ProfileView: View {
         } catch {
             hasUnlockedMinions = false
         }
+    }
+
+    private var displayNameText: String {
+        userStore.profile?.displayName ?? "이름 미설정"
+    }
+
+    private var addressRankText: String {
+        let address = userStore.profile?.homeArea?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !address.isEmpty else { return "주소 미설정" }
+
+        if let rank = userStore.addressRank {
+            return "\(address) \(rank)대손파 \(honorificText)"
+        }
+        return address
+    }
+
+    private var honorificText: String {
+        userStore.profile?.sex == "female" ? "누님" : "형님"
     }
 }

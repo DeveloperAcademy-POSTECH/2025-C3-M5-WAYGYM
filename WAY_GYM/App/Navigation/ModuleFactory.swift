@@ -11,6 +11,10 @@ enum AppRouter: Hashable {
     case auth
     case profileSetup
     case main
+    
+    case friend
+    case friendRequest
+    
     case profile
     case setting
     
@@ -18,6 +22,8 @@ enum AppRouter: Hashable {
     case minionList
     case runningList
     case runningDetail(String)
+    
+    case profileEdit
 }
 
 protocol ModuleFactoryProtocol {
@@ -38,6 +44,10 @@ final class ModuleFactory: ModuleFactoryProtocol {
             let viewModel = MainViewModel()
             let view = MainView(vm: viewModel, locationManager: LocationManager())
             return AnyView(view)
+        case .friend:
+            return AnyView(FriendView())
+        case .friendRequest:
+            return AnyView(FriendRequestView())
         case .profile:
             return AnyView(ProfileView())
         case .setting:
@@ -50,6 +60,8 @@ final class ModuleFactory: ModuleFactoryProtocol {
             return AnyView(RunningListView())
         case .runningDetail(let runId):
             return AnyView(BigSingleRunningView(runId: runId))
+        case .profileEdit:
+            return AnyView(ProfileEditView())
         }
     }
 }
