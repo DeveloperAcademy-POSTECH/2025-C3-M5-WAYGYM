@@ -3,8 +3,6 @@ import FirebaseFirestore
 
 struct ProfileMinionView: View {
     @StateObject var minionModel = MinionModel()
-    @StateObject var rewardService = RewardService()
-    @ObservedObject var runRecordVM = RunRecordStore()
     
     @State private var recentMinions: [(minion: MinionDefinitionModel, acquisitionDate: Date)] = []
     
@@ -79,9 +77,6 @@ struct ProfileMinionView: View {
                     
                     Text(minion.name)
                         .foregroundStyle(Color.black)
-                    
-                    Text(String(format: "%.0f km", minion.unlockNumber))
-                        .foregroundColor(.black)
                 }
                 
             }

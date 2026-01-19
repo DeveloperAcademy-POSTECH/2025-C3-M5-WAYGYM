@@ -13,7 +13,6 @@ struct MinionSingleView: View {
     @ObservedObject var minionModel: MinionModel
     let minionIndex: Int
     @State private var acquisitionDate: Date? = nil
-    @StateObject private var runRecordVM = RunRecordStore()
     
     var body: some View {
         ZStack {
@@ -54,8 +53,6 @@ struct MinionSingleView: View {
                 VStack(spacing: 16) {
                     HStack {
                         Text(minionModel.allMinions[minionIndex].name)
-                        Spacer()
-                        Text(String(format: "%.0f km", minionModel.allMinions[minionIndex].unlockNumber))
                     }
                     .padding(.horizontal, 10)
                     
@@ -80,10 +77,7 @@ struct MinionSingleView: View {
             }
         }
         .onAppear {
-            let unlockNumber = minionModel.allMinions[minionIndex].unlockNumber
-            runRecordVM.fetchRunRecordsAndCalculateMinionAcquisitionDate(for: unlockNumber) { date in
-                acquisitionDate = date
-            }
+            // TODO: 서버에서 미니언 정보 받아오기
         }
         .navigationBarBackButtonHidden(true)
     }

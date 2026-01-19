@@ -4,10 +4,9 @@ import FirebaseFirestore
 // minion = 점령전(듀오) 승리 보상, 점령전은 시작한 후 보름 동안 유지된 후 승패가 결정됨
 struct MinionListView: View {
     @StateObject private var minionModel = MinionModel()
-    @StateObject private var rewardService = RewardService()
     @State private var selectedMinion: MinionDefinitionModel? = nil
-    
-    @StateObject private var runRecordVM = RunRecordStore()
+
+    @State private var unlockedMinionIds: Set<Int> = []
     @State private var acquisitionDate: Date? = nil
     
     var body: some View {
@@ -29,7 +28,7 @@ struct MinionListView: View {
                                 .frame(width: 180, height: 170)
                             
                             if let selectedMinion = selectedMinion {
-                                Image(selectedMinion.id)
+                                Image(selectedMinion.iconName)
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 150)
@@ -94,7 +93,7 @@ struct MinionListView: View {
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(minionModel.allMinions) { minion in
                             
-                            let isUnlocked = rewardService.isUnlocked(minion, with: Int(runRecordVM.totalDistance))
+                            let isUnlocked = unlockedMinionIds.contains(minion.minionId)
                             
                             if isUnlocked {
                                 Button(action: {
@@ -114,9 +113,6 @@ struct MinionListView: View {
                                                 .shadow(color: selectedMinion?.id == minion.id ? Color.yellow : Color.black, radius: 4, x: 0, y: 0)
                                             
                                             Text(minion.name)
-                                                .foregroundStyle(Color.black)
-                                            
-                                            Text(String(format: "%.0f km", minion.unlockNumber))
                                                 .foregroundStyle(Color.black)
                                         }
                                     }
@@ -140,9 +136,6 @@ struct MinionListView: View {
                                         
                                         Text("???")
                                             .foregroundStyle(Color.black)
-                                        
-                                        Text(String(format: "%.0f km", minion.unlockNumber))
-                                            .foregroundStyle(Color.black)
                                     }
                                 }
                                 .cornerRadius(8)
@@ -160,14 +153,9 @@ struct MinionListView: View {
             }
             .padding(.horizontal, 14)
         }
-        .onChange(of: selectedMinion) { newMinion in
-            if let minion = newMinion {
-                runRecordVM.fetchRunRecordsAndCalculateMinionAcquisitionDate(for: minion.unlockNumber) { date in
-                    acquisitionDate = date
-                }
-            } else {
-                acquisitionDate = nil
-            }
+        .onAppear {
+            // TODO: 서버에서 Users/{uid}/minionUnlocks를 읽어서
+            // unlockedMinionIds(Set<Int>)와 acquisitionDate를 세팅
         }
         .navigationBarBackButtonHidden(true)
     }

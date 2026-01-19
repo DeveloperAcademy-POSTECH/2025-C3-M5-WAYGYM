@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseAuth
 import FirebaseFirestore
 import FirebaseFirestoreSwift
 
@@ -8,13 +9,7 @@ struct ProfileView: View {
     @StateObject private var minionModel = MinionModel()
     @EnvironmentObject var runRecordService: RunRecordStore
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
-
-    var hasUnlockedMinions: Bool {
-        let unlocked = minionModel.allMinions.filter { minion in
-            return RewardService().isUnlocked(minion, with: Int(runRecordService.totalDistance))
-        }
-        return !unlocked.isEmpty
-    }
+    @State private var hasUnlockedMinions: Bool = false
     
     var hasRunRecords: Bool {
         runRecordService.totalDistance > 0
@@ -49,6 +44,11 @@ struct ProfileView: View {
         }
         .backHiddenSwipeEnabled()
         .ignoresSafeArea(.all, edges: .top)
+        .onAppear {
+            Task {
+                await checkHasUnlockedMinions()
+            }
+        }
     }
 
     private var userSection: some View {
@@ -208,5 +208,25 @@ struct ProfileView: View {
         .padding(20)
         .customBorder()
         
+    }
+    
+    private func checkHasUnlockedMinions() async {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            hasUnlockedMinions = false
+            return
+        }
+
+        do {
+            let snapshot = try await Firestore.firestore()
+                .collection("Users")
+                .document(uid)
+                .collection("minionUnlocks")
+                .limit(to: 1)
+                .getDocuments()
+
+            hasUnlockedMinions = !snapshot.documents.isEmpty
+        } catch {
+            hasUnlockedMinions = false
+        }
     }
 }
