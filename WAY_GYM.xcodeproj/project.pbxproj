@@ -29,17 +29,17 @@
 		8B9130952F1365D100C6ABE6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */; };
 		8B9130962F1365D100C6ABE6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */; };
 		8B9130972F1365D100C6ABE6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */; };
+		8BD032E92F1CA22F0040FE19 /* RunRecordCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD032E82F1CA22F0040FE19 /* RunRecordCardView.swift */; };
+		8BD032F12F1CDA500040FE19 /* FirebaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD032F02F1CDA500040FE19 /* FirebaseManager.swift */; };
 		8BF0776D2F07B7B8004D9277 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077332F07B7B8004D9277 /* RootView.swift */; };
 		8BF0776E2F07B7B8004D9277 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077352F07B7B8004D9277 /* App.swift */; };
-		8BF0776F2F07B7B8004D9277 /* RunRecordDummyData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077382F07B7B8004D9277 /* RunRecordDummyData.swift */; };
 		8BF077702F07B7B8004D9277 /* Color+hex+extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF0773A2F07B7B8004D9277 /* Color+hex+extension.swift */; };
 		8BF077712F07B7B8004D9277 /* Font+extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF0773B2F07B7B8004D9277 /* Font+extension.swift */; };
 		8BF077722F07B7B8004D9277 /* FormatDate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF0773E2F07B7B8004D9277 /* FormatDate.swift */; };
 		8BF077732F07B7B8004D9277 /* MinionModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077412F07B7B8004D9277 /* MinionModel.swift */; };
 		8BF077742F07B7B8004D9277 /* RunRecordModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077422F07B7B8004D9277 /* RunRecordModel.swift */; };
 		8BF077762F07B7B8004D9277 /* WeaponModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077442F07B7B8004D9277 /* WeaponModel.swift */; };
-		8BF077772F07B7B8004D9277 /* RewardService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077462F07B7B8004D9277 /* RewardService.swift */; };
-		8BF077782F07B7B8004D9277 /* RunRecordService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077472F07B7B8004D9277 /* RunRecordService.swift */; };
+		8BF077782F07B7B8004D9277 /* RunRecordStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077472F07B7B8004D9277 /* RunRecordStore.swift */; };
 		8BF0777A2F07B7B8004D9277 /* CustomBorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF0774A2F07B7B8004D9277 /* CustomBorder.swift */; };
 		8BF0777B2F07B7B8004D9277 /* CustomNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF0774B2F07B7B8004D9277 /* CustomNavigationBar.swift */; };
 		8BF0777C2F07B7B8004D9277 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF0774D2F07B7B8004D9277 /* LocationManager.swift */; };
@@ -52,7 +52,6 @@
 		8BF077842F07B7B8004D9277 /* RunningListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077572F07B7B8004D9277 /* RunningListView.swift */; };
 		8BF077852F07B7B8004D9277 /* WeaponListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077592F07B7B8004D9277 /* WeaponListView.swift */; };
 		8BF077862F07B7B8004D9277 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF0775B2F07B7B8004D9277 /* ProfileView.swift */; };
-		8BF077872F07B7B8004D9277 /* MinionRewardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF0775D2F07B7B8004D9277 /* MinionRewardView.swift */; };
 		8BF077882F07B7B8004D9277 /* RewardQueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF0775E2F07B7B8004D9277 /* RewardQueueView.swift */; };
 		8BF077892F07B7B8004D9277 /* WeaponRewardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF0775F2F07B7B8004D9277 /* WeaponRewardView.swift */; };
 		8BF0778B2F07B7B8004D9277 /* RunResultModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077622F07B7B8004D9277 /* RunResultModalView.swift */; };
@@ -61,6 +60,8 @@
 		8BF9200F2F1A077D00E8B04C /* View+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF9200E2F1A077D00E8B04C /* View+.swift */; };
 		8BF920112F1A07D400E8B04C /* HapticUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF920102F1A07D400E8B04C /* HapticUtils.swift */; };
 		8BF920152F1A090C00E8B04C /* InputCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF920142F1A090C00E8B04C /* InputCard.swift */; };
+		8C01A0112F2A0001 /* UserRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C01A0012F2A0001 /* UserRepository.swift */; };
+		8C01A0122F2A0001 /* RunRecordRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C01A0022F2A0001 /* RunRecordRepository.swift */; };
 		B36066862DEECF4200863D7F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B36066852DEECF4200863D7F /* FirebaseAuth */; };
 		B360668A2DEECF4200863D7F /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = B36066892DEECF4200863D7F /* FirebaseDatabase */; };
 		B360668C2DEECF4200863D7F /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = B360668B2DEECF4200863D7F /* FirebaseFirestore */; };
@@ -104,18 +105,18 @@
 		8B6CD05A2F18F53C002B993F /* ProfileSetupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSetupViewModel.swift; sourceTree = "<group>"; };
 		8B6CD05C2F18F56B002B993F /* AddressPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressPickerSheet.swift; sourceTree = "<group>"; };
 		8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		8BD032E82F1CA22F0040FE19 /* RunRecordCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunRecordCardView.swift; sourceTree = "<group>"; };
+		8BD032F02F1CDA500040FE19 /* FirebaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseManager.swift; sourceTree = "<group>"; };
 		8BF077332F07B7B8004D9277 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		8BF077352F07B7B8004D9277 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		8BF077362F07B7B8004D9277 /* WAY_GYM.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WAY_GYM.entitlements; sourceTree = "<group>"; };
-		8BF077382F07B7B8004D9277 /* RunRecordDummyData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunRecordDummyData.swift; sourceTree = "<group>"; };
 		8BF0773A2F07B7B8004D9277 /* Color+hex+extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+hex+extension.swift"; sourceTree = "<group>"; };
 		8BF0773B2F07B7B8004D9277 /* Font+extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Font+extension.swift"; sourceTree = "<group>"; };
 		8BF0773E2F07B7B8004D9277 /* FormatDate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormatDate.swift; sourceTree = "<group>"; };
 		8BF077412F07B7B8004D9277 /* MinionModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinionModel.swift; sourceTree = "<group>"; };
 		8BF077422F07B7B8004D9277 /* RunRecordModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunRecordModel.swift; sourceTree = "<group>"; };
 		8BF077442F07B7B8004D9277 /* WeaponModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeaponModel.swift; sourceTree = "<group>"; };
-		8BF077462F07B7B8004D9277 /* RewardService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardService.swift; sourceTree = "<group>"; };
-		8BF077472F07B7B8004D9277 /* RunRecordService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunRecordService.swift; sourceTree = "<group>"; };
+		8BF077472F07B7B8004D9277 /* RunRecordStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunRecordStore.swift; sourceTree = "<group>"; };
 		8BF0774A2F07B7B8004D9277 /* CustomBorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomBorder.swift; sourceTree = "<group>"; };
 		8BF0774B2F07B7B8004D9277 /* CustomNavigationBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomNavigationBar.swift; sourceTree = "<group>"; };
 		8BF0774D2F07B7B8004D9277 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
@@ -128,7 +129,6 @@
 		8BF077572F07B7B8004D9277 /* RunningListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunningListView.swift; sourceTree = "<group>"; };
 		8BF077592F07B7B8004D9277 /* WeaponListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeaponListView.swift; sourceTree = "<group>"; };
 		8BF0775B2F07B7B8004D9277 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
-		8BF0775D2F07B7B8004D9277 /* MinionRewardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MinionRewardView.swift; sourceTree = "<group>"; };
 		8BF0775E2F07B7B8004D9277 /* RewardQueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardQueueView.swift; sourceTree = "<group>"; };
 		8BF0775F2F07B7B8004D9277 /* WeaponRewardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeaponRewardView.swift; sourceTree = "<group>"; };
 		8BF077622F07B7B8004D9277 /* RunResultModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunResultModalView.swift; sourceTree = "<group>"; };
@@ -137,6 +137,8 @@
 		8BF9200E2F1A077D00E8B04C /* View+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+.swift"; sourceTree = "<group>"; };
 		8BF920102F1A07D400E8B04C /* HapticUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticUtils.swift; sourceTree = "<group>"; };
 		8BF920142F1A090C00E8B04C /* InputCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputCard.swift; sourceTree = "<group>"; };
+		8C01A0012F2A0001 /* UserRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserRepository.swift; sourceTree = "<group>"; };
+		8C01A0022F2A0001 /* RunRecordRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunRecordRepository.swift; sourceTree = "<group>"; };
 		B34B7A9E2DE54FDB00B14CAB /* WAY_GYM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WAY_GYM.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B34B7AAB2DE54FDD00B14CAB /* WAY_GYMTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WAY_GYMTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B34B7AB52DE54FDD00B14CAB /* WAY_GYMUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WAY_GYMUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -230,14 +232,6 @@
 			path = App;
 			sourceTree = "<group>";
 		};
-		8BF077392F07B7B8004D9277 /* Data */ = {
-			isa = PBXGroup;
-			children = (
-				8BF077382F07B7B8004D9277 /* RunRecordDummyData.swift */,
-			);
-			path = Data;
-			sourceTree = "<group>";
-		};
 		8BF0773C2F07B7B8004D9277 /* Extenstions */ = {
 			isa = PBXGroup;
 			children = (
@@ -251,6 +245,7 @@
 			isa = PBXGroup;
 			children = (
 				8BF0774D2F07B7B8004D9277 /* LocationManager.swift */,
+				8BD032F02F1CDA500040FE19 /* FirebaseManager.swift */,
 			);
 			path = Manager;
 			sourceTree = "<group>";
@@ -268,10 +263,10 @@
 		8BF077402F07B7B8004D9277 /* Common */ = {
 			isa = PBXGroup;
 			children = (
-				8BF077392F07B7B8004D9277 /* Data */,
 				8BF0773C2F07B7B8004D9277 /* Extenstions */,
-				8BF0773D2F07B7B8004D9277 /* Manager */,
 				8BF0773F2F07B7B8004D9277 /* Utils */,
+				8BF0773D2F07B7B8004D9277 /* Manager */,
+				8C01A0202F2A0001 /* Repository */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -289,8 +284,7 @@
 		8BF077492F07B7B8004D9277 /* Service */ = {
 			isa = PBXGroup;
 			children = (
-				8BF077462F07B7B8004D9277 /* RewardService.swift */,
-				8BF077472F07B7B8004D9277 /* RunRecordService.swift */,
+				8BF077472F07B7B8004D9277 /* RunRecordStore.swift */,
 			);
 			path = Service;
 			sourceTree = "<group>";
@@ -330,9 +324,10 @@
 		8BF077582F07B7B8004D9277 /* Running */ = {
 			isa = PBXGroup;
 			children = (
-				8BF077552F07B7B8004D9277 /* BigSingleRunningView.swift */,
+				8BD032E82F1CA22F0040FE19 /* RunRecordCardView.swift */,
 				8BF077562F07B7B8004D9277 /* ProfileRunningView.swift */,
 				8BF077572F07B7B8004D9277 /* RunningListView.swift */,
+				8BF077552F07B7B8004D9277 /* BigSingleRunningView.swift */,
 			);
 			path = Running;
 			sourceTree = "<group>";
@@ -407,11 +402,19 @@
 			isa = PBXGroup;
 			children = (
 				8BF077622F07B7B8004D9277 /* RunResultModalView.swift */,
-				8BF0775D2F07B7B8004D9277 /* MinionRewardView.swift */,
 				8BF0775E2F07B7B8004D9277 /* RewardQueueView.swift */,
 				8BF0775F2F07B7B8004D9277 /* WeaponRewardView.swift */,
 			);
 			path = RunResult;
+			sourceTree = "<group>";
+		};
+		8C01A0202F2A0001 /* Repository */ = {
+			isa = PBXGroup;
+			children = (
+				8C01A0012F2A0001 /* UserRepository.swift */,
+				8C01A0022F2A0001 /* RunRecordRepository.swift */,
+			);
+			path = Repository;
 			sourceTree = "<group>";
 		};
 		B34B7A952DE54FDB00B14CAB = {
@@ -591,7 +594,6 @@
 				8B05370E2F10E2C000A61DFD /* CountdownOverlay.swift in Sources */,
 				8B2ED1D92F176508008AE661 /* AuthViewModel.swift in Sources */,
 				8B0537152F10E93200A61DFD /* MainViewModel.swift in Sources */,
-				8BF0776F2F07B7B8004D9277 /* RunRecordDummyData.swift in Sources */,
 				8BF077702F07B7B8004D9277 /* Color+hex+extension.swift in Sources */,
 				8BF077712F07B7B8004D9277 /* Font+extension.swift in Sources */,
 				8BF077722F07B7B8004D9277 /* FormatDate.swift in Sources */,
@@ -602,9 +604,11 @@
 				8B2ED1E42F1787BA008AE661 /* ProfileSetupView.swift in Sources */,
 				8B2ED1DF2F176D15008AE661 /* CustomButton.swift in Sources */,
 				8BF077762F07B7B8004D9277 /* WeaponModel.swift in Sources */,
-				8BF077772F07B7B8004D9277 /* RewardService.swift in Sources */,
-				8BF077782F07B7B8004D9277 /* RunRecordService.swift in Sources */,
+				8BF077782F07B7B8004D9277 /* RunRecordStore.swift in Sources */,
+				8C01A0112F2A0001 /* UserRepository.swift in Sources */,
+				8C01A0122F2A0001 /* RunRecordRepository.swift in Sources */,
 				8BF0777A2F07B7B8004D9277 /* CustomBorder.swift in Sources */,
+				8BD032F12F1CDA500040FE19 /* FirebaseManager.swift in Sources */,
 				8BF0777B2F07B7B8004D9277 /* CustomNavigationBar.swift in Sources */,
 				8B6CD05B2F18F53C002B993F /* ProfileSetupViewModel.swift in Sources */,
 				8BF0777C2F07B7B8004D9277 /* LocationManager.swift in Sources */,
@@ -622,9 +626,9 @@
 				8B5C08732F0FB3FB008A7F68 /* ModuleFactory.swift in Sources */,
 				8B6CD05D2F18F56B002B993F /* AddressPickerSheet.swift in Sources */,
 				8BF077862F07B7B8004D9277 /* ProfileView.swift in Sources */,
-				8BF077872F07B7B8004D9277 /* MinionRewardView.swift in Sources */,
 				8BF077882F07B7B8004D9277 /* RewardQueueView.swift in Sources */,
 				8BF920112F1A07D400E8B04C /* HapticUtils.swift in Sources */,
+				8BD032E92F1CA22F0040FE19 /* RunRecordCardView.swift in Sources */,
 				8B6CD0592F18F51C002B993F /* AddressLoader.swift in Sources */,
 				8BF077892F07B7B8004D9277 /* WeaponRewardView.swift in Sources */,
 				8B05370A2F10DC4800A61DFD /* RouteMapView.swift in Sources */,

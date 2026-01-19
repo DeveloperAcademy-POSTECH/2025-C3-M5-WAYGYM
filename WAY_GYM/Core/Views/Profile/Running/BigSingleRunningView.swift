@@ -9,113 +9,220 @@ import SwiftUI
 import MapKit
 
 struct BigSingleRunningView: View {
-    let summary: RunSummary
-    @Environment(\.dismiss) var dismiss
-    
+    @EnvironmentObject var coordinator: AppCoordinator
+    @EnvironmentObject private var runRecordService: RunRecordStore
+
+    private let runId: String?
+    private let initialSummary: RunRecordModel?
+
+    init(runId: String) {
+        self.runId = runId
+        self.initialSummary = nil
+    }
+
+    init(summary: RunRecordModel) {
+        self.runId = nil
+        self.initialSummary = summary
+    }
+
+    private var resolvedSummary: RunRecordModel? {
+        if let initialSummary { return initialSummary }
+        guard let runId else { return nil }
+        return runRecordService.runRecords.first(where: { $0.id == runId })
+    }
+
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 37.5665, longitude: 126.9780),
         span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
     )
-    
+
     @State private var overlays: [MKOverlay] = []
-    
+    @State private var polygons: [MKPolygon] = []
+
     var body: some View {
-        ZStack {
-            MapOverlay(overlays: overlays, region: region)
+        Group {
+            if let summary = resolvedSummary {
+                ZStack {
+                    RunHistoryMapView(
+                        polylines: overlays as! [MKPolyline],
+                        polygons: polygons,
+                        region: region
+                    )
                     .ignoresSafeArea()
-            
-            VStack {
-                Spacer()
-                
-                VStack {
-                    HStack {
-                        customLabel(value: "\(Int(summary.capturedArea))", title:
-                                        "영역(m²)")
-                        
+                    
+                    VStack {
                         Spacer()
                         
-                        VStack() {
-                            Text(summary.startTime.formattedYMD())
-                            Text("\(summary.startTime.formattedHM()) (\(summary.startTime.koreanWeekday()))")
+                        VStack {
+                            HStack {
+                                customLabel(value: "TODO", title: "영역(m²)")
+                                
+                                Spacer()
+                                
+                                VStack() {
+                                    Text(summary.startTime.formattedYMD())
+                                    Text("\(summary.startTime.formattedHM()) (\(summary.startTime.koreanWeekday()))")
+                                }
+                                .font(.text01)
+                                .padding(.trailing, 16)
+                            }
+                            
+                            Spacer()
+                                .frame(height: 24)
+                            
+                            HStack {
+                                customLabel(value: "\(Int(summary.duration) / 60):\(String(format: "%02d", Int(summary.duration) % 60))", title: "소요시간")
+                                Spacer()
+                                customLabel(value: String(format: "%.2f", summary.distanceM / 1000), title: "거리(km)")
+                            }
                         }
+                        .multilineTextAlignment(.center)
+                        .padding(20)
+                        .frame(width: UIScreen.main.bounds.width)
+                        .frame(height: UIScreen.main.bounds.height * 0.21)
+                        .background(Color.gang_sheet_bg_opacity)
+                        .cornerRadius(16)
+                        
+                    }
+                    .ignoresSafeArea()
+                    
+                    VStack {
+                        HStack {
+                            Spacer()
+                            
+                            Button {
+                                coordinator.pop()
+                            } label: {
+                                Image("xmark")
+                                    .resizable()
+                                    .frame(width: 20, height: 20)
+                                    .foregroundStyle(Color.gang_text_2)
+                                    .padding(15)
+                                    .background(Circle().foregroundStyle(Color.gang_bg))
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        Spacer()
+                    }
+                }
+                .task(id: summary.id) {
+                    configureMap(for: summary)
+                }
+                .navigationBarBackButtonHidden(true)
+            } else {
+                VStack(spacing: 8) {
+                    ProgressView()
+                    Text("러닝 기록을 불러오는 중입니다...")
                         .font(.text01)
-                        .padding(.trailing, 16)
-                    }
-                    
-                    Spacer()
-                        .frame(height: 24)
-                    
-                    HStack {
-                        customLabel(value: "\(Int(summary.duration) / 60):\(String(format: "%02d", Int(summary.duration) % 60))", title: "소요시간")
-                        Spacer()
-                        customLabel(value: String(format: "%.2f", summary.distance / 1000), title: "거리(km)")
-                        Spacer()
-                        customLabel(value: String(Int(summary.calories)), title: "칼로리")
-                    }
+                        .foregroundColor(.secondary)
                 }
-                .multilineTextAlignment(.center)
-                .padding(20)
-                .frame(width: UIScreen.main.bounds.width)
-                // .frame(height: 150)
-                .frame(height: UIScreen.main.bounds.height * 0.21)
-                .background(Color.gang_sheet_bg_opacity)
-                .cornerRadius(16)
-                
-            }
-            .ignoresSafeArea()
-            
-            VStack {
-                HStack {
-                    Spacer()
-                    
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image("xmark")
-                            .resizable()
-                            .frame(width: 20, height: 20)
-                            .foregroundStyle(Color.gang_text_2)
-                            .padding(15)
-                            .background(Circle().foregroundStyle(Color.gang_bg))
-                    }
-                }
-                .padding(.horizontal, 16)
-                Spacer()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.clear)
             }
         }
-        .onAppear {
-            let coords = summary.coordinates.map {
-                CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)
-            }
+    }
 
-            let polys = makePolygons(from: summary.capturedAreas)
-            let lines = makePolylines(from: summary.coordinates)
-            self.overlays = polys + lines
+    // MARK: - Map configuration
+    private func configureMap(for summary: RunRecordModel) {
+        // 1) routeEncoded → 좌표 디코딩
+        let coords = decodePolyline(summary.routeEncoded)
 
-            if coords.count >= 2 {
-                let lats = coords.map { $0.latitude }
-                let lons = coords.map { $0.longitude }
+        // 2) 폴리라인 오버레이
+        let polyline = MKPolyline(coordinates: coords, count: coords.count)
+        self.overlays = [polyline]
 
-                let minLat = lats.min() ?? 0
-                let maxLat = lats.max() ?? 0
-                let minLon = lons.min() ?? 0
-                let maxLon = lons.max() ?? 0
+        // 3) routeFrame 기반으로 지도 영역 설정 (썸네일과 동일한 프레이밍)
+        if summary.routeFrame.count == 4 {
+            let minLat = summary.routeFrame[0]
+            let minLon = summary.routeFrame[1]
+            let maxLat = summary.routeFrame[2]
+            let maxLon = summary.routeFrame[3]
 
-                let centerLat = (minLat + maxLat) / 2
-                let centerLon = (minLon + maxLon) / 2
+            let centerLat = (minLat + maxLat) / 2
+            let centerLon = (minLon + maxLon) / 2
 
-                let spanLat = max((maxLat - minLat) * 0.5, 0.003)
-                let spanLon = max((maxLon - minLon) * 0.5, 0.003)
+            let spanLat = max((maxLat - minLat) * 1.2, 0.003)
+            let spanLon = max((maxLon - minLon) * 1.2, 0.003)
 
-                self.region = MKCoordinateRegion(
-                    center: CLLocationCoordinate2D(latitude: centerLat, longitude: centerLon),
-                    span: MKCoordinateSpan(latitudeDelta: spanLat, longitudeDelta: spanLon)
-                )
-            }
+            self.region = MKCoordinateRegion(
+                center: CLLocationCoordinate2D(latitude: centerLat, longitude: centerLon),
+                span: MKCoordinateSpan(latitudeDelta: spanLat, longitudeDelta: spanLon)
+            )
         }
-        .navigationBarBackButtonHidden(true)
+        // 4) capturedCellIds → polygon overlays
+        let gridSize = 0.0005
+        self.polygons = summary.capturedCellIds.compactMap { id in
+            let parts = id.split(separator: ",")
+            guard parts.count == 2,
+                  let lat = Double(parts[0]),
+                  let lng = Double(parts[1]) else { return nil }
+
+            let minLat = lat
+            let minLng = lng
+            let maxLat = lat + gridSize
+            let maxLng = lng + gridSize
+
+            let coords: [CLLocationCoordinate2D] = [
+                .init(latitude: minLat, longitude: minLng),
+                .init(latitude: minLat, longitude: maxLng),
+                .init(latitude: maxLat, longitude: maxLng),
+                .init(latitude: maxLat, longitude: minLng),
+                .init(latitude: minLat, longitude: minLng)
+            ]
+
+            return MKPolygon(coordinates: coords, count: coords.count)
+        }
     }
     
+    
+    // MARK: - Encoded polyline decode
+    private func decodePolyline(_ encoded: String) -> [CLLocationCoordinate2D] {
+        guard !encoded.isEmpty else { return [] }
+
+        var coords: [CLLocationCoordinate2D] = []
+        var index = encoded.startIndex
+
+        var lat = 0
+        var lng = 0
+
+        while index < encoded.endIndex {
+            var b: Int
+            var shift = 0
+            var result = 0
+
+            repeat {
+                b = Int(encoded[index].asciiValue!) - 63
+                index = encoded.index(after: index)
+                result |= (b & 0x1f) << shift
+                shift += 5
+            } while b >= 0x20
+
+            let dlat = ((result & 1) != 0) ? ~(result >> 1) : (result >> 1)
+            lat += dlat
+
+            shift = 0
+            result = 0
+
+            repeat {
+                b = Int(encoded[index].asciiValue!) - 63
+                index = encoded.index(after: index)
+                result |= (b & 0x1f) << shift
+                shift += 5
+            } while b >= 0x20
+
+            let dlng = ((result & 1) != 0) ? ~(result >> 1) : (result >> 1)
+            lng += dlng
+
+            coords.append(
+                CLLocationCoordinate2D(
+                    latitude: Double(lat) / 1e5,
+                    longitude: Double(lng) / 1e5
+                )
+            )
+        }
+
+        return coords
+    }
     // TODO: - 지도 오버레이 생성 (임시: 나중에 별도 ViewModel로 이동)
     private func makePolylines(from coordinates: [CoordinatePair]) -> [MKPolyline] {
         guard coordinates.count >= 2 else { return [] }
@@ -154,8 +261,9 @@ struct BigSingleRunningView: View {
         }
     }
     
-    struct MapOverlay: UIViewRepresentable {
-        let overlays: [MKOverlay]
+    struct RunHistoryMapView: UIViewRepresentable {
+        let polylines: [MKPolyline]
+        let polygons: [MKPolygon]
         let region: MKCoordinateRegion
 
         func makeUIView(context: Context) -> MKMapView {
@@ -163,13 +271,17 @@ struct BigSingleRunningView: View {
             mapView.delegate = context.coordinator
             mapView.isUserInteractionEnabled = true
             mapView.setRegion(region, animated: false)
+            mapView.pointOfInterestFilter = .excludingAll
+            mapView.mapType = .mutedStandard
+            mapView.overrideUserInterfaceStyle = .dark
             return mapView
         }
 
         func updateUIView(_ uiView: MKMapView, context: Context) {
             uiView.setRegion(region, animated: false)
             uiView.removeOverlays(uiView.overlays)
-            uiView.addOverlays(overlays)
+            polygons.forEach { uiView.addOverlay($0) }
+            polylines.forEach { uiView.addOverlay($0) }
         }
 
         func makeCoordinator() -> Coordinator {
@@ -194,9 +306,3 @@ struct BigSingleRunningView: View {
     }
     
 }
-
-//#Preview {
-//    BigSingleRunningView(summary: RunSummary)
-//        .foregroundColor(Color.gang_text_2)
-//        .font(.title01)
-//}

@@ -3,8 +3,6 @@ import FirebaseFirestore
 
 struct ProfileMinionView: View {
     @StateObject var minionModel = MinionModel()
-    @StateObject var rewardService = RewardService()
-    @ObservedObject var runRecordVM = RunRecordService()
     
     @State private var recentMinions: [(minion: MinionDefinitionModel, acquisitionDate: Date)] = []
     
@@ -55,33 +53,7 @@ struct ProfileMinionView: View {
         .frame(maxHeight: .infinity)
         .onAppear {
             if !hasLoaded {
-                loadRecentMinions()
                 hasLoaded = true
-            }
-        }
-    }
-    
-    private func loadRecentMinions() {
-        isLoading = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            print("🟠 전체 미니언 수: \(minionModel.allMinions.count)")
-
-            runRecordVM.fetchAndSumDistances { total in
-                print("📏 총 거리(콜백): \(total)")
-
-                let unlockedMinions = minionModel.allMinions.filter { minion in
-                    rewardService.isUnlocked(minion, with: Int(total))
-                }
-
-                let sortedMinions = unlockedMinions
-                    .sorted { Int($0.id) ?? 0 < Int($1.id) ?? 0 }
-                    .suffix(3)
-
-                self.recentMinions = sortedMinions.map { minion in
-                    (minion: minion, acquisitionDate: Date()) // placeholder date
-                }
-
-                isLoading = false
             }
         }
     }
@@ -105,9 +77,6 @@ struct ProfileMinionView: View {
                     
                     Text(minion.name)
                         .foregroundStyle(Color.black)
-                    
-                    Text(String(format: "%.0f km", minion.unlockNumber))
-                        .foregroundColor(.black)
                 }
                 
             }

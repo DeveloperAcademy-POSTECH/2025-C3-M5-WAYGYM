@@ -1,28 +1,23 @@
 import SwiftUI
 
-// weapon = area, 1,000,000단위
+// weapon = 총 달린 거리 (꾸준함 보상), km
 struct WeaponListView: View {
-    @StateObject private var weaponModel = WeaponModel()
-    
+    @EnvironmentObject var runRecordService: RunRecordStore
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
+    let weaponModel = WeaponModel()
     var selectedWeapon: WeaponDefinitionModel? {
         weaponModel.allWeapons.first(where: { $0.id == selectedWeaponId })
     }
-    
-    @EnvironmentObject var rewardService: RewardService
-    
-    @StateObject private var runRecordVM = RunRecordService()
-    @State private var acquisitionDate: Date? = nil
+    var acquisitionDate: Date? {
+        guard let weapon = selectedWeapon, weapon.id != "0" else { return nil }
+        return runRecordService.weaponAcquiredAtById[weapon.id]
+    }
     
     var body: some View {
-        ZStack {
-            Color.gang_bg_profile
-                .ignoresSafeArea()
-            
             VStack {
                 CustomNavigationBar(title: "무기 창고")
                 
-                // 진한 박스 zstack
+                // MARK: 진한 박스 zstack
                 ZStack {
                     Color.gang_bg_primary_4
                     
@@ -56,7 +51,7 @@ struct WeaponListView: View {
                                         Text("\(formatShortDate(date))")
                                     }
                                     
-                                    Text("\(Int(weapon.unlockNumber))m²")
+                                    Text("\(String(format: "%.0f", weapon.unlockNumber))km")
                                 }
                                 .font(.title02)
                                 .padding(.vertical, 1)
@@ -102,7 +97,7 @@ struct WeaponListView: View {
                     ]
                     LazyVGrid(columns: columns, spacing: 30) {
                         ForEach(weaponModel.allWeapons) { weapon in
-                            let isUnlocked = rewardService.isUnlocked(weapon, with: runRecordVM.totalCapturedAreaValue)
+                            let isUnlocked = runRecordService.unlockedWeaponIds.contains(weapon.id)
                             
                             if isUnlocked {
                                 Button(action: {
@@ -152,32 +147,15 @@ struct WeaponListView: View {
                 .padding(.horizontal, 14)
                 .scrollIndicators(.hidden)
             }
-        }
-        .onAppear {
-            runRecordVM.fetchAndSumCapturedValue()
-        }
-        .onChange(of: selectedWeapon) { _, newWeapon in
-            if let weapon = newWeapon {
-                runRecordVM.fetchRunRecordsAndCalculateWeaponAcquisitionDate(for: weapon.unlockNumber) { date in
-                    print("선택 무기 변경, 획득 날짜: \(String(describing: date))")
-                    acquisitionDate = date
-                }
-            } else {
-                acquisitionDate = nil
-            }
-        }
+        .background { Color.gang_bg_primary_4.ignoresSafeArea()}
         .navigationBarBackButtonHidden(true)
     }
 }
 
-let runRecordVM = RunRecordService()
-let rewardService = RewardService()
-
 #Preview {
     StatefulPreviewWrapper(nil as WeaponDefinitionModel?) { binding in
         WeaponListView()
-            .environmentObject(runRecordVM)
-            .environmentObject(rewardService)
+            .environmentObject(RunRecordStore())
             .font(.text01)
             .foregroundColor(Color.gang_text_2)
     }

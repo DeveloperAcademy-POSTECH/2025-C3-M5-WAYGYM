@@ -12,6 +12,8 @@ import FirebaseFirestore
 
 
 final class ProfileSetupViewModel: ObservableObject {
+    private let userRepository: UserRepositoryProtocol = UserRepository()
+    
     enum Sex: String, CaseIterable {
         case male
         case female
@@ -37,7 +39,6 @@ final class ProfileSetupViewModel: ObservableObject {
     @Published var dong: String = ""
     let addressData: [SidoNode]
     private let locationService = LocationAddressService()
-
     enum AddressMode: String, CaseIterable { case current = "현위치", manual = "직접 선택" }
     @Published var addressMode: AddressMode = .current
     @Published var isAddressPickerPresented: Bool = false
@@ -157,14 +158,7 @@ extension ProfileSetupViewModel {
 
         Task {
             do {
-                let db = Firestore.firestore()
-                let snapshot = try await db
-                    .collection("Users")
-                    .whereField("friendCode", isEqualTo: candidate)
-                    .limit(to: 1)
-                    .getDocuments()
-
-                let available = snapshot.documents.isEmpty
+                let available = try await userRepository.isFriendCodeAvailable(candidate)
 
                 await MainActor.run {
                     self.userIdAvailable = available
@@ -225,9 +219,6 @@ extension ProfileSetupViewModel {
 
         isSavingProfile = true
 
-        let db = Firestore.firestore()
-        let doc = db.collection("Users").document(uid)
-
         let data: [String: Any] = [
             "displayName": displayName,
             "sex": sex.rawValue,
@@ -235,17 +226,19 @@ extension ProfileSetupViewModel {
             "createdAt": FieldValue.serverTimestamp(),
             "friendCode": friendCode
         ]
-
-        doc.setData(data, merge: true) { [weak self] error in
-            guard let self else { return }
-            DispatchQueue.main.async {
-                if let error {
-                    self.saveProfileError = "저장에 실패했습니다: \(error.localizedDescription)"
-                } else {
+        Task {
+            do {
+                try await userRepository.saveProfile(uid: uid, data: data)
+                await MainActor.run {
                     self.saveProfileError = nil
+                    self.isSavingProfile = false
                     onSuccess?()
                 }
-                self.isSavingProfile = false
+            } catch {
+                await MainActor.run {
+                    self.saveProfileError = "저장에 실패했습니다: \(error.localizedDescription)"
+                    self.isSavingProfile = false
+                }
             }
         }
     }

@@ -9,63 +9,48 @@ import FirebaseFirestore
 import SwiftUI
 
 struct RunResultModalView: View {
-    @State private var hasReward: Bool = false
-
-    @StateObject private var rewardService = RewardService()
-
     @ObservedObject var viewModel: MainViewModel
     let onComplete: () -> Void
-    var onRewardSelected: ((WeaponDefinitionModel) -> Void)?
-
-    @State private var rewardQueue: [RewardItem] = []
+    
+    @State private var rewardQueue: [WeaponDefinitionModel] = []
     @State private var showRewardQueue: Bool = false
+    private var hasReward: Bool {
+        !rewardQueue.isEmpty
+    }
+
+    private let weaponModel = WeaponModel()
 
     var body: some View {
         ZStack {
             Color.clear
             
-            VStack(spacing: 20) {
+            VStack(spacing: 24) {
                 Text("이번엔 여기까지...")
                     .font(.custom("NeoDunggeunmoPro-Regular", size: 30))
                     .bold()
                     .padding(.top, 26)
                     .foregroundColor(.white)
+
+                MiniMapThumbnail(
+                    route: PolylineDecoder.decode(routeEncoded: viewModel.latestRunRecord?.routeEncoded ?? ""),
+                    polygons: [],
+                    showsBackground: false
+                )
+                .frame(width: 222, height: 288)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
                 
-                if let routeImage = viewModel.latestRunRecord?.routeImage,
-                   let url = URL(string: routeImage) {
-                    AsyncImage(url: url) { image in
-                        image
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 370)
-                            .shadow(radius: 4)
-                            .padding(.horizontal, -10)
-                    } placeholder: {
-                        ProgressView()
-                            .frame(height: 370)
-                    }
-                } else {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(height: 370)
-                        .cornerRadius(12)
-                        .overlay(Text("이미지 없음").foregroundColor(.gray))
-                }
-                
-                VStack(spacing: 20) {
-                    let capturedValue = viewModel.latestRunRecord?.capturedAreaValue ?? 0
+                    // TODO: 임시 계산: 셀 1칸 = 100m²
+                    let capturedValue = (viewModel.latestRunRecord?.capturedCellIds.count ?? 0) * 100
                     if capturedValue > 0 {
                         Text("\(capturedValue)m²")
                             .font(.largeTitle02)
                             .foregroundColor(.white)
                             .padding(.top, -20)
                     }
-
-                    Spacer().frame(height: 0)
-
+                
                     if let record = viewModel.latestRunRecord {
                         let duration = record.duration
-                        let distance = record.distance
+                        let distance = record.distanceM
                         let calories = duration / 60 * 7.4
                         HStack(spacing: 40) {
                             VStack(spacing: 8) {
@@ -84,9 +69,6 @@ struct RunResultModalView: View {
                         .font(.title03)
                         .foregroundColor(.white)
                     }
-                }
-                
-                Spacer().frame(height: 0)
                 
                 Button(action: {
                     if !rewardQueue.isEmpty {
@@ -118,37 +100,22 @@ struct RunResultModalView: View {
         }
         .overlay {
             if showRewardQueue {
-                RewardQueueView(rewards: rewardQueue, onComplete: {
+                RewardQueueView(weapons: rewardQueue, onComplete: {
+                    viewModel.clearJustUnlockedWeapons()
                     showRewardQueue = false
                     onComplete()
                 })
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .onAppear {
+        .task {
+            // fetch 완료 전에 이전 큐가 남아있지 않게 비움
+            rewardQueue = []
             viewModel.loadLatestRunResult()
-            // 해금된 무기/똘마니 하나의 리워드 배열로 넣기
-            var collectedRewards: [RewardItem] = []
-            // 해금된 무기 찾기
-            rewardService.checkWeaponUnlockOnStop { unlocked in
-                let weaponRewards = unlocked.map { RewardItem.weapon($0) }
-                collectedRewards.append(contentsOf: weaponRewards)
-                print("해금된 무기: \(unlocked.map {$0.id})")
-
-                // 해금된 똘마니 찾기
-                rewardService.checkMinionUnlockOnStop { unlockedMinions in
-                    let minionRewards = unlockedMinions.map { RewardItem.minion($0)}
-                    print("해금된 미니언: \(unlockedMinions.map {$0.id})")
-
-                    // 해금된 똘마니/무기 배열에 넣을때, 미니언부터 앞으로 넣음
-                    collectedRewards.insert(contentsOf: minionRewards, at: 0)
-
-                    // 리워드가 있다면 배열로 저장하고, 버튼이 '보상 확인하기'로 바뀜
-                    if !collectedRewards.isEmpty {
-                        rewardQueue = collectedRewards
-                        hasReward = true
-                    }
-                }
+        }
+        .onChange(of: viewModel.justUnlockedWeaponIds) { _, newIds in
+            rewardQueue = newIds.compactMap { id in
+                weaponModel.allWeapons.first(where: { $0.id == id })
             }
         }
     }
@@ -168,14 +135,26 @@ private func formatDuration(_ duration: TimeInterval) -> String {
     return formatter.string(from: duration) ?? "00:00:00"
 }
 
-#Preview {
-    RunResultModalView(
-        viewModel: MainViewModel(),
+#Preview("RunResultModalView – Dummy Data") {
+    let vm = MainViewModel()
+
+    // 📌 더미 런 기록 (최근 런 결과)
+    vm.latestRunRecord = RunRecordModel(
+        id: "dummy-run-id",
+        startTime: Date().addingTimeInterval(-30 * 60), // 30분 전
+        endTime: Date(),
+        distanceM: 3200, // 3.2km
+        routeEncoded: "ixb{E{nttWoEMiE]cE@yDOdEF}DG`EAwEEvEFyEItE\\{DStDB_E?dE@aEW`Ef@sEg@`ELoDF|DA{D@rDJcEOpE?uEIdEZiEc@|EP{ECjEVqDk@",
+        capturedCellIds: Array(repeating: "36.064163,129.379981", count: 12),
+        routeFrame: [36.0635, 129.3790, 36.0650, 129.3810]
+    )
+
+    return RunResultModalView(
+        viewModel: vm,
         onComplete: {
-            print("구역 확장 결과 모달 버튼 클릭")
-        },
-        onRewardSelected: { weapon in
-            print("Reward selected: \(weapon.id)")
+            print("Preview complete tapped")
         }
     )
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(Color.black)
 }

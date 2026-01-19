@@ -9,12 +9,10 @@ import SwiftUI
 import FirebaseFirestore
 
 struct MinionSingleView: View {
+    @EnvironmentObject var coordinator: AppCoordinator
     @ObservedObject var minionModel: MinionModel
     let minionIndex: Int
-    
-    @Environment(\.dismiss) var dismiss
     @State private var acquisitionDate: Date? = nil
-    @StateObject private var runRecordVM = RunRecordService()
     
     var body: some View {
         ZStack {
@@ -24,7 +22,7 @@ struct MinionSingleView: View {
             VStack {
                 HStack {
                     Button {
-                        dismiss()
+                        coordinator.pop()
                     } label: {
                         Image(systemName: "xmark")
                             .foregroundStyle(Color.gang_text_2)
@@ -55,8 +53,6 @@ struct MinionSingleView: View {
                 VStack(spacing: 16) {
                     HStack {
                         Text(minionModel.allMinions[minionIndex].name)
-                        Spacer()
-                        Text(String(format: "%.0f km", minionModel.allMinions[minionIndex].unlockNumber))
                     }
                     .padding(.horizontal, 10)
                     
@@ -81,10 +77,7 @@ struct MinionSingleView: View {
             }
         }
         .onAppear {
-            let unlockNumber = minionModel.allMinions[minionIndex].unlockNumber
-            runRecordVM.fetchRunRecordsAndCalculateMinionAcquisitionDate(for: unlockNumber) { date in
-                acquisitionDate = date
-            }
+            // TODO: 서버에서 미니언 정보 받아오기
         }
         .navigationBarBackButtonHidden(true)
     }

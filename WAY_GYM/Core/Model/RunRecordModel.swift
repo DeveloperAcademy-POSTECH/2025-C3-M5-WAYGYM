@@ -3,6 +3,69 @@ import FirebaseFirestore
 import FirebaseFirestoreSwift
 import CoreLocation
 
+// MARK: - 데이터 모델
+struct RunRecordModel: Identifiable, Codable, Equatable {
+    @DocumentID var id: String? // Firestore 문서 ID
+    // type / activeDuoWorldId 는 지금 단계에서는 제외
+    let startTime: Date
+    let endTime: Date?
+    var duration: TimeInterval {
+        guard let end = endTime else { return 0 }
+        return end.timeIntervalSince(startTime)
+    }
+    let distanceM: Double
+    let routeEncoded: String
+    let capturedCellIds: [String] /// 이 런으로 획득한 셀 id들 ("lat,lng")
+    let routeFrame: [Double] /// [minLat, minLng, maxLat, maxLng]
+
+    enum CodingKeys: String, CodingKey {
+        case startTime = "start_time"
+        case endTime = "end_time"
+        case distanceM = "distance_m"
+        case routeEncoded = "route_encoded"
+        case capturedCellIds = "captured_cell_ids"
+        case routeFrame = "route_frame"
+    }
+
+//    init(from decoder: Decoder) throws {
+//        let c = try decoder.container(keyedBy: CodingKeys.self)
+//        if let docId = decoder.userInfo[FirestoreDecodingUserInfoKey.documentID] as? String {
+//            id = docId
+//        }
+//        startTime = try c.decode(Date.self, forKey: .startTime)
+//        endTime = try c.decodeIfPresent(Date.self, forKey: .endTime)
+//        distanceM = try c.decodeIfPresent(Double.self, forKey: .distanceM) ?? 0
+//        routeEncoded = try c.decodeIfPresent(String.self, forKey: .routeEncoded) ?? ""
+//        capturedCellIds = (try? c.decode([String].self, forKey: .capturedCellIds)) ?? []
+//        routeFrame = (try? c.decode([Double].self, forKey: .routeFrame)) ?? [0, 0, 0, 0]
+//    }
+
+    init(
+        id: String? = nil,
+        startTime: Date,
+        endTime: Date?,
+        distanceM: Double,
+        routeEncoded: String,
+        capturedCellIds: [String],
+        routeFrame: [Double]
+    ) {
+        self.id = id
+        self.startTime = startTime
+        self.endTime = endTime
+        self.distanceM = distanceM
+        self.routeEncoded = routeEncoded
+        self.capturedCellIds = capturedCellIds
+        self.routeFrame = routeFrame
+    }
+
+    static func makeDate(_ dateString: String) -> Date {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy.MM.dd HH:mm"
+        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
+        return formatter.date(from: dateString) ?? Date()
+    }
+}
+
 // MARK: - 좌표 쌍 구조체
 struct CoordinatePair: Codable, Equatable {
     let latitude: Double
@@ -13,114 +76,4 @@ struct CoordinatePairWithGroup: Codable, Equatable {
     let latitude: Double
     let longitude: Double
     let groupId: Int
-}
-
-// MARK: - 데이터 모델
-struct RunRecordModels: Identifiable, Codable, Equatable {
-    @DocumentID var id: String? // Firestore 문서 ID
-    let distance: Double // 이동 거리 (미터)
-    // let stepCount: Double // 걸음 수
-    // let caloriesBurned: Double // 소모 칼로리 (kcal)
-    
-    let startTime: Date // 시작 시간
-    let endTime: Date? // 종료 시간 (선택적)
-    var duration: TimeInterval {
-        guard let end = endTime else {return 0}
-        return end.timeIntervalSince(startTime)
-    }
-    
-    let routeImage: String? // Firebase Storage 이미지 URL (선택적)
-    let coordinates: [CoordinatePair]  // 경로 좌표 [[latitude, longitude]] - 사용자의 전체 경로
-    let capturedAreas: [CoordinatePairWithGroup]  // 면적을 형성한 좌표들 (groupId로 도형 구분)
-    let capturedAreaValue: Int // 유저가 차지한 면적 (숫자 데이터)
-    let capturedCellIds: [String]  // 이 런으로 획득한 셀 id들 ("lat,lng")
-    
-    enum CodingKeys: String, CodingKey {
-        // case id  // removed as per instructions
-        case distance
-        // case stepCount = "step_count"
-        // case caloriesBurned = "calories_burned"
-        case startTime = "start_time"
-        case endTime = "end_time"
-        case routeImage
-        case coordinates
-        case capturedAreas = "captured_areas"
-        case capturedAreaValue
-        case capturedCellIds = "capturedCellIds"
-    }
-    
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        // id = try container.decodeIfPresent(String.self, forKey: .id)  // removed as per instructions
-        distance = try container.decode(Double.self, forKey: .distance)
-        // stepCount = try container.decode(Double.self, forKey: .stepCount)
-        // caloriesBurned = try container.decode(Double.self, forKey: .caloriesBurned)
-        startTime = try container.decode(Date.self, forKey: .startTime)
-        endTime = try container.decodeIfPresent(Date.self, forKey: .endTime)
-        routeImage = try container.decodeIfPresent(String.self, forKey: .routeImage)
-        coordinates = (try? container.decode([CoordinatePair].self, forKey: .coordinates)) ?? []
-        capturedAreas = (try? container.decode([CoordinatePairWithGroup].self, forKey: .capturedAreas)) ?? []
-        capturedAreaValue = try container.decodeIfPresent(Int.self, forKey: .capturedAreaValue) ?? 0
-        capturedCellIds = (try? container.decode([String].self, forKey: .capturedCellIds)) ?? []
-    }
-    
-    init(id: String? = nil,
-         distance: Double,
-//         stepCount: Double,
-//         caloriesBurned: Double,
-         startTime: Date,
-         endTime: Date?,
-         routeImage: String?,
-         coordinates: [CoordinatePair],
-         capturedAreas: [CoordinatePairWithGroup],
-         capturedAreaValue: Int,
-         capturedCellIds: [String]) {
-        self.id = id
-        self.distance = distance
-        // self.stepCount = stepCount
-        // self.caloriesBurned = caloriesBurned
-        self.startTime = startTime
-        self.endTime = endTime
-        self.routeImage = routeImage
-        self.coordinates = coordinates
-        self.capturedAreas = capturedAreas
-        self.capturedAreaValue = capturedAreaValue
-        self.capturedCellIds = capturedCellIds
-    }
-    
-    // 좌표를 CLLocationCoordinate2D로 변환
-    var coordinateList: [CLLocationCoordinate2D] {
-        coordinates.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
-    }
-    
-    static func makeDate(_ dateString: String) -> Date {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy.MM.dd HH:mm"
-        formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
-        return formatter.date(from: dateString) ?? Date()
-    }
-}
-
-// running detail view에서 필요한 항목만 가져오기 위해 정의
-struct RunSummary: Identifiable {
-    let id: String
-    let routeImageURL: URL?
-    let distance: Double
-    let duration: TimeInterval
-    let calories: Double
-    let capturedArea: Double
-    let startTime: Date
-    let coordinates: [CoordinatePair]
-    let capturedAreas: [CoordinatePairWithGroup]
-}
-
-// running list view에서
-struct RunSummaryProfile: Identifiable {
-    let id: String
-    let routeImageURL: URL?
-    let distance: Double
-    let duration: TimeInterval
-    let calories: Double
-    let capturedArea: Double
-    let startTime: Date
 }

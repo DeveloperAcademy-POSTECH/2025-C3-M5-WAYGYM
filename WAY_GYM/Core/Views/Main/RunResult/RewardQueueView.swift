@@ -7,39 +7,30 @@
 
 import SwiftUI
 
-enum RewardItem {
-    case minion(MinionDefinitionModel)
-    case weapon(WeaponDefinitionModel)
-}
-
 struct RewardQueueView: View {
-    let rewards: [RewardItem]
+    let weapons: [WeaponDefinitionModel]
     @EnvironmentObject var coordinator: AppCoordinator
     @State private var currentIndex: Int = 0
     let onComplete: () -> Void
 
     var body: some View {
-        if currentIndex < rewards.count {
-            return AnyView(
-                Group {
-                    switch rewards[currentIndex] {
-                    case .minion(let minion):
-                        MinionRewardView(minion: minion, onDismiss: {
-                            currentIndex += 1
-                        }, isLast: currentIndex == rewards.count - 1)
-                    case .weapon(let weapon):
-                        WeaponRewardView(weapon: weapon, onDismiss: {
-                            currentIndex += 1
-                        }, isLast: currentIndex == rewards.count - 1)
+        Group {
+            if currentIndex < weapons.count {
+                let weapon = weapons[currentIndex]
+                WeaponRewardView(
+                    weapon: weapon,
+                    onDismiss: {
+                        currentIndex += 1
+                    },
+                    isLast: currentIndex == weapons.count - 1
+                )
+            } else {
+                Color.clear
+                    .onAppear {
+                        onComplete()
+                        coordinator.popToRoot()
                     }
-                }
-            )
-        } else {
-            DispatchQueue.main.async {
-                onComplete()
-                coordinator.popToRoot()
             }
-            return AnyView(EmptyView())
         }
     }
 }

@@ -9,14 +9,32 @@ import Foundation
 import Combine
 import CoreGraphics
 import MapKit
-import FirebaseFirestore
-import FirebaseFirestoreSwift
+import FirebaseAuth
 
 final class MainViewModel: ObservableObject {
     @Published var runPhase: RunPhase = .root
     
-    @Published var latestRunRecord: RunRecordModels?
-    private let db = Firestore.firestore()
+    @Published var latestRunRecord: RunRecordModel?
+    
+    // 이번 런(방금 종료한 런)으로 새로 해금된 무기들 (weaponId)
+    @Published var justUnlockedWeaponIds: [String] = []
+
+    // 런 시작 직전까지의 누적 거리(m). 런 시작 시점에 저장해두고, 런 종료 후 보상 계산에 사용한다.
+    private var runStartTotalDistanceM: Double = 0
+
+    func clearJustUnlockedWeapons() {
+        justUnlockedWeaponIds = []
+    }
+
+    /// 런이 "시작"되는 순간에 호출해서 기준 누적거리를 저장한다.
+    /// - Parameter totalDistanceM: 런 시작 직전까지의 누적 거리(m)
+    func markRunStart(totalDistanceM: Double) {
+        runStartTotalDistanceM = totalDistanceM
+        justUnlockedWeaponIds = []
+        print("🎬 markRunStart | prevTotal(m)=\(runStartTotalDistanceM)")
+    }
+    
+    private let runRecordRepository: RunRecordRepositoryProtocol = RunRecordRepository()
     
     @Published var isAreaActive: Bool = false
     private var backupPolylines: [MKPolyline] = []
@@ -36,8 +54,14 @@ final class MainViewModel: ObservableObject {
     }
 
     // MARK: - ControlPanel
-    func tapPlay(locationManager: LocationManager) {
+    func tapPlay(locationManager: LocationManager, currentTotalDistanceM: Double? = nil) {
         guard runPhase == .root else { return }
+        if currentTotalDistanceM == nil {
+            print("⚠️ tapPlay called without currentTotalDistanceM. runStartTotalDistanceM stays as \(runStartTotalDistanceM). 보상 계산이 어긋날 수 있어요.")
+        }
+        if let currentTotalDistanceM {
+            markRunStart(totalDistanceM: currentTotalDistanceM)
+        }
         countdownTimer?.invalidate()
 
         var remaining = 3
@@ -107,19 +131,17 @@ final class MainViewModel: ObservableObject {
         locationManager.moveToCurrentLocation()
     }
 
-    func toggleCapturedArea(locationManager: LocationManager) {
+    func toggleCapturedArea(locationManager: LocationManager, records: [RunRecordModel]) {
         isAreaActive.toggle()
 
         if isAreaActive {
             backupPolylines = locationManager.polylines
             locationManager.polylines.removeAll()
-            locationManager.loadCapturedPolygons(from: locationManager.runRecordList)
-            // Firestore 리스너 재호출로 polylines 방지
-            locationManager.fetchRunRecordsFromFirestore()
+            locationManager.loadCapturedPolygons(from: records)
         } else {
             locationManager.polygons.removeAll()
             locationManager.polylines = backupPolylines
-            locationManager.fetchRunRecordsFromFirestore()
+            locationManager.runRecordList = records
         }
 
         // 기존 LocationManager 플래그도 동기화(프로젝트 내 다른 곳에서 쓸 수 있으니)
@@ -130,82 +152,57 @@ final class MainViewModel: ObservableObject {
 // MARK: - 최신 런 결과 불러오기
 extension MainViewModel {
     func loadLatestRunResult() {
-        db.collection("RunRecordModels")
-            .order(by: "start_time", descending: true)
-            .limit(to: 1)
-            .getDocuments { [weak self] snapshot, error in
-                if let error = error {
-                    print("❌ 최신 런닝 결과 불러오기 실패: \(error.localizedDescription)")
-                    return
-                }
+        guard let uid = Auth.auth().currentUser?.uid else {
+            print("⚠️ 로그인된 사용자가 없습니다. 최신 런 결과 조회 중단")
+            return
+        }
 
-                guard let doc = snapshot?.documents.first else {
+        Task {
+            do {
+                guard let latest = try await runRecordRepository.fetchLatestRunRecord(uid: uid) else {
                     print("❌ 최신 런닝 결과 문서 없음")
                     return
                 }
 
-                // 1) UI를 빠르게 띄우기: 문서에서 요약 필드만 뽑아 "가벼운 RunRecordModels"를 먼저 세팅
-                let data = doc.data()
+                await MainActor.run {
+                    self.latestRunRecord = latest
 
-                let distance: Double = {
-                    if let d = data["distance"] as? Double { return d }
-                    if let i = data["distance"] as? Int { return Double(i) }
-                    return 0
-                }()
+                    // "이번 런" 보상(새로 해금된 무기) 계산
+                    self.justUnlockedWeaponIds = self.computeJustUnlockedWeaponIds(
+                        prevTotalDistanceM: self.runStartTotalDistanceM,
+                        addedDistanceM: latest.distanceM
+                    )
 
-                let startTime: Date = {
-                    if let ts = data["start_time"] as? Timestamp { return ts.dateValue() }
-                    if let date = data["start_time"] as? Date { return date }
-                    return Date()
-                }()
-
-                let endTime: Date? = {
-                    if let ts = data["end_time"] as? Timestamp { return ts.dateValue() }
-                    if let date = data["end_time"] as? Date { return date }
-                    return nil
-                }()
-
-                let routeImage: String? = {
-                    if let s = data["routeImage"] as? String { return s }
-                    return nil
-                }()
-
-                let capturedAreaValue: Int = {
-                    if let v = data["capturedAreaValue"] as? Int { return v }
-                    if let d = data["capturedAreaValue"] as? Double { return Int(d) }
-                    return 0
-                }()
-
-                // 좌표/면적 그룹은 비어있는 상태로 먼저 넣어 UI 표시 속도를 확보
-                let lightweight = RunRecordModels(
-                    id: doc.documentID,
-                    distance: distance,
-                    startTime: startTime,
-                    endTime: endTime,
-                    routeImage: routeImage,
-                    coordinates: [],
-                    capturedAreas: [],
-                    capturedAreaValue: capturedAreaValue,
-                    capturedCellIds: []
-                )
-
-                DispatchQueue.main.async {
-                    self?.latestRunRecord = lightweight
-                    print("⚡️ 요약 필드로 먼저 표시: \(doc.documentID)")
+                    let newTotal = self.runStartTotalDistanceM + latest.distanceM
+                    print("🧾 latestRunResult | docId=\(latest.id ?? "(no id)") start=\(latest.startTime) end=\(String(describing: latest.endTime)) distanceM=\(latest.distanceM)")
+                    print("🧮 rewardCalc input | prevTotalDistanceM=\(self.runStartTotalDistanceM) addedDistanceM=\(latest.distanceM) newTotalDistanceM=\(newTotal)")
+                    print("🎁 justUnlockedWeaponIds=\(self.justUnlockedWeaponIds)")
                 }
-
-                // 2) 백그라운드에서 전체 디코딩(좌표 포함) 후 최신값으로 교체
-                DispatchQueue.global(qos: .userInitiated).async {
-                    do {
-                        let fullRecord = try doc.data(as: RunRecordModels.self)
-                        DispatchQueue.main.async {
-                            self?.latestRunRecord = fullRecord
-                            print("✅ 전체 디코딩 완료: \(fullRecord.id ?? "(no id)")")
-                        }
-                    } catch {
-                        print("❌ RunRecordModels 전체 디코딩 실패: \(error)")
-                    }
-                }
+            } catch {
+                print("❌ 최신 런닝 결과 불러오기 실패: \(error.localizedDescription)")
             }
+        }
+    }
+
+    /// prevTotalDistanceM(런 시작 전 누적) + addedDistanceM(이번 런 거리)를 기준으로 "이번 런으로 새로" 해금된 무기 id를 계산
+    private func computeJustUnlockedWeaponIds(prevTotalDistanceM: Double, addedDistanceM: Double) -> [String] {
+        let weaponModel = WeaponModel()
+        let newTotal = prevTotalDistanceM + addedDistanceM
+        print("🧪 computeJustUnlockedWeaponIds | prev=\(prevTotalDistanceM) added=\(addedDistanceM) newTotal=\(newTotal)")
+
+        // unlockNumber는 km 기준이므로 m로 변환
+        let sorted = weaponModel.allWeapons.sorted { $0.unlockNumber < $1.unlockNumber }
+
+        let ids = sorted.compactMap { w -> String? in
+            let thresholdM = w.unlockNumber * 1000
+            let crossed = (prevTotalDistanceM < thresholdM && newTotal >= thresholdM)
+            if crossed {
+                print("✅ crossed | weaponId=\(w.id) unlockNumber(km)=\(w.unlockNumber) thresholdM=\(thresholdM)")
+                return w.id
+            }
+            return nil
+        }
+
+        return ids
     }
 }

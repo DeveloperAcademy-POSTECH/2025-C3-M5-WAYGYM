@@ -18,7 +18,7 @@ struct ControlPanel: View {
     let onTapToggleCapturedArea: () -> Void
     
     let isAreaActive: Bool
-    @State private var isLocationActive = false
+    @State private var isLocationTapped = false
     @State private var didStartHold: Bool = false
 
     var body: some View {
@@ -105,23 +105,26 @@ struct ControlPanel: View {
         VStack(spacing: 12) {
             Button(action: {
                 onTapMyLocation()
-                isLocationActive.toggle()
+                isLocationTapped = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    isLocationTapped = false
+                }
             }) {
                 RoundedRectangle(cornerRadius: 10)
-                    .fill(isLocationActive ? Color.yellow : Color.black)
+                    .fill(isLocationTapped ? Color.yellow : Color.black)
                     .frame(width: 56, height: 56)
                     .overlay(
                         Image(systemName: "location.fill")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 26, height: 26)
-                            .foregroundColor(isLocationActive ? .black : .yellow)
+                            .foregroundColor(isLocationTapped ? .black : .yellow)
                     )
             }
 
             Text("내 위치")
                 .font(.text02)
-                .foregroundColor(isLocationActive ? .yellow : .white)
+                .foregroundColor(isLocationTapped ? .yellow : .white)
         }
     }
     
