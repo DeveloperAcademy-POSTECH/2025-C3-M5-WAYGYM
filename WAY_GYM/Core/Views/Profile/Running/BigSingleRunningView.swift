@@ -10,7 +10,7 @@ import MapKit
 
 struct BigSingleRunningView: View {
     @EnvironmentObject var coordinator: AppCoordinator
-    @EnvironmentObject private var runRecordService: RunRecordStore
+    @EnvironmentObject private var runRecordStore: RunRecordStore
 
     private let runId: String?
     private let initialSummary: RunRecordModel?
@@ -28,7 +28,7 @@ struct BigSingleRunningView: View {
     private var resolvedSummary: RunRecordModel? {
         if let initialSummary { return initialSummary }
         guard let runId else { return nil }
-        return runRecordService.runRecords.first(where: { $0.id == runId })
+        return runRecordStore.runRecords.first(where: { $0.id == runId })
     }
 
     @State private var region = MKCoordinateRegion(

@@ -11,7 +11,7 @@ import SwiftUI
 
 @MainActor
 final class AppCoordinator: ObservableObject {
-    @Published var root: AppRouter = .auth
+    @Published var root: AppRouter = .main
     @Published var path: [AppRouter] = []
 
     /// 다음 화면

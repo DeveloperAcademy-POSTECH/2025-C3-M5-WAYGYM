@@ -11,6 +11,10 @@ enum AppRouter: Hashable {
     case auth
     case profileSetup
     case main
+    
+    case friend
+    case friendRequest
+    
     case profile
     case setting
     
@@ -18,26 +22,34 @@ enum AppRouter: Hashable {
     case minionList
     case runningList
     case runningDetail(String)
+    
+    case profileEdit
 }
 
 protocol ModuleFactoryProtocol {
-    func make(_ route: AppRouter, onAuthed: @escaping () -> Void) -> AnyView
+    func make(_ route: AppRouter) -> AnyView
 }
 
 final class ModuleFactory: ModuleFactoryProtocol {
     static let shared = ModuleFactory()
     private init() {}
     
-    func make(_ route: AppRouter, onAuthed: @escaping () -> Void) -> AnyView {
+    func make(_ route: AppRouter) -> AnyView {
         switch route {
         case .auth:
-            return AnyView(AuthView(onAuthed: onAuthed))
+            let viewModel = AuthViewModel()
+            let view = AuthView(vm: viewModel)
+            return AnyView(view)
         case .profileSetup:
             return AnyView(ProfileSetupView())
         case .main:
             let viewModel = MainViewModel()
             let view = MainView(vm: viewModel, locationManager: LocationManager())
             return AnyView(view)
+        case .friend:
+            return AnyView(FriendView())
+        case .friendRequest:
+            return AnyView(FriendRequestView())
         case .profile:
             return AnyView(ProfileView())
         case .setting:
@@ -50,6 +62,8 @@ final class ModuleFactory: ModuleFactoryProtocol {
             return AnyView(RunningListView())
         case .runningDetail(let runId):
             return AnyView(BigSingleRunningView(runId: runId))
+        case .profileEdit:
+            return AnyView(ProfileEditView())
         }
     }
 }

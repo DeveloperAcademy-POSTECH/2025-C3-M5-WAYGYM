@@ -2,7 +2,7 @@
 //  RunRecordRepository.swift
 //  WAY_GYM
 //
-//  Created by Codex on 2/6/25.
+//  Created by 이주현 on 2/6/25.
 //
 
 import Foundation

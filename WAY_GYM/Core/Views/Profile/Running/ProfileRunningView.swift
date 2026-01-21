@@ -8,10 +8,10 @@
 import SwiftUI
 
 struct ProfileRunningView: View {
-    @EnvironmentObject var runRecordService: RunRecordStore
+    @EnvironmentObject var runRecordStore: RunRecordStore
     @EnvironmentObject var coordinator: AppCoordinator
     private var topSummaries: [RunRecordModel] {
-        Array(runRecordService.runRecords.sorted(by: { $0.startTime > $1.startTime }).prefix(3))
+        Array(runRecordStore.runRecords.sorted(by: { $0.startTime > $1.startTime }).prefix(3))
     }
 
     var body: some View {

@@ -2,7 +2,7 @@ import SwiftUI
 
 // weapon = 총 달린 거리 (꾸준함 보상), km
 struct WeaponListView: View {
-    @EnvironmentObject var runRecordService: RunRecordStore
+    @EnvironmentObject var runRecordStore: RunRecordStore
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     let weaponModel = WeaponModel()
     var selectedWeapon: WeaponDefinitionModel? {
@@ -10,7 +10,7 @@ struct WeaponListView: View {
     }
     var acquisitionDate: Date? {
         guard let weapon = selectedWeapon, weapon.id != "0" else { return nil }
-        return runRecordService.weaponAcquiredAtById[weapon.id]
+        return runRecordStore.weaponAcquiredAtById[weapon.id]
     }
     
     var body: some View {
@@ -97,7 +97,7 @@ struct WeaponListView: View {
                     ]
                     LazyVGrid(columns: columns, spacing: 30) {
                         ForEach(weaponModel.allWeapons) { weapon in
-                            let isUnlocked = runRecordService.unlockedWeaponIds.contains(weapon.id)
+                            let isUnlocked = runRecordStore.unlockedWeaponIds.contains(weapon.id)
                             
                             if isUnlocked {
                                 Button(action: {
