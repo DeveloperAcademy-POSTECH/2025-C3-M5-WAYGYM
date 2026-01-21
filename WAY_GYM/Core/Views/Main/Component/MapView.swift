@@ -58,12 +58,22 @@ struct MapView: UIViewRepresentable {
             validPolylines.forEach { mapView.addOverlay($0) }
         }
 
-        mapView.removeAnnotations(mapView.annotations)
         if let currentLocation = currentLocation {
-            let annotation = MKPointAnnotation()
-            annotation.coordinate = currentLocation
-            annotation.title = "현재 위치"
-            mapView.addAnnotation(annotation)
+            if let annotation = context.coordinator.currentLocationAnnotation {
+                if annotation.coordinate.latitude != currentLocation.latitude ||
+                    annotation.coordinate.longitude != currentLocation.longitude {
+                    annotation.coordinate = currentLocation
+                }
+            } else {
+                let annotation = MKPointAnnotation()
+                annotation.coordinate = currentLocation
+                annotation.title = "현재 위치"
+                context.coordinator.currentLocationAnnotation = annotation
+                mapView.addAnnotation(annotation)
+            }
+        } else if let annotation = context.coordinator.currentLocationAnnotation {
+            mapView.removeAnnotation(annotation)
+            context.coordinator.currentLocationAnnotation = nil
         }
     }
     
@@ -74,6 +84,7 @@ struct MapView: UIViewRepresentable {
     class Coordinator: NSObject, MKMapViewDelegate {
         var parent: MapView
         var isProgrammaticRegionChange: Bool = false
+        var currentLocationAnnotation: MKPointAnnotation?
         
         init(_ parent: MapView) {
             self.parent = parent
@@ -118,7 +129,6 @@ struct MapView: UIViewRepresentable {
 
             annotationView.annotation = annotation
 
-            // Always update image on reuse as well, so weapon changes reflect immediately.
             let imageName = "main_\(parent.selectedWeaponId)"
             let resolvedImage = UIImage(named: imageName) ?? UIImage(named: "H")
             annotationView.image = resolvedImage

@@ -27,17 +27,19 @@ enum AppRouter: Hashable {
 }
 
 protocol ModuleFactoryProtocol {
-    func make(_ route: AppRouter, onAuthed: @escaping () -> Void) -> AnyView
+    func make(_ route: AppRouter) -> AnyView
 }
 
 final class ModuleFactory: ModuleFactoryProtocol {
     static let shared = ModuleFactory()
     private init() {}
     
-    func make(_ route: AppRouter, onAuthed: @escaping () -> Void) -> AnyView {
+    func make(_ route: AppRouter) -> AnyView {
         switch route {
         case .auth:
-            return AnyView(AuthView(onAuthed: onAuthed))
+            let viewModel = AuthViewModel()
+            let view = AuthView(vm: viewModel)
+            return AnyView(view)
         case .profileSetup:
             return AnyView(ProfileSetupView())
         case .main:

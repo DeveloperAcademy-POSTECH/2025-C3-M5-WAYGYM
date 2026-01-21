@@ -2,7 +2,7 @@ import Foundation
 import FirebaseAuth
 
 final class UserStore: ObservableObject {
-    @Published var profile: UserProfile?
+    @Published var profile: User?
     @Published var addressRank: Int?
 
     private let userRepository: UserRepositoryProtocol

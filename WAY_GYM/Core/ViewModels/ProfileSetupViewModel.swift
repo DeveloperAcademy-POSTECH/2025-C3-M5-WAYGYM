@@ -218,7 +218,7 @@ extension ProfileSetupViewModel {
 
         isSavingProfile = true
 
-        let profile = UserProfile(
+        let profile = User(
             displayName: displayName,
             homeArea: homeArea,
             sex: sex.rawValue,

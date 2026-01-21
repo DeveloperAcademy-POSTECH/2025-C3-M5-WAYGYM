@@ -164,7 +164,7 @@ struct FriendRequestView: View {
                     group.addTask {
                         do {
                             let profile = try await userRepository.fetchUserProfile(uid: request.fromUid)
-                            return makeRow(requestId: requestId, fromUid: request.fromUid, profile: profile)
+                            return await makeRow(requestId: requestId, fromUid: request.fromUid, profile: profile)
                         } catch {
                             return nil
                         }
@@ -191,7 +191,7 @@ struct FriendRequestView: View {
         }
     }
 
-    private func makeRow(requestId: String, fromUid: String, profile: UserProfile) -> FriendRequestRowModel {
+    private func makeRow(requestId: String, fromUid: String, profile: User) -> FriendRequestRowModel {
         let displayName = profile.displayName ?? "알 수 없음"
         let subText: String
         if let friendCode = profile.friendCode, friendCode.isEmpty == false {

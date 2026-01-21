@@ -13,7 +13,6 @@ import FirebaseAuth
 
 final class MainViewModel: ObservableObject {
     @Published var runPhase: RunPhase = .root
-    
     @Published var latestRunRecord: RunRecordModel?
     
     // 이번 런(방금 종료한 런)으로 새로 해금된 무기들 (weaponId)

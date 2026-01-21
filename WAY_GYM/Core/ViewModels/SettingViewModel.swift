@@ -48,7 +48,7 @@ final class ProfileEditViewModel: ObservableObject {
         [sido, sigungu, dong].filter { !$0.isEmpty }.joined(separator: " ")
     }
 
-    func loadProfileIfNeeded(_ profile: UserProfile?) {
+    func loadProfileIfNeeded(_ profile: User?) {
         guard !hasLoadedProfile, let profile else { return }
         hasLoadedProfile = true
 
@@ -183,7 +183,7 @@ extension ProfileEditViewModel {
 
         isSavingProfile = true
 
-        let profile = UserProfile(
+        let profile = User(
             displayName: displayName,
             homeArea: homeArea,
             sex: sex.rawValue,

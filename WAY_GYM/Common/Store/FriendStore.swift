@@ -16,9 +16,10 @@ enum FriendStatus {
 }
 
 final class FriendStore: ObservableObject {
-    @Published private(set) var friendUids: Set<String> = []
-    @Published private(set) var outgoingPendingUids: Set<String> = []
-    @Published private(set) var incomingPendingUids: Set<String> = []
+    @Published private(set) var friendUids: Set<String> = [] /// 나와 친구 관계인 사람들
+    @Published private(set) var outgoingPendingUids: Set<String> = [] /// 내가 친구신청을 보낸 사람들
+    @Published private(set) var incomingPendingUids: Set<String> = [] /// 내게 친구신청을 보낸 사람들
+    @Published private(set) var lastRefreshError: String?
 
     private let friendRepository: FriendRepositoryProtocol
 
@@ -33,6 +34,7 @@ final class FriendStore: ObservableObject {
             return
         }
 
+        lastRefreshError = nil
         do {
             let friendships = try await friendRepository.fetchFriendships(for: uid)
             let friends = friendships.compactMap { $0.otherUid(for: uid) }
@@ -44,6 +46,7 @@ final class FriendStore: ObservableObject {
             let incoming = try await friendRepository.fetchPendingFriendRequestsReceived(to: uid)
             incomingPendingUids = Set(incoming.map { $0.fromUid })
         } catch {
+            lastRefreshError = error.localizedDescription
             print("⚠️ FriendStore refresh 실패: \(error.localizedDescription)")
         }
     }
@@ -53,6 +56,7 @@ final class FriendStore: ObservableObject {
         friendUids = []
         outgoingPendingUids = []
         incomingPendingUids = []
+        lastRefreshError = nil
     }
 
     func status(for uid: String) -> FriendStatus {
@@ -72,4 +76,13 @@ final class FriendStore: ObservableObject {
     func markOutgoingPending(uid: String) {
         outgoingPendingUids.insert(uid)
     }
+
+#if DEBUG
+    @MainActor
+    static func previewWithError(_ message: String) -> FriendStore {
+        let store = FriendStore()
+        store.lastRefreshError = message
+        return store
+    }
+#endif
 }

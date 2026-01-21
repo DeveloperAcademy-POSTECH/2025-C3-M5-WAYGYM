@@ -16,6 +16,7 @@ struct FriendView: View {
 
     @State private var query: String = ""
     @State private var isSearching: Bool = false
+    @State private var isSearchLoading: Bool = false
 
     @State private var searchResults: [FriendUserRowModel] = []
     @State private var friends: [FriendUserRowModel] = []
@@ -27,34 +28,38 @@ struct FriendView: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 16) {
+                    if let errorMessage = friendStore.lastRefreshError {
+                        refreshErrorBanner(message: errorMessage)
+                    }
                     searchUser
 
-                    if isSearching {
-                        searchResultList
-                    } else {
+                    if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         friendList
+                    } else {
+                        searchResultList
                     }
 
                     Spacer(minLength: 24)
                 }
                 .padding(.top, 12)
             }
-            .padding(.horizontal, 16)
         }
+        .task(id: friendStore.friendUids) {
+            await fetchFriendProfiles()
+        }
+        .padding(.horizontal, 16)
         .background {
             Color.gangBgPrimary5
                 .ignoresSafeArea()
         }
         .backHiddenSwipeEnabled()
-        .task(id: friendStore.friendUids) {
-            await loadFriends()
-        }
+        .dismissKeyboard()
     }
 
     // MARK: - UI
     private var searchUser: some View {
         VStack(spacing: 10) {
-            VStack(spacing: 1) {
+            VStack(spacing: 2) {
                 sectionTitle("유저 검색")
                 helperText("이름이나 아이디로 검색해서 친구 신청을 보낼 수 있어요")
             }
@@ -70,7 +75,7 @@ struct FriendView: View {
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text("나에게 온 친구 신청")
-                            .font(.title03)
+                            .font(.text01)
                             .foregroundStyle(Color.gangText1)
 
                         Text(incomingRequestCount == 0 ? "새로운 신청이 없어요" : "\(incomingRequestCount)개의 신청이 있어요")
@@ -92,16 +97,56 @@ struct FriendView: View {
                             )
                     }
 
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Color.gangText2.opacity(0.75))
+                    if incomingRequestCount > 0 {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Color.gangText2.opacity(0.75))
+                    }
                 }
                 .padding(14)
                 .background(cardBackground)
                 .overlay(cardBorder)
             }
             .buttonStyle(.plain)
+            .disabled(incomingRequestCount == 0)
         }
+    }
+
+    private func refreshErrorBanner(message: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(Color.white.opacity(0.9))
+
+            Text("친구 정보를 불러오지 못했어요")
+                .font(.text02)
+                .foregroundStyle(Color.gangText1)
+
+            Spacer(minLength: 0)
+
+            Button {
+                Task { await friendStore.refresh() }
+            } label: {
+                Text("재시도")
+                    .font(.text02)
+                    .foregroundStyle(Color.white.opacity(0.92))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(Color.white.opacity(0.14))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(Color.white.opacity(0.12), lineWidth: 1)
+                    )
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(14)
+        .background(cardBackground)
+        .overlay(cardBorder)
+        .accessibilityLabel("친구 정보 로드 실패. 재시도 버튼.")
     }
     
     private var friendList: some View {
@@ -179,7 +224,11 @@ struct FriendView: View {
 
     private var searchResultList: some View {
         VStack(spacing: 10) {
-            if searchResults.isEmpty {
+            if isSearchLoading {
+                ProgressView()
+                    .foregroundStyle(Color.gang_text_2)
+                    .frame(width: 50)
+            } else if searchResults.isEmpty, isSearching {
                 helperText("검색 결과가 없어요")
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else {
@@ -394,6 +443,7 @@ struct FriendView: View {
 
         isSearching = true
         searchResults = []
+        isSearchLoading = true
 
         Task {
             do {
@@ -401,10 +451,12 @@ struct FriendView: View {
                 let rows = users.map { makeRow(from: $0) }
                 await MainActor.run {
                     searchResults = rows
+                    isSearchLoading = false
                 }
             } catch {
                 await MainActor.run {
                     searchResults = []
+                    isSearchLoading = false
                 }
             }
         }
@@ -428,7 +480,7 @@ struct FriendView: View {
         }
     }
 
-    private func makeRow(from user: UserProfile) -> FriendUserRowModel {
+    private func makeRow(from user: User) -> FriendUserRowModel {
         let id = user.id ?? user.friendCode ?? user.displayName ?? UUID().uuidString
         let displayName = user.displayName ?? "알 수 없음"
         let subText: String
@@ -451,7 +503,7 @@ struct FriendView: View {
         }
     }
 
-    private func loadFriends() async {
+    private func fetchFriendProfiles() async {
         let uids = Array(friendStore.friendUids)
         guard uids.isEmpty == false else {
             await MainActor.run { friends = [] }
@@ -502,6 +554,15 @@ private struct FriendUserRowModel: Identifiable {
     FriendView()
         .environmentObject(AppCoordinator())
         .environmentObject(FriendStore())
+        .font(.text01)
+        .foregroundColor(Color("gang_text_2"))
+        .preferredColorScheme(.dark)
+}
+
+#Preview("FriendView - Refresh Error") {
+    FriendView()
+        .environmentObject(AppCoordinator())
+        .environmentObject(FriendStore.previewWithError("친구 정보를 불러오지 못했어요"))
         .font(.text01)
         .foregroundColor(Color("gang_text_2"))
         .preferredColorScheme(.dark)

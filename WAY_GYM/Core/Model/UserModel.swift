@@ -1,0 +1,30 @@
+import Foundation
+import FirebaseFirestoreSwift
+
+struct User: Codable {
+    @DocumentID var id: String?
+    
+    let displayName: String?
+    let homeArea: String?
+    let sex: String?
+    let friendCode: String?
+    
+    // Duo 관련
+    let activeDuoWorldId: String? = nil
+    let pendingWorldResult: String? = nil
+    
+    // 보상 관련
+    let nextMinionNumber: Int? = nil
+    
+    @ServerTimestamp var createdAt: Date? = nil
+}
+
+// Subcollection: Users/{uid}/minionUnlocks/{minionId}
+struct MinionUnlock: Codable {
+    @DocumentID var id: String?   // == minionId
+
+    let minionId: String
+    let unlockedAt: Date
+    let worldId: String
+    let opponentUid: String
+}

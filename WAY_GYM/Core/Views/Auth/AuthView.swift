@@ -9,8 +9,8 @@ import SwiftUI
 import FirebaseAuth
 
 struct AuthView: View {
-    @EnvironmentObject private var coordinator: AppCoordinator
-    @StateObject private var viewModel: AuthViewModel
+    @EnvironmentObject var coordinator: AppCoordinator
+    @StateObject var vm: AuthViewModel
 
     private enum FocusField: Hashable {
         case phone
@@ -18,10 +18,6 @@ struct AuthView: View {
     }
 
     @FocusState private var focusField: FocusField?
-
-    init(onAuthed: @escaping () -> Void) {
-        _viewModel = StateObject(wrappedValue: AuthViewModel(onAuthed: onAuthed))
-    }
 
     var body: some View {
         ZStack {
@@ -37,7 +33,7 @@ struct AuthView: View {
                             countryRow
                                 .customBorder(color: .gangBlackOpacity)
                             
-                            TextField(viewModel.isKR ? "010-1234-5678" : "전화번호", text: $viewModel.phoneText)
+                            TextField(vm.isKR ? "010-1234-5678" : "전화번호", text: $vm.phoneText)
                                 .keyboardType(.numberPad)
                                 .textContentType(.telephoneNumber)
                                 .textFieldStyle(.plain)
@@ -46,31 +42,31 @@ struct AuthView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                                 .foregroundStyle(Color.gangBlack)
                                 .focused($focusField, equals: .phone)
-                                .onChange(of: viewModel.phoneText) { _, newValue in
-                                    viewModel.onPhoneTextChanged(newValue)
+                                .onChange(of: vm.phoneText) { _, newValue in
+                                    vm.onPhoneTextChanged(newValue)
                                 }
                         }
                         
-                        if viewModel.verificationID == nil, let errorMessage = viewModel.errorMessage {
+                        if vm.verificationID == nil, let errorMessage = vm.errorMessage {
                             Text(errorMessage)
                                 .font(.system(size: 12, weight: .bold, design: .rounded))
                                 .foregroundStyle(.red.opacity(0.9))
                         }
                         
                         CustomButton(
-                            title: viewModel.isSending ? "전송 중..." : "인증번호 보내기",
+                            title: vm.isSending ? "전송 중..." : "인증번호 보내기",
                             action: { Task { await
-                                viewModel.sendCode() } },
+                                vm.sendCode() } },
                             style: .compact,
-                            isDisabled: !viewModel.canSend || viewModel.verificationID != nil
+                            isDisabled: !vm.canSend || vm.verificationID != nil
                         )
                     }
                 }
 
-                if viewModel.verificationID != nil {
+                if vm.verificationID != nil {
                     InputCard {
                         VStack(alignment: .leading, spacing: 12) {
-                            TextField("6자리 인증번호", text: $viewModel.codeText)
+                            TextField("6자리 인증번호", text: $vm.codeText)
                                 .keyboardType(.numberPad)
                                 .textContentType(.oneTimeCode)
                                 .padding(12)
@@ -78,19 +74,19 @@ struct AuthView: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                                 .foregroundStyle(Color.gangBlack)
                                 .focused($focusField, equals: .code)
-                                .onChange(of: viewModel.codeText) { _, newValue in
-                                    viewModel.onCodeTextChanged(newValue)
+                                .onChange(of: vm.codeText) { _, newValue in
+                                    vm.onCodeTextChanged(newValue)
                                 }
                             
                             CustomButton(
                                 title: "확인",
-                                action: { Task { await viewModel.verifyCode() } },
+                                action: { Task { await vm.verifyCode() } },
                                 style: .compact,
-                                isDisabled: !viewModel.canVerify || viewModel.isCompletingAuth,
-                                isLoading: viewModel.isVerifying || viewModel.isCompletingAuth
+                                isDisabled: !vm.canVerify || vm.isCompletingAuth,
+                                isLoading: vm.isVerifying || vm.isCompletingAuth
                             )
                             
-                            if let errorMessage = viewModel.errorMessage {
+                            if let errorMessage = vm.errorMessage {
                                 Text(errorMessage)
                                     .font(.system(size: 12, weight: .bold, design: .rounded))
                                     .foregroundStyle(.red.opacity(0.9))
@@ -102,7 +98,7 @@ struct AuthView: View {
                                 .foregroundStyle(Color.gangText2.opacity(0.6))
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .onTapGesture {
-                                    viewModel.resetToPhoneEntry()
+                                    vm.resetToPhoneEntry()
                                 }
                         }
                     }
@@ -114,13 +110,13 @@ struct AuthView: View {
         }
         .dismissKeyboard()
         .onChange(of: focusField) { _, newValue in
-            if newValue == .phone, viewModel.verificationID != nil {
-                viewModel.resetToPhoneEntry()
+            if newValue == .phone, vm.verificationID != nil {
+                vm.resetToPhoneEntry()
             }
         }
-        .sheet(isPresented: $viewModel.showCountrySheet) {
-            CountryPickerSheet(selected: viewModel.country) { selected in
-                viewModel.selectCountry(selected)
+        .sheet(isPresented: $vm.showCountrySheet) {
+            CountryPickerSheet(selected: vm.country) { selected in
+                vm.selectCountry(selected)
             }
         }
     }
@@ -139,10 +135,10 @@ struct AuthView: View {
 
     private var countryRow: some View {
         Button {
-            viewModel.tapCountryRow()
+            vm.tapCountryRow()
         } label: {
             HStack {
-                Text(viewModel.country.flag).font(.title3)
+                Text(vm.country.flag).font(.title3)
                 Image(systemName: "chevron.up.chevron.down")
                     .foregroundStyle(Color.gangText2)
             }
@@ -154,9 +150,7 @@ struct AuthView: View {
 
 
 #Preview {
-    AuthView(onAuthed: {
-        // preview authed
-    })
+    AuthView(vm: AuthViewModel())
     .font(.text01)
     .foregroundColor(Color("gang_text_2"))
 }

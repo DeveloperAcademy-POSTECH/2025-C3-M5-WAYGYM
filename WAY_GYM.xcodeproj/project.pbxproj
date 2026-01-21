@@ -29,6 +29,7 @@
 		8B9130952F1365D100C6ABE6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */; };
 		8B9130962F1365D100C6ABE6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */; };
 		8B9130972F1365D100C6ABE6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */; };
+		8B98810F2F1E69C6009F8F87 /* RefreshErrorBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B98810E2F1E69C6009F8F87 /* RefreshErrorBanner.swift */; };
 		8BD032E92F1CA22F0040FE19 /* RunRecordCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD032E82F1CA22F0040FE19 /* RunRecordCardView.swift */; };
 		8BD032F12F1CDA500040FE19 /* FirebaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD032F02F1CDA500040FE19 /* FirebaseManager.swift */; };
 		8BF0776D2F07B7B8004D9277 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077332F07B7B8004D9277 /* RootView.swift */; };
@@ -69,7 +70,7 @@
 		8BF920152F1A090C00E8B04C /* InputCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF920142F1A090C00E8B04C /* InputCard.swift */; };
 		8C01A0112F2A0001 /* UserRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C01A0012F2A0001 /* UserRepository.swift */; };
 		8C01A0122F2A0001 /* RunRecordRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C01A0022F2A0001 /* RunRecordRepository.swift */; };
-		9C1A1A1A2F30000100000001 /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1A1A1A2F30000100000002 /* UserProfile.swift */; };
+		9C1A1A1A2F30000100000001 /* UserModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1A1A1A2F30000100000002 /* UserModel.swift */; };
 		9C1A1A1A2F30000100000003 /* UserStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1A1A1A2F30000100000004 /* UserStore.swift */; };
 		9C1A1A1B2F30000100000006 /* SettingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1A1A1B2F30000100000005 /* SettingViewModel.swift */; };
 		B36066862DEECF4200863D7F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B36066852DEECF4200863D7F /* FirebaseAuth */; };
@@ -115,6 +116,7 @@
 		8B6CD05A2F18F53C002B993F /* ProfileSetupViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSetupViewModel.swift; sourceTree = "<group>"; };
 		8B6CD05C2F18F56B002B993F /* AddressPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressPickerSheet.swift; sourceTree = "<group>"; };
 		8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		8B98810E2F1E69C6009F8F87 /* RefreshErrorBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshErrorBanner.swift; sourceTree = "<group>"; };
 		8BD032E82F1CA22F0040FE19 /* RunRecordCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunRecordCardView.swift; sourceTree = "<group>"; };
 		8BD032F02F1CDA500040FE19 /* FirebaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseManager.swift; sourceTree = "<group>"; };
 		8BF077332F07B7B8004D9277 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -156,7 +158,7 @@
 		8BF920142F1A090C00E8B04C /* InputCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputCard.swift; sourceTree = "<group>"; };
 		8C01A0012F2A0001 /* UserRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserRepository.swift; sourceTree = "<group>"; };
 		8C01A0022F2A0001 /* RunRecordRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunRecordRepository.swift; sourceTree = "<group>"; };
-		9C1A1A1A2F30000100000002 /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
+		9C1A1A1A2F30000100000002 /* UserModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserModel.swift; sourceTree = "<group>"; };
 		9C1A1A1A2F30000100000004 /* UserStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStore.swift; sourceTree = "<group>"; };
 		9C1A1A1B2F30000100000005 /* SettingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingViewModel.swift; sourceTree = "<group>"; };
 		B34B7A9E2DE54FDB00B14CAB /* WAY_GYM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WAY_GYM.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -297,7 +299,7 @@
 		8BF077452F07B7B8004D9277 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				9C1A1A1A2F30000100000002 /* UserProfile.swift */,
+				9C1A1A1A2F30000100000002 /* UserModel.swift */,
 				8BF5D01E2F1E15380075BEF1 /* FriendShipModel.swift */,
 				8BF077422F07B7B8004D9277 /* RunRecordModel.swift */,
 				8BF077412F07B7B8004D9277 /* MinionModel.swift */,
@@ -320,6 +322,7 @@
 			isa = PBXGroup;
 			children = (
 				8BF0774A2F07B7B8004D9277 /* CustomBorder.swift */,
+				8B98810E2F1E69C6009F8F87 /* RefreshErrorBanner.swift */,
 				8BF0774B2F07B7B8004D9277 /* CustomNavigationBar.swift */,
 				8B2ED1DE2F176D15008AE661 /* CustomButton.swift */,
 				8BF920142F1A090C00E8B04C /* InputCard.swift */,
@@ -635,13 +638,14 @@
 				8BF077702F07B7B8004D9277 /* Color+hex+extension.swift in Sources */,
 				8BF077712F07B7B8004D9277 /* Font+extension.swift in Sources */,
 				8BF077722F07B7B8004D9277 /* FormatDate.swift in Sources */,
+				8B98810F2F1E69C6009F8F87 /* RefreshErrorBanner.swift in Sources */,
 				8B0537082F10DC0100A61DFD /* MapView.swift in Sources */,
 				8BF077732F07B7B8004D9277 /* MinionModel.swift in Sources */,
 				8BF5D01D2F1E14590075BEF1 /* FriendStore.swift in Sources */,
 				8BF5D01F2F1E15380075BEF1 /* FriendShipModel.swift in Sources */,
 				8BF9200F2F1A077D00E8B04C /* View+.swift in Sources */,
 				8BF077742F07B7B8004D9277 /* RunRecordModel.swift in Sources */,
-				9C1A1A1A2F30000100000001 /* UserProfile.swift in Sources */,
+				9C1A1A1A2F30000100000001 /* UserModel.swift in Sources */,
 				8BF5D0232F1E1C340075BEF1 /* Practice.swift in Sources */,
 				8B2ED1E42F1787BA008AE661 /* ProfileSetupView.swift in Sources */,
 				8B2ED1DF2F176D15008AE661 /* CustomButton.swift in Sources */,
@@ -848,7 +852,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "WAY-GYM-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "나와바리GO";
+				INFOPLIST_KEY_CFBundleDisplayName = "동네접수RUN";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "걸음 수와 칼로리 데이터를 읽기 위해 HealthKit 접근이 필요합니다.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "HealthKit 데이터를 사용하기 위해 권한이 필요합니다.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = please;
@@ -885,7 +889,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "WAY-GYM-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "나와바리GO";
+				INFOPLIST_KEY_CFBundleDisplayName = "동네접수RUN";
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "걸음 수와 칼로리 데이터를 읽기 위해 HealthKit 접근이 필요합니다.";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "HealthKit 데이터를 사용하기 위해 권한이 필요합니다.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = please;

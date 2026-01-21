@@ -1,7 +1,7 @@
 import Foundation
 import FirebaseFirestoreSwift
 
-struct UserProfile: Codable {
+struct User: Codable {
     @DocumentID var id: String?
     let displayName: String?
     let homeArea: String?

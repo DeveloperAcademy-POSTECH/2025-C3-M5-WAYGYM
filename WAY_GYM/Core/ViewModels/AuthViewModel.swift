@@ -8,7 +8,6 @@
 import Foundation
 import FirebaseAuth
 
-@MainActor
 final class AuthViewModel: ObservableObject {
     @Published var country: Country = CountryData.korea
     @Published var showCountrySheet: Bool = false
@@ -21,11 +20,6 @@ final class AuthViewModel: ObservableObject {
     @Published var isVerifying: Bool = false
     @Published var isCompletingAuth: Bool = false
     @Published var errorMessage: String? = nil
-
-    private let onAuthed: () -> Void
-    init(onAuthed: @escaping () -> Void) {
-        self.onAuthed = onAuthed
-    }
 
     var isKR: Bool { country.id == "KR" }
     var canSend: Bool {
@@ -139,9 +133,7 @@ final class AuthViewModel: ObservableObject {
 
         do {
             _ = try await Auth.auth().signIn(with: credential)
-
             isCompletingAuth = true
-            onAuthed()
         } catch {
             errorMessage = "인증번호가 올바르지 않아요. 다시 확인해 주세요."
         }

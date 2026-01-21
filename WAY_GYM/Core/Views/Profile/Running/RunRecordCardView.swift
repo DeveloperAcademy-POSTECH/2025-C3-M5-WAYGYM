@@ -157,8 +157,8 @@ struct MiniMapThumbnail: View {
                         let s = projector.toPoint(start)
                         let e = projector.toPoint(end)
 
-                        drawMarker(context: &context, center: s, radius: 5, fill: Color.green.opacity(0.95))
-                        drawMarker(context: &context, center: e, radius: 5, fill: Color.green.opacity(0.55))
+                        drawMarker(context: &context, center: s, radius: 5, fill: Color.green.opacity(0.55))
+                        drawMarker(context: &context, center: e, radius: 5, fill: Color.green.opacity(0.95))
                     }
                 }
 
