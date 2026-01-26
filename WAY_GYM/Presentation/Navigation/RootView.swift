@@ -66,12 +66,17 @@ struct RootView: View {
             if coordinator.root != target { coordinator.replaceRoot(target) }
 
             if exists {
-                await runRecordStore.refresh()
-                await userStore.refresh()
-                await friendStore.refresh()
+                await hydrateStoresAfterLogin()
             }
         } catch {
             if coordinator.root != .profileSetup { coordinator.replaceRoot(.profileSetup) }
         }
+    }
+    
+    /// 앱에서 계속 사용할 핵심 데이터를 서버에서 새로 받아와 Store에 채운다.
+    private func hydrateStoresAfterLogin() async {
+        await runRecordStore.refresh()
+        await userStore.refresh()
+        await friendStore.refresh()
     }
 }

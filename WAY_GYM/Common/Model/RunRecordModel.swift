@@ -4,7 +4,7 @@ import FirebaseFirestoreSwift
 import CoreLocation
 
 // MARK: - 데이터 모델
-struct RunRecordModel: Identifiable, Codable, Equatable {
+struct RunRecord: Identifiable, Codable, Equatable {
     @DocumentID var id: String? // Firestore 문서 ID
     // type / activeDuoWorldId 는 지금 단계에서는 제외
     let startTime: Date
@@ -25,6 +25,25 @@ struct RunRecordModel: Identifiable, Codable, Equatable {
         case routeEncoded = "route_encoded"
         case capturedCellIds = "captured_cell_ids"
         case routeFrame = "route_frame"
+    }
+
+    enum Field: String, FirestoreFieldKey {
+        case startTime = "start_time"
+        case endTime = "end_time"
+        case distanceM = "distance_m"
+        case routeEncoded = "route_encoded"
+        case capturedCellIds = "captured_cell_ids"
+        case routeFrame = "route_frame"
+    }
+
+    enum Collection: String, FirestoreCollectionKey {
+        case runs = "runs"
+    }
+
+    static func collectionPath(uid: String) -> FirestoreCollectionPath {
+        FirestoreCollectionPath(
+            rawValue: "\(FirestoreCollection.runRecords.key)/\(uid)/\(Collection.runs.key)"
+        )
     }
 
 //    init(from decoder: Decoder) throws {

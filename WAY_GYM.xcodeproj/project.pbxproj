@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		8B047DB62F20D02B00B2614C /* FirestorePath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B047DB52F20D02B00B2614C /* FirestorePath.swift */; };
 		8B0537082F10DC0100A61DFD /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B0537072F10DC0100A61DFD /* MapView.swift */; };
 		8B05370A2F10DC4800A61DFD /* RouteMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B0537092F10DC4800A61DFD /* RouteMapView.swift */; };
 		8B05370C2F10DC5200A61DFD /* ControlPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B05370B2F10DC5200A61DFD /* ControlPanel.swift */; };
@@ -31,7 +32,7 @@
 		8B9130972F1365D100C6ABE6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */; };
 		8B98810F2F1E69C6009F8F87 /* RefreshErrorBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B98810E2F1E69C6009F8F87 /* RefreshErrorBanner.swift */; };
 		8BD032E92F1CA22F0040FE19 /* RunRecordCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD032E82F1CA22F0040FE19 /* RunRecordCardView.swift */; };
-		8BD032F12F1CDA500040FE19 /* FirebaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD032F02F1CDA500040FE19 /* FirebaseManager.swift */; };
+		8BD032F12F1CDA500040FE19 /* FirestoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD032F02F1CDA500040FE19 /* FirestoreManager.swift */; };
 		8BF0776D2F07B7B8004D9277 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077332F07B7B8004D9277 /* RootView.swift */; };
 		8BF0776E2F07B7B8004D9277 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077352F07B7B8004D9277 /* App.swift */; };
 		8BF077702F07B7B8004D9277 /* Color+hex+extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF0773A2F07B7B8004D9277 /* Color+hex+extension.swift */; };
@@ -98,6 +99,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		8B047DB52F20D02B00B2614C /* FirestorePath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestorePath.swift; sourceTree = "<group>"; };
 		8B0537072F10DC0100A61DFD /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		8B0537092F10DC4800A61DFD /* RouteMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteMapView.swift; sourceTree = "<group>"; };
 		8B05370B2F10DC5200A61DFD /* ControlPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlPanel.swift; sourceTree = "<group>"; };
@@ -118,7 +120,7 @@
 		8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		8B98810E2F1E69C6009F8F87 /* RefreshErrorBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshErrorBanner.swift; sourceTree = "<group>"; };
 		8BD032E82F1CA22F0040FE19 /* RunRecordCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunRecordCardView.swift; sourceTree = "<group>"; };
-		8BD032F02F1CDA500040FE19 /* FirebaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseManager.swift; sourceTree = "<group>"; };
+		8BD032F02F1CDA500040FE19 /* FirestoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreManager.swift; sourceTree = "<group>"; };
 		8BF077332F07B7B8004D9277 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		8BF077352F07B7B8004D9277 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 		8BF077362F07B7B8004D9277 /* WAY_GYM.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WAY_GYM.entitlements; sourceTree = "<group>"; };
@@ -196,6 +198,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8B047DB42F20D01D00B2614C /* Firestore */ = {
+			isa = PBXGroup;
+			children = (
+				8B047DB52F20D02B00B2614C /* FirestorePath.swift */,
+				8BD032F02F1CDA500040FE19 /* FirestoreManager.swift */,
+			);
+			path = Firestore;
+			sourceTree = "<group>";
+		};
 		8B0537132F10E92400A61DFD /* Component */ = {
 			isa = PBXGroup;
 			children = (
@@ -205,6 +216,15 @@
 				8B0537092F10DC4800A61DFD /* RouteMapView.swift */,
 			);
 			path = Component;
+			sourceTree = "<group>";
+		};
+		8B1384772F2733520038AA86 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				8BF0774D2F07B7B8004D9277 /* LocationManager.swift */,
+				8B047DB42F20D01D00B2614C /* Firestore */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		8B2ED1D42F1764B2008AE661 /* Auth */ = {
@@ -247,15 +267,6 @@
 			path = Navigation;
 			sourceTree = "<group>";
 		};
-		8BF077372F07B7B8004D9277 /* App */ = {
-			isa = PBXGroup;
-			children = (
-				8BF077342F07B7B8004D9277 /* Navigation */,
-				8BF077352F07B7B8004D9277 /* App.swift */,
-			);
-			path = App;
-			sourceTree = "<group>";
-		};
 		8BF0773C2F07B7B8004D9277 /* Extenstions */ = {
 			isa = PBXGroup;
 			children = (
@@ -263,15 +274,6 @@
 				8BF0773B2F07B7B8004D9277 /* Font+extension.swift */,
 			);
 			path = Extenstions;
-			sourceTree = "<group>";
-		};
-		8BF0773D2F07B7B8004D9277 /* Manager */ = {
-			isa = PBXGroup;
-			children = (
-				8BF0774D2F07B7B8004D9277 /* LocationManager.swift */,
-				8BD032F02F1CDA500040FE19 /* FirebaseManager.swift */,
-			);
-			path = Manager;
 			sourceTree = "<group>";
 		};
 		8BF0773F2F07B7B8004D9277 /* Utils */ = {
@@ -289,9 +291,9 @@
 			children = (
 				8BF0773C2F07B7B8004D9277 /* Extenstions */,
 				8BF0773F2F07B7B8004D9277 /* Utils */,
-				8BF0773D2F07B7B8004D9277 /* Manager */,
+				8BF077452F07B7B8004D9277 /* Model */,
+				8B1384772F2733520038AA86 /* Services */,
 				8C01A0202F2A0001 /* Repository */,
-				8BF077492F07B7B8004D9277 /* Store */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -395,14 +397,16 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
-		8BF077652F07B7B8004D9277 /* Core */ = {
+		8BF077652F07B7B8004D9277 /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
-				8BF077452F07B7B8004D9277 /* Model */,
+				8BF077352F07B7B8004D9277 /* App.swift */,
+				8BF077342F07B7B8004D9277 /* Navigation */,
+				8BF077492F07B7B8004D9277 /* Store */,
 				8BF077642F07B7B8004D9277 /* Views */,
 				8B2ED1D72F1764ED008AE661 /* ViewModels */,
 			);
-			path = Core;
+			path = Presentation;
 			sourceTree = "<group>";
 		};
 		8BF077682F07B7B8004D9277 /* Resources */ = {
@@ -419,9 +423,8 @@
 			isa = PBXGroup;
 			children = (
 				8BF077682F07B7B8004D9277 /* Resources */,
-				8BF077372F07B7B8004D9277 /* App */,
 				8BF077402F07B7B8004D9277 /* Common */,
-				8BF077652F07B7B8004D9277 /* Core */,
+				8BF077652F07B7B8004D9277 /* Presentation */,
 				8BF077362F07B7B8004D9277 /* WAY_GYM.entitlements */,
 				8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */,
 			);
@@ -654,8 +657,9 @@
 				9C1A1A1A2F30000100000003 /* UserStore.swift in Sources */,
 				8C01A0112F2A0001 /* UserRepository.swift in Sources */,
 				8C01A0122F2A0001 /* RunRecordRepository.swift in Sources */,
+				8B047DB62F20D02B00B2614C /* FirestorePath.swift in Sources */,
 				8BF0777A2F07B7B8004D9277 /* CustomBorder.swift in Sources */,
-				8BD032F12F1CDA500040FE19 /* FirebaseManager.swift in Sources */,
+				8BD032F12F1CDA500040FE19 /* FirestoreManager.swift in Sources */,
 				8BF0777B2F07B7B8004D9277 /* CustomNavigationBar.swift in Sources */,
 				8B6CD05B2F18F53C002B993F /* ProfileSetupViewModel.swift in Sources */,
 				9C1A1A1B2F30000100000006 /* SettingViewModel.swift in Sources */,

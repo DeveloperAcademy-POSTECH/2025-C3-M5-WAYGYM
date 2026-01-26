@@ -11,6 +11,10 @@ import FirebaseFirestoreSwift
 struct Friendship: Codable {
     @DocumentID var id: String?
     let memberUids: [String]
+
+    enum Field: String, FirestoreFieldKey {
+        case memberUids
+    }
     
     func otherUid(for uid: String) -> String? {
         guard memberUids.count == 2 else { return nil }
@@ -25,4 +29,10 @@ struct FriendRequest: Codable {
     let fromUid: String
     let toUid: String
     let status: String?
+
+    enum Field: String, FirestoreFieldKey {
+        case fromUid
+        case toUid
+        case status
+    }
 }

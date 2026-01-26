@@ -1,5 +1,5 @@
 //
-//  FirebaseManager.swift
+//  FirestoreManager.swift
 //  WAY_GYM
 //
 //  Created by 이주현 on 1/18/26.
@@ -35,20 +35,32 @@ enum FirestoreError: LocalizedError {
     }
 }
 
-protocol FirebaseManagerProtocol {
+protocol FirestoreManagerProtocol {
     // MARK: - Firestore 읽기
     /// 단일 문서 조회
     func fetch<T: Decodable>(path: String) async throws -> T
+    func fetch<T: Decodable>(path: FirestoreDocumentPath) async throws -> T
     
     /// 컬렉션 전체 조회
     func fetchCollection<T: Decodable>(path: String) async throws -> [T]
+    func fetchCollection<T: Decodable>(path: FirestoreCollectionPath) async throws -> [T]
     
     /// 정렬된 컬렉션 조회
     func fetchCollection<T: Decodable>(path: String, orderBy field: String, descending: Bool) async throws -> [T]
+    func fetchCollection<T: Decodable>(
+        path: FirestoreCollectionPath,
+        orderBy field: String,
+        descending: Bool
+    ) async throws -> [T]
     
     func fetchWhereEqual<T: Decodable>(
         path: String,
         field: String,
+        isEqualTo value: String
+    ) async throws -> [T]
+    func fetchWhereEqual<T: Decodable, F: FirestoreFieldKey>(
+        path: FirestoreCollectionPath,
+        field: F,
         isEqualTo value: String
     ) async throws -> [T]
 
@@ -57,9 +69,15 @@ protocol FirebaseManagerProtocol {
         field: String,
         value: String
     ) async throws -> [T]
+    func fetchWhereArrayContains<T: Decodable, F: FirestoreFieldKey>(
+        path: FirestoreCollectionPath,
+        field: F,
+        value: String
+    ) async throws -> [T]
 
     /// 문서 존재 여부
     func documentExists(path: String) async throws -> Bool
+    func documentExists(path: FirestoreDocumentPath) async throws -> Bool
 
     /// 조건 일치 문서 존재 여부
     func existsWhereEqual(
@@ -68,10 +86,22 @@ protocol FirebaseManagerProtocol {
         isEqualTo value: String,
         limit: Int
     ) async throws -> Bool
+    func existsWhereEqual<F: FirestoreFieldKey>(
+        path: FirestoreCollectionPath,
+        field: F,
+        isEqualTo value: String,
+        limit: Int
+    ) async throws -> Bool
 
     /// 정렬 + 제한 컬렉션 조회
     func fetchCollection<T: Decodable>(
         path: String,
+        orderBy field: String,
+        descending: Bool,
+        limit: Int
+    ) async throws -> [T]
+    func fetchCollection<T: Decodable>(
+        path: FirestoreCollectionPath,
         orderBy field: String,
         descending: Bool,
         limit: Int
@@ -88,24 +118,30 @@ protocol FirebaseManagerProtocol {
     // MARK: - Firestore 쓰기
     /// 문서 생성 (ID 지정)
     func create(path: String, data: [String: Any]) async throws
+    func create(path: FirestoreDocumentPath, data: [String: Any]) async throws
     /// 문서 생성 (ID 자동 생성)
     func createWithAutoId(path: String, data: [String: Any]) async throws -> String
+    func createWithAutoId(path: FirestoreCollectionPath, data: [String: Any]) async throws -> String
 
     /// 문서 생성/업데이트 (merge 옵션)
     func set(path: String, data: [String: Any], merge: Bool) async throws
+    func set(path: FirestoreDocumentPath, data: [String: Any], merge: Bool) async throws
 
     /// 문서 생성 (ID 자동 생성, Encodable)
     func createWithAutoId<T: Encodable>(path: String, data: T) async throws -> String
+    func createWithAutoId<T: Encodable>(path: FirestoreCollectionPath, data: T) async throws -> String
     
     /// 문서 업데이트
     func update(path: String, data: [String: Any]) async throws
+    func update(path: FirestoreDocumentPath, data: [String: Any]) async throws
     
     /// 문서 삭제
     func delete(path: String) async throws
+    func delete(path: FirestoreDocumentPath) async throws
 }
 
-final class FirebaseManager: FirebaseManagerProtocol {
-    static let shared = FirebaseManager()
+final class FirestoreManager: FirestoreManagerProtocol {
+    static let shared = FirestoreManager()
     init() {}
     
     private let db = Firestore.firestore()
@@ -182,6 +218,10 @@ final class FirebaseManager: FirebaseManagerProtocol {
             throw FirestoreError.decodingFailed
         }
     }
+
+    func fetch<T: Decodable>(path: FirestoreDocumentPath) async throws -> T {
+        try await fetch(path: path.rawValue)
+    }
     
     func fetchCollection<T: Decodable>(path: String) async throws -> [T] {
         let collectionRef = try parseCollectionPath(path)
@@ -195,6 +235,10 @@ final class FirebaseManager: FirebaseManagerProtocol {
                 return nil
             }
         }
+    }
+
+    func fetchCollection<T: Decodable>(path: FirestoreCollectionPath) async throws -> [T] {
+        try await fetchCollection(path: path.rawValue)
     }
     
     func fetchCollection<T: Decodable>(
@@ -214,6 +258,14 @@ final class FirebaseManager: FirebaseManagerProtocol {
                 return nil
             }
         }
+    }
+
+    func fetchCollection<T: Decodable>(
+        path: FirestoreCollectionPath,
+        orderBy field: String,
+        descending: Bool
+    ) async throws -> [T] {
+        try await fetchCollection(path: path.rawValue, orderBy: field, descending: descending)
     }
     
     func fetchWhereEqual<T: Decodable>(
@@ -236,6 +288,18 @@ final class FirebaseManager: FirebaseManagerProtocol {
         }
     }
 
+    func fetchWhereEqual<T: Decodable, F: FirestoreFieldKey>(
+        path: FirestoreCollectionPath,
+        field: F,
+        isEqualTo value: String
+    ) async throws -> [T] {
+        try await fetchWhereEqual(
+            path: path.rawValue,
+            field: field.key,
+            isEqualTo: value
+        )
+    }
+
     func fetchWhereArrayContains<T: Decodable>(
         path: String,
         field: String,
@@ -253,6 +317,18 @@ final class FirebaseManager: FirebaseManagerProtocol {
                 return nil
             }
         }
+    }
+
+    func fetchWhereArrayContains<T: Decodable, F: FirestoreFieldKey>(
+        path: FirestoreCollectionPath,
+        field: F,
+        value: String
+    ) async throws -> [T] {
+        try await fetchWhereArrayContains(
+            path: path.rawValue,
+            field: field.key,
+            value: value
+        )
     }
     
     func fetchWhere<T: Decodable>(
@@ -284,6 +360,10 @@ final class FirebaseManager: FirebaseManagerProtocol {
         return snapshot.exists
     }
 
+    func documentExists(path: FirestoreDocumentPath) async throws -> Bool {
+        try await documentExists(path: path.rawValue)
+    }
+
     func existsWhereEqual(
         path: String,
         field: String,
@@ -296,6 +376,20 @@ final class FirebaseManager: FirebaseManagerProtocol {
             .limit(to: limit)
             .getDocuments()
         return snapshot.documents.isEmpty == false
+    }
+
+    func existsWhereEqual<F: FirestoreFieldKey>(
+        path: FirestoreCollectionPath,
+        field: F,
+        isEqualTo value: String,
+        limit: Int
+    ) async throws -> Bool {
+        try await existsWhereEqual(
+            path: path.rawValue,
+            field: field.key,
+            isEqualTo: value,
+            limit: limit
+        )
     }
 
     func fetchCollection<T: Decodable>(
@@ -320,6 +414,20 @@ final class FirebaseManager: FirebaseManagerProtocol {
         }
     }
 
+    func fetchCollection<T: Decodable>(
+        path: FirestoreCollectionPath,
+        orderBy field: String,
+        descending: Bool,
+        limit: Int
+    ) async throws -> [T] {
+        try await fetchCollection(
+            path: path.rawValue,
+            orderBy: field,
+            descending: descending,
+            limit: limit
+        )
+    }
+
     func listenCollection(
         path: String,
         orderBy field: String,
@@ -342,6 +450,10 @@ final class FirebaseManager: FirebaseManagerProtocol {
         let docRef = try parseFirestorePath(path)
         try await docRef.setData(data, merge: true)
     }
+
+    func create(path: FirestoreDocumentPath, data: [String: Any]) async throws {
+        try await create(path: path.rawValue, data: data)
+    }
     
     func createWithAutoId(path: String, data: [String: Any]) async throws -> String {
         let collectionRef = try parseCollectionPath(path)
@@ -349,9 +461,17 @@ final class FirebaseManager: FirebaseManagerProtocol {
         return docRef.documentID
     }
 
+    func createWithAutoId(path: FirestoreCollectionPath, data: [String: Any]) async throws -> String {
+        try await createWithAutoId(path: path.rawValue, data: data)
+    }
+
     func set(path: String, data: [String: Any], merge: Bool) async throws {
         let docRef = try parseFirestorePath(path)
         try await docRef.setData(data, merge: merge)
+    }
+
+    func set(path: FirestoreDocumentPath, data: [String: Any], merge: Bool) async throws {
+        try await set(path: path.rawValue, data: data, merge: merge)
     }
 
     func createWithAutoId<T: Encodable>(path: String, data: T) async throws -> String {
@@ -360,10 +480,18 @@ final class FirebaseManager: FirebaseManagerProtocol {
         try docRef.setData(from: data)
         return docRef.documentID
     }
+
+    func createWithAutoId<T: Encodable>(path: FirestoreCollectionPath, data: T) async throws -> String {
+        try await createWithAutoId(path: path.rawValue, data: data)
+    }
     
     func update(path: String, data: [String: Any]) async throws {
         let docRef = try parseFirestorePath(path)
         try await docRef.updateData(data)
+    }
+
+    func update(path: FirestoreDocumentPath, data: [String: Any]) async throws {
+        try await update(path: path.rawValue, data: data)
     }
     
     enum BatchOption {
@@ -375,6 +503,10 @@ final class FirebaseManager: FirebaseManagerProtocol {
     func delete(path: String) async throws {
         let docRef = try parseFirestorePath(path)
         try await docRef.delete()
+    }
+
+    func delete(path: FirestoreDocumentPath) async throws {
+        try await delete(path: path.rawValue)
     }
     
     func deleteWhereEqual(

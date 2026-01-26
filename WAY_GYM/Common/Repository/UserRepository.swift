@@ -20,22 +20,22 @@ protocol UserRepositoryProtocol {
 }
 
 final class UserRepository: UserRepositoryProtocol {
-    private let firebaseManager: FirebaseManagerProtocol
-    init(firebaseManager: FirebaseManagerProtocol = FirebaseManager.shared) {
+    private let firebaseManager: FirestoreManagerProtocol
+    init(firebaseManager: FirestoreManagerProtocol = FirestoreManager.shared) {
         self.firebaseManager = firebaseManager
     }
 
     func doesUserExist(uid: String) async throws -> Bool {
-        try await firebaseManager.documentExists(path: "Users/\(uid)")
+        let path = FirestoreDocumentPath(collection: .users, documentId: uid)
+        return try await firebaseManager.documentExists(path: path)
     }
 
     func isFriendCodeAvailable(_ friendCode: String) async throws -> Bool {
-        let normalized = friendCode.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        guard normalized.isEmpty == false else { return false }
+        guard friendCode.isEmpty == false else { return false }
         let exists = try await firebaseManager.existsWhereEqual(
-            path: "Users",
-            field: "friendCode",
-            isEqualTo: normalized,
+            path: FirestoreCollectionPath(.users),
+            field: User.Field.friendCode,
+            isEqualTo: friendCode,
             limit: 1
         )
         return !exists
@@ -43,44 +43,36 @@ final class UserRepository: UserRepositoryProtocol {
 
     func saveProfile(uid: String, profile: User) async throws {
         var data = try Firestore.Encoder().encode(profile)
-        if let displayName = profile.displayName?.trimmingCharacters(in: .whitespacesAndNewlines),
-           displayName.isEmpty == false {
-            data["displayName"] = displayName.lowercased()
-        }
-        if let friendCode = profile.friendCode?.trimmingCharacters(in: .whitespacesAndNewlines),
-           friendCode.isEmpty == false {
-            data["friendCode"] = friendCode.lowercased()
-        }
-        try await firebaseManager.set(path: "Users/\(uid)", data: data, merge: true)
+        let path = FirestoreDocumentPath(collection: .users, documentId: uid)
+        try await firebaseManager.set(path: path, data: data, merge: true)
     }
 
     func fetchUserProfile(uid: String) async throws -> User {
-        try await firebaseManager.fetch(path: "Users/\(uid)")
+        let path = FirestoreDocumentPath(collection: .users, documentId: uid)
+        return try await firebaseManager.fetch(path: path)
     }
 
     func fetchUserCountByHomeArea(_ homeArea: String) async throws -> Int {
         let users: [User] = try await firebaseManager.fetchWhereEqual(
-            path: "Users",
-            field: "homeArea",
+            path: FirestoreCollectionPath(.users),
+            field: User.Field.homeArea,
             isEqualTo: homeArea
         )
         return users.count
     }
 
     func searchUsers(matching query: String) async throws -> [User] {
-        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmed.isEmpty == false else { return [] }
-        let normalized = trimmed.lowercased()
+        guard query.isEmpty == false else { return [] }
 
         let nameMatches: [User] = try await firebaseManager.fetchWhereEqual(
-            path: "Users",
-            field: "displayName",
-            isEqualTo: normalized
+            path: FirestoreCollectionPath(.users),
+            field: User.Field.displayName,
+            isEqualTo: query
         )
         let codeMatches: [User] = try await firebaseManager.fetchWhereEqual(
-            path: "Users",
-            field: "friendCode",
-            isEqualTo: normalized
+            path: FirestoreCollectionPath(.users),
+            field: User.Field.friendCode,
+            isEqualTo: query
         )
 
         let currentUid = Auth.auth().currentUser?.uid

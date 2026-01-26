@@ -139,7 +139,7 @@ private func formatDuration(_ duration: TimeInterval) -> String {
     let vm = MainViewModel()
 
     // 📌 더미 런 기록 (최근 런 결과)
-    vm.latestRunRecord = RunRecordModel(
+    vm.latestRunRecord = RunRecord(
         id: "dummy-run-id",
         startTime: Date().addingTimeInterval(-30 * 60), // 30분 전
         endTime: Date(),

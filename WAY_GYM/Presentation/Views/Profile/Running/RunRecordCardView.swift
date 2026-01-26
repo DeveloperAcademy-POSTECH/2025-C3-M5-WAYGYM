@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct RunRecordCardView: View {
-    let summary: RunRecordModel
+    let summary: RunRecord
     
     private var durationSeconds: TimeInterval {
         if summary.duration > 0 { return summary.duration }
@@ -367,7 +367,7 @@ private static func decodeComponent(_ bytes: [UInt8], startIndex: Int) -> (Int, 
 
 #Preview {
     RunRecordCardView(
-        summary: RunRecordModel(
+        summary: RunRecord(
             startTime: Date().addingTimeInterval(-60 * 45), // 45분 전 시작
             endTime: Date(),
             distanceM: 5120, // 5.12km

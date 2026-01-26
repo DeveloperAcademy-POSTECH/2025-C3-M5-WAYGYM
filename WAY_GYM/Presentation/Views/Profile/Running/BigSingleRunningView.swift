@@ -13,19 +13,19 @@ struct BigSingleRunningView: View {
     @EnvironmentObject private var runRecordStore: RunRecordStore
 
     private let runId: String?
-    private let initialSummary: RunRecordModel?
+    private let initialSummary: RunRecord?
 
     init(runId: String) {
         self.runId = runId
         self.initialSummary = nil
     }
 
-    init(summary: RunRecordModel) {
+    init(summary: RunRecord) {
         self.runId = nil
         self.initialSummary = summary
     }
 
-    private var resolvedSummary: RunRecordModel? {
+    private var resolvedSummary: RunRecord? {
         if let initialSummary { return initialSummary }
         guard let runId else { return nil }
         return runRecordStore.runRecords.first(where: { $0.id == runId })
@@ -123,7 +123,7 @@ struct BigSingleRunningView: View {
     }
 
     // MARK: - Map configuration
-    private func configureMap(for summary: RunRecordModel) {
+    private func configureMap(for summary: RunRecord) {
         // 1) routeEncoded → 좌표 디코딩
         let coords = decodePolyline(summary.routeEncoded)
 
