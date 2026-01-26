@@ -83,7 +83,7 @@ struct MainView: View {
                             vm.tapPlay(locationManager: locationManager, currentTotalDistanceM: runRecordStore.totalDistance) },
                         onBeginFinishHold: { vm.beginFinishHold(locationManager: locationManager) },
                         onEndFinishHold: { vm.cancelFinishHold() },
-                        onTapMyLocation: { vm.tapMyLocation(locationManager: locationManager) },
+                        onTapMyLocation: { vm.tapCurrentLocation(locationManager: locationManager) },
                         onTapToggleCapturedArea: {
                             vm.toggleCapturedArea(
                                 locationManager: locationManager,

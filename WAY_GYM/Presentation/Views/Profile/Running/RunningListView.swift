@@ -4,11 +4,11 @@ import FirebaseFirestore
 struct RunningListView: View {
     @EnvironmentObject private var runRecordStore: RunRecordStore
 
-    private var summaries: [RunRecordModel] {
+    private var summaries: [RunRecord] {
         runRecordStore.runRecords
     }
 
-    private var groupedSummaries: [String: [RunRecordModel]] {
+    private var groupedSummaries: [String: [RunRecord]] {
         Dictionary(grouping: summaries) { summary in
             RunRecordFormatters.monthKey.string(from: summary.startTime)
         }

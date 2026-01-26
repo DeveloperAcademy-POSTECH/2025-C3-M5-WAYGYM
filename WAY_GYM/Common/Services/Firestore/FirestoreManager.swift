@@ -1,5 +1,5 @@
 //
-//  FirebaseManager.swift
+//  FirestoreManager.swift
 //  WAY_GYM
 //
 //  Created by 이주현 on 1/18/26.
@@ -10,45 +10,6 @@ import FirebaseFirestore
 import FirebaseFirestoreSwift
 import FirebaseStorage
 import UIKit
-
-enum FirestoreCollection: String {
-    case users = "Users"
-}
-
-struct FirestoreCollectionPath: RawRepresentable {
-    let rawValue: String
-
-    init(_ collection: FirestoreCollection) {
-        self.rawValue = collection.rawValue
-    }
-
-    init(rawValue: String) {
-        self.rawValue = rawValue
-    }
-}
-
-struct FirestoreDocumentPath: RawRepresentable {
-    let rawValue: String
-
-    init(collection: FirestoreCollection, documentId: String) {
-        self.rawValue = "\(collection.rawValue)/\(documentId)"
-    }
-
-    init(rawValue: String) {
-        self.rawValue = rawValue
-    }
-}
-
-enum UserField: String {
-    case displayName
-    case homeArea
-    case sex
-    case friendCode
-    case activeDuoWorldId
-    case pendingWorldResult
-    case nextMinionNumber
-    case createdAt
-}
 
 enum FirestoreError: LocalizedError {
     case invalidPath
@@ -74,7 +35,7 @@ enum FirestoreError: LocalizedError {
     }
 }
 
-protocol FirebaseManagerProtocol {
+protocol FirestoreManagerProtocol {
     // MARK: - Firestore 읽기
     /// 단일 문서 조회
     func fetch<T: Decodable>(path: String) async throws -> T
@@ -97,15 +58,20 @@ protocol FirebaseManagerProtocol {
         field: String,
         isEqualTo value: String
     ) async throws -> [T]
-    func fetchWhereEqual<T: Decodable>(
+    func fetchWhereEqual<T: Decodable, F: FirestoreFieldKey>(
         path: FirestoreCollectionPath,
-        field: UserField,
+        field: F,
         isEqualTo value: String
     ) async throws -> [T]
 
     func fetchWhereArrayContains<T: Decodable>(
         path: String,
         field: String,
+        value: String
+    ) async throws -> [T]
+    func fetchWhereArrayContains<T: Decodable, F: FirestoreFieldKey>(
+        path: FirestoreCollectionPath,
+        field: F,
         value: String
     ) async throws -> [T]
 
@@ -120,9 +86,9 @@ protocol FirebaseManagerProtocol {
         isEqualTo value: String,
         limit: Int
     ) async throws -> Bool
-    func existsWhereEqual(
+    func existsWhereEqual<F: FirestoreFieldKey>(
         path: FirestoreCollectionPath,
-        field: UserField,
+        field: F,
         isEqualTo value: String,
         limit: Int
     ) async throws -> Bool
@@ -174,8 +140,8 @@ protocol FirebaseManagerProtocol {
     func delete(path: FirestoreDocumentPath) async throws
 }
 
-final class FirebaseManager: FirebaseManagerProtocol {
-    static let shared = FirebaseManager()
+final class FirestoreManager: FirestoreManagerProtocol {
+    static let shared = FirestoreManager()
     init() {}
     
     private let db = Firestore.firestore()
@@ -322,14 +288,14 @@ final class FirebaseManager: FirebaseManagerProtocol {
         }
     }
 
-    func fetchWhereEqual<T: Decodable>(
+    func fetchWhereEqual<T: Decodable, F: FirestoreFieldKey>(
         path: FirestoreCollectionPath,
-        field: UserField,
+        field: F,
         isEqualTo value: String
     ) async throws -> [T] {
         try await fetchWhereEqual(
             path: path.rawValue,
-            field: field.rawValue,
+            field: field.key,
             isEqualTo: value
         )
     }
@@ -351,6 +317,18 @@ final class FirebaseManager: FirebaseManagerProtocol {
                 return nil
             }
         }
+    }
+
+    func fetchWhereArrayContains<T: Decodable, F: FirestoreFieldKey>(
+        path: FirestoreCollectionPath,
+        field: F,
+        value: String
+    ) async throws -> [T] {
+        try await fetchWhereArrayContains(
+            path: path.rawValue,
+            field: field.key,
+            value: value
+        )
     }
     
     func fetchWhere<T: Decodable>(
@@ -400,15 +378,15 @@ final class FirebaseManager: FirebaseManagerProtocol {
         return snapshot.documents.isEmpty == false
     }
 
-    func existsWhereEqual(
+    func existsWhereEqual<F: FirestoreFieldKey>(
         path: FirestoreCollectionPath,
-        field: UserField,
+        field: F,
         isEqualTo value: String,
         limit: Int
     ) async throws -> Bool {
         try await existsWhereEqual(
             path: path.rawValue,
-            field: field.rawValue,
+            field: field.key,
             isEqualTo: value,
             limit: limit
         )

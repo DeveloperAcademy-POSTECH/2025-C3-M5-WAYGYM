@@ -18,8 +18,8 @@ protocol FriendRepositoryProtocol {
 }
 
 final class FriendRepository: FriendRepositoryProtocol {
-    private let firebaseManager: FirebaseManagerProtocol
-    init(firebaseManager: FirebaseManagerProtocol = FirebaseManager.shared) {
+    private let firebaseManager: FirestoreManagerProtocol
+    init(firebaseManager: FirestoreManagerProtocol = FirestoreManager.shared) {
         self.firebaseManager = firebaseManager
     }
 
@@ -31,8 +31,8 @@ final class FriendRepository: FriendRepositoryProtocol {
         let requestId = "\(uidA)_\(uidB)"
 
         let db = Firestore.firestore()
-        let requestRef = db.collection("friend_requests").document(requestId)
-        let friendshipRef = db.collection("friendships").document(requestId)
+        let requestRef = db.collection(FirestoreCollection.friendRequests).document(requestId)
+        let friendshipRef = db.collection(FirestoreCollection.friendships).document(requestId)
 
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             db.runTransaction({ transaction, errorPointer in
@@ -51,18 +51,18 @@ final class FriendRepository: FriendRepositoryProtocol {
                     return nil
                 }
 
-                if requestSnapshot.exists {
-                    if let status = requestSnapshot.data()?["status"] as? String,
+        if requestSnapshot.exists {
+                    if let status = requestSnapshot.data()?.value(FriendRequest.Field.status) as? String,
                        status == "pending" || status == "accepted" {
                         return nil
                     }
                 }
 
-                let data: [String: Any] = [
-                    "fromUid": fromUid,
-                    "toUid": toUid,
-                    "status": "pending"
-                ]
+                let data = firestoreData(
+                    (FriendRequest.Field.fromUid, fromUid),
+                    (FriendRequest.Field.toUid, toUid),
+                    (FriendRequest.Field.status, "pending")
+                )
                 transaction.setData(data, forDocument: requestRef, merge: true)
                 return nil
             }, completion: { _, error in
@@ -77,8 +77,8 @@ final class FriendRepository: FriendRepositoryProtocol {
 
     func fetchFriendships(for uid: String) async throws -> [Friendship] {
         let matches: [Friendship] = try await firebaseManager.fetchWhereArrayContains(
-            path: "friendships",
-            field: "memberUids",
+            path: FirestoreCollectionPath(.friendships),
+            field: Friendship.Field.memberUids,
             value: uid
         )
         return matches
@@ -86,8 +86,8 @@ final class FriendRepository: FriendRepositoryProtocol {
 
     func fetchPendingFriendRequestsSent(from uid: String) async throws -> [FriendRequest] {
         let requests: [FriendRequest] = try await firebaseManager.fetchWhereEqual(
-            path: "friend_requests",
-            field: "fromUid",
+            path: FirestoreCollectionPath(.friendRequests),
+            field: FriendRequest.Field.fromUid,
             isEqualTo: uid
         )
         return requests.filter { $0.status == "pending" }
@@ -95,8 +95,8 @@ final class FriendRepository: FriendRepositoryProtocol {
 
     func fetchPendingFriendRequestsReceived(to uid: String) async throws -> [FriendRequest] {
         let requests: [FriendRequest] = try await firebaseManager.fetchWhereEqual(
-            path: "friend_requests",
-            field: "toUid",
+            path: FirestoreCollectionPath(.friendRequests),
+            field: FriendRequest.Field.toUid,
             isEqualTo: uid
         )
         return requests.filter { $0.status == "pending" }
@@ -110,8 +110,8 @@ final class FriendRepository: FriendRepositoryProtocol {
         let pairId = "\(uidA)_\(uidB)"
 
         let db = Firestore.firestore()
-        let requestRef = db.collection("friend_requests").document(pairId)
-        let friendshipRef = db.collection("friendships").document(pairId)
+        let requestRef = db.collection(FirestoreCollection.friendRequests).document(pairId)
+        let friendshipRef = db.collection(FirestoreCollection.friendships).document(pairId)
 
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             db.runTransaction({ transaction, errorPointer in
@@ -125,8 +125,15 @@ final class FriendRepository: FriendRepositoryProtocol {
                 guard requestSnapshot.exists else {
                     return nil
                 }
-                transaction.updateData(["status": "accepted"], forDocument: requestRef)
-                transaction.setData(["memberUids": [uidA, uidB]], forDocument: friendshipRef, merge: true)
+                transaction.updateData(
+                    firestoreData((FriendRequest.Field.status, "accepted")),
+                    forDocument: requestRef
+                )
+                transaction.setData(
+                    firestoreData((Friendship.Field.memberUids, [uidA, uidB])),
+                    forDocument: friendshipRef,
+                    merge: true
+                )
                 return nil
             }, completion: { _, error in
                 if let error {

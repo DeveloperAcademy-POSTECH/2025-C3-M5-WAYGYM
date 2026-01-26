@@ -20,8 +20,8 @@ protocol UserRepositoryProtocol {
 }
 
 final class UserRepository: UserRepositoryProtocol {
-    private let firebaseManager: FirebaseManagerProtocol
-    init(firebaseManager: FirebaseManagerProtocol = FirebaseManager.shared) {
+    private let firebaseManager: FirestoreManagerProtocol
+    init(firebaseManager: FirestoreManagerProtocol = FirestoreManager.shared) {
         self.firebaseManager = firebaseManager
     }
 
@@ -34,7 +34,7 @@ final class UserRepository: UserRepositoryProtocol {
         guard friendCode.isEmpty == false else { return false }
         let exists = try await firebaseManager.existsWhereEqual(
             path: FirestoreCollectionPath(.users),
-            field: .friendCode,
+            field: User.Field.friendCode,
             isEqualTo: friendCode,
             limit: 1
         )
@@ -55,7 +55,7 @@ final class UserRepository: UserRepositoryProtocol {
     func fetchUserCountByHomeArea(_ homeArea: String) async throws -> Int {
         let users: [User] = try await firebaseManager.fetchWhereEqual(
             path: FirestoreCollectionPath(.users),
-            field: .homeArea,
+            field: User.Field.homeArea,
             isEqualTo: homeArea
         )
         return users.count
@@ -66,12 +66,12 @@ final class UserRepository: UserRepositoryProtocol {
 
         let nameMatches: [User] = try await firebaseManager.fetchWhereEqual(
             path: FirestoreCollectionPath(.users),
-            field: .displayName,
+            field: User.Field.displayName,
             isEqualTo: query
         )
         let codeMatches: [User] = try await firebaseManager.fetchWhereEqual(
             path: FirestoreCollectionPath(.users),
-            field: .friendCode,
+            field: User.Field.friendCode,
             isEqualTo: query
         )
 

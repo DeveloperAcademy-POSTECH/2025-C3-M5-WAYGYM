@@ -13,7 +13,7 @@ import FirebaseAuth
 
 final class MainViewModel: ObservableObject {
     @Published var runPhase: RunPhase = .root
-    @Published var latestRunRecord: RunRecordModel?
+    @Published var latestRunRecord: RunRecord?
     
     // 이번 런(방금 종료한 런)으로 새로 해금된 무기들 (weaponId)
     @Published var justUnlockedWeaponIds: [String] = []
@@ -52,7 +52,30 @@ final class MainViewModel: ObservableObject {
         // holdProgress = 0
     }
 
-    // MARK: - ControlPanel
+    
+    // MARK: - 컨트롤 패널
+    func tapCurrentLocation(locationManager: LocationManager) {
+        locationManager.moveToCurrentLocation()
+    }
+
+    func toggleCapturedArea(locationManager: LocationManager, records: [RunRecord]) {
+        isAreaActive.toggle()
+
+        if isAreaActive {
+            backupPolylines = locationManager.polylines
+            locationManager.polylines.removeAll()
+            locationManager.loadCapturedPolygons(from: records)
+        } else {
+            locationManager.polygons.removeAll()
+            locationManager.polylines = backupPolylines
+            locationManager.runRecordList = records
+        }
+
+        // 기존 LocationManager 플래그도 동기화(프로젝트 내 다른 곳에서 쓸 수 있으니)
+        locationManager.isAreaActive = isAreaActive
+    }
+    
+    // MARK: - 런닝 버튼
     func tapPlay(locationManager: LocationManager, currentTotalDistanceM: Double? = nil) {
         guard runPhase == .root else { return }
         if currentTotalDistanceM == nil {
@@ -125,27 +148,6 @@ final class MainViewModel: ObservableObject {
     func dismissRunResult() {
         runPhase = .root
     }
-
-    func tapMyLocation(locationManager: LocationManager) {
-        locationManager.moveToCurrentLocation()
-    }
-
-    func toggleCapturedArea(locationManager: LocationManager, records: [RunRecordModel]) {
-        isAreaActive.toggle()
-
-        if isAreaActive {
-            backupPolylines = locationManager.polylines
-            locationManager.polylines.removeAll()
-            locationManager.loadCapturedPolygons(from: records)
-        } else {
-            locationManager.polygons.removeAll()
-            locationManager.polylines = backupPolylines
-            locationManager.runRecordList = records
-        }
-
-        // 기존 LocationManager 플래그도 동기화(프로젝트 내 다른 곳에서 쓸 수 있으니)
-        locationManager.isAreaActive = isAreaActive
-    }
 }
 
 // MARK: - 최신 런 결과 불러오기
@@ -173,7 +175,7 @@ extension MainViewModel {
                     )
 
                     let newTotal = self.runStartTotalDistanceM + latest.distanceM
-                    print("🧾 latestRunResult | docId=\(latest.id ?? "(no id)") start=\(latest.startTime) end=\(String(describing: latest.endTime)) distanceM=\(latest.distanceM)")
+                    print("🧾 latestRunResult | docId=\(latest.id ?? \"(no id)\") start=\(latest.startTime) end=\(String(describing: latest.endTime)) distanceM=\(latest.distanceM)")
                     print("🧮 rewardCalc input | prevTotalDistanceM=\(self.runStartTotalDistanceM) addedDistanceM=\(latest.distanceM) newTotalDistanceM=\(newTotal)")
                     print("🎁 justUnlockedWeaponIds=\(self.justUnlockedWeaponIds)")
                 }

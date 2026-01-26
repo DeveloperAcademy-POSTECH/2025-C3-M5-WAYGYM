@@ -26,8 +26,8 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     @Published var isSimulating = false /// 러닝(경로 추적) 중인지 여부. (UI 표시 상태가 아니라, 좌표 누적/경로 생성 로직을 켤지 말지 결정)
     
     /// 서버에서 가져오거나 보낼 런닝 기록 모델
-    @Published var runRecord: RunRecordModel?
-    @Published var runRecordList: [RunRecordModel] = [] /// 서버에서 받아온 모든 런닝 기록
+    @Published var runRecord: RunRecord?
+    @Published var runRecordList: [RunRecord] = [] /// 서버에서 받아온 모든 런닝 기록
     
     private var coordinates: [CLLocationCoordinate2D] = [] /// 러닝 중 누적된 좌표 원본 (모든 이동 좌표)
     /// 폴리곤을 더 세부 데이터로 저장하는 용도
@@ -181,7 +181,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         let routeEncoded = PolylineEncoder.encode(coordinates)
         let routeFrame = computeRouteFrame(from: coordinates)
 
-        let newData = RunRecordModel(
+        let newData = RunRecord(
             id: nil,
             startTime: start,
             endTime: endTime,
@@ -716,7 +716,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     
     /// 사용자의 전체 런닝 기록 중 "점유한 셀"을 지도에 표시하기 위한 MKPolygon 배열을 만든다.
     /// - records 안의 모든 capturedCellIds를 합쳐서, 각 셀을 사각형 폴리곤으로 변환한다.
-    func loadCapturedPolygons(from records: [RunRecordModel]) {
+    func loadCapturedPolygons(from records: [RunRecord]) {
         // 1) 모든 기록의 capturedCellIds 합치기
         var allCellIds: Set<String> = []
         for r in records {

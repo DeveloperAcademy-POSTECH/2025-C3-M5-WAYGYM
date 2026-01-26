@@ -9,78 +9,80 @@ import Foundation
 import FirebaseFirestore
 
 protocol RunRecordRepositoryProtocol {
-    func fetchUserRunRecords(uid: String) async throws -> [RunRecordModel]
+    func fetchUserRunRecords(uid: String) async throws -> [RunRecord]
 
-    func fetchLatestRunRecord(uid: String) async throws -> RunRecordModel?
-    func saveRunRecord(uid: String, record: RunRecordModel) async throws -> String
+    func fetchLatestRunRecord(uid: String) async throws -> RunRecord?
+    func saveRunRecord(uid: String, record: RunRecord) async throws -> String
 }
 
 final class RunRecordRepository: RunRecordRepositoryProtocol {
-    private let firebaseManager: FirebaseManagerProtocol
+    private let firebaseManager: FirestoreManagerProtocol
 
-    init(firebaseManager: FirebaseManagerProtocol = FirebaseManager.shared) {
+    init(firebaseManager: FirestoreManagerProtocol = FirestoreManager.shared) {
         self.firebaseManager = firebaseManager
     }
 
-    func fetchUserRunRecords(uid: String) async throws -> [RunRecordModel] {
+    func fetchUserRunRecords(uid: String) async throws -> [RunRecord] {
         let snapshot = try await Firestore.firestore()
-            .collection("RunRecords")
+            .collection(FirestoreCollection.runRecords)
             .document(uid)
-            .collection("runs")
-            .order(by: "start_time", descending: true)
+            .collection(RunRecord.Collection.runs)
+            .order(by: RunRecord.Field.startTime, descending: true)
             .getDocuments()
 
         return snapshot.documents.compactMap { mapRunRecord(doc: $0) }
     }
 
-    func fetchLatestRunRecord(uid: String) async throws -> RunRecordModel? {
+    func fetchLatestRunRecord(uid: String) async throws -> RunRecord? {
         let snapshot = try await Firestore.firestore()
-            .collection("RunRecords")
+            .collection(FirestoreCollection.runRecords)
             .document(uid)
-            .collection("runs")
-            .order(by: "start_time", descending: true)
+            .collection(RunRecord.Collection.runs)
+            .order(by: RunRecord.Field.startTime, descending: true)
             .limit(to: 1)
             .getDocuments()
 
         return snapshot.documents.compactMap { mapRunRecord(doc: $0) }.first
     }
 
-    func saveRunRecord(uid: String, record: RunRecordModel) async throws -> String {
-        let path = "RunRecords/\(uid)/runs"
-        return try await firebaseManager.createWithAutoId(path: path, data: record)
+    func saveRunRecord(uid: String, record: RunRecord) async throws -> String {
+        return try await firebaseManager.createWithAutoId(
+            path: RunRecord.collectionPath(uid: uid),
+            data: record
+        )
     }
 
-    private func mapRunRecord(doc: QueryDocumentSnapshot) -> RunRecordModel? {
+    private func mapRunRecord(doc: QueryDocumentSnapshot) -> RunRecord? {
         let data = doc.data()
 
-        guard let startTS = data["start_time"] as? Timestamp else { return nil }
+        guard let startTS = data.value(RunRecord.Field.startTime) as? Timestamp else { return nil }
         let startTime = startTS.dateValue()
 
         let endTime: Date? = {
-            if let ts = data["end_time"] as? Timestamp { return ts.dateValue() }
+            if let ts = data.value(RunRecord.Field.endTime) as? Timestamp { return ts.dateValue() }
             return nil
         }()
 
         let distanceM: Double = {
-            if let d = data["distance_m"] as? Double { return d }
-            if let i = data["distance_m"] as? Int { return Double(i) }
+            if let d = data.value(RunRecord.Field.distanceM) as? Double { return d }
+            if let i = data.value(RunRecord.Field.distanceM) as? Int { return Double(i) }
             return 0
         }()
 
-        let routeEncoded = (data["route_encoded"] as? String) ?? ""
+        let routeEncoded = (data.value(RunRecord.Field.routeEncoded) as? String) ?? ""
 
         let capturedCellIds: [String] = {
-            if let arr = data["captured_cell_ids"] as? [String] { return arr }
+            if let arr = data.value(RunRecord.Field.capturedCellIds) as? [String] { return arr }
             return []
         }()
 
         let routeFrame: [Double] = {
-            if let arr = data["route_frame"] as? [Double] { return arr }
-            if let arr = data["route_frame"] as? [NSNumber] { return arr.map { $0.doubleValue } }
+            if let arr = data.value(RunRecord.Field.routeFrame) as? [Double] { return arr }
+            if let arr = data.value(RunRecord.Field.routeFrame) as? [NSNumber] { return arr.map { $0.doubleValue } }
             return [0, 0, 0, 0]
         }()
 
-        return RunRecordModel(
+        return RunRecord(
             id: doc.documentID,
             startTime: startTime,
             endTime: endTime,

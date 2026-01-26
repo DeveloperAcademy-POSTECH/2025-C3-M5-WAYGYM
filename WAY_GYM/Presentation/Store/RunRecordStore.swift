@@ -11,7 +11,7 @@ import MapKit
 import FirebaseAuth
 
 class RunRecordStore: ObservableObject {
-    @Published var runRecords: [RunRecordModel] = []
+    @Published var runRecords: [RunRecord] = []
     @Published var totalDistance: Double = 0.0
     @Published var totalCapturedAreaValue: Int = 0
     
