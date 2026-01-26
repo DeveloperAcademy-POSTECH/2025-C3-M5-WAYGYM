@@ -175,7 +175,7 @@ extension MainViewModel {
                     )
 
                     let newTotal = self.runStartTotalDistanceM + latest.distanceM
-                    print("🧾 latestRunResult | docId=\(latest.id ?? \"(no id)\") start=\(latest.startTime) end=\(String(describing: latest.endTime)) distanceM=\(latest.distanceM)")
+                    print("🧾 latestRunResult | docId=\(latest.id ?? "(no id)") start=\(latest.startTime) end=\(String(describing: latest.endTime)) distanceM=\(latest.distanceM)")
                     print("🧮 rewardCalc input | prevTotalDistanceM=\(self.runStartTotalDistanceM) addedDistanceM=\(latest.distanceM) newTotalDistanceM=\(newTotal)")
                     print("🎁 justUnlockedWeaponIds=\(self.justUnlockedWeaponIds)")
                 }
