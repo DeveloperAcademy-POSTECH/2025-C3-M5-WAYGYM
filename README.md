@@ -25,7 +25,7 @@
 
 ### 이후 진행
 - 아카데미 수료 이후, 주디제이가 단독으로 프로젝트를 이어서 개발 중
-- 기존 기획 의도와 디자인을 유지하며 기능 확장, 구조 개선, 출시 준비를 진행하고 있음 ( 2026년 1–2월 내 App Store 출시 예정)
+- 기존 기획 의도와 디자인을 유지하며 기능 확장, 구조 개선, 출시 준비를 진행하고 있음 (2026년 2월 내 App Store 출시 예정)
 
 ---
 
@@ -147,5 +147,5 @@ WAY_GYM은 **러닝을 ‘운동 기록’이 아닌 ‘점령 활동’으로 �
 
 ## 📬 문의
 
-[![링크드인]([https://img.shields.io/badge/@kuring.konkuk-e4405f?style=for-the-badge&logo=instagram&logoColor=white](https://img.shields.io/badge/-LinkedIn-blue?style=flat-square&logo=Linkedin&logoColor=white&link=www.linkedin.com/in/주현-‎이-612a882b8))](www.linkedin.com/in/주현-‎이-612a882b8)
+[![링크드인](http://img.shields.io/badge/-LinkedIn-0072b1?style=flat&logo=linkedin&link=https://www.linkedin.com/in/주현-‎이-612a882b8)](https://www.linkedin.com/in/주현-‎이-612a882b8)
 [![이메일](https://img.shields.io/badge/judyjjuhyunlee@gmail.com-168de2?style=for-the-badge&logo=gmail&logoColor=white)](judyjjuhyunlee@gmail.com)
