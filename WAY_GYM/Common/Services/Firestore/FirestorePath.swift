@@ -14,6 +14,7 @@ enum FirestoreCollection: String, FirestoreCollectionKey {
     case runRecords = "RunRecords"
     case friendRequests = "friendRequests"
     case friendships = "friendships"
+    case worldRequests = "world_requests"
 }
 
 
@@ -79,6 +80,10 @@ extension Query {
 
     func whereField<F: FirestoreFieldKey>(_ field: F, arrayContains value: Any) -> Query {
         whereField(field.key, arrayContains: value)
+    }
+
+    func whereField<F: FirestoreFieldKey>(_ field: F, in values: [Any]) -> Query {
+        whereField(field.key, in: values)
     }
 
     func order<F: FirestoreFieldKey>(by field: F, descending: Bool = false) -> Query {

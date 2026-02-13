@@ -10,6 +10,7 @@ import FirebaseAuth
 
 struct FriendRequestView: View {
     @EnvironmentObject private var friendStore: FriendStore
+    @StateObject private var vm = FriendViewModel()
     private let userRepository = UserRepository()
     private let friendRepository = FriendRepository()
 
@@ -209,11 +210,7 @@ struct FriendRequestView: View {
 
         Task {
             do {
-                try await friendRepository.acceptFriendRequest(
-                    requestId: request.requestId,
-                    fromUid: request.fromUid,
-                    toUid: toUid
-                )
+                try await vm.acceptRequest(fromUid: request.fromUid, toUid: toUid)
                 await MainActor.run {
                     requests.removeAll { $0.id == request.id }
                 }

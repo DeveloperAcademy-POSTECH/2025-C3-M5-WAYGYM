@@ -152,7 +152,7 @@ extension ProfileEditViewModel {
         }
     }
 
-    func saveProfileToFirestore(onSuccess: (() -> Void)? = nil) {
+    func reSaveProfileToFirestore(onSuccess: (() -> Void)? = nil) {
         guard !isSavingProfile else { return }
 
         saveProfileError = nil
@@ -179,20 +179,17 @@ extension ProfileEditViewModel {
 
         let displayName = nickname.trimmingCharacters(in: .whitespacesAndNewlines)
         let homeArea = fullAddressText
-        let friendCode = (originalFriendCode ?? userId).trimmingCharacters(in: .whitespacesAndNewlines)
 
         isSavingProfile = true
 
-        let profile = User(
-            displayName: displayName,
-            homeArea: homeArea,
-            sex: sex.rawValue,
-            friendCode: friendCode.isEmpty ? nil : friendCode,
-            createdAt: nil
-        )
         Task {
             do {
-                try await userRepository.saveProfile(uid: uid, profile: profile)
+                try await userRepository.updateProfile(
+                    uid: uid,
+                    displayName: displayName,
+                    homeArea: homeArea,
+                    sex: sex.rawValue
+                )
                 await MainActor.run {
                     self.saveProfileError = nil
                     self.isSavingProfile = false

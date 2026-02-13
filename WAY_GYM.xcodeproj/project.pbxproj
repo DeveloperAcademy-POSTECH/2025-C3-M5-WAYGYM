@@ -31,6 +31,7 @@
 		8B9130962F1365D100C6ABE6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */; };
 		8B9130972F1365D100C6ABE6 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */; };
 		8B98810F2F1E69C6009F8F87 /* RefreshErrorBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B98810E2F1E69C6009F8F87 /* RefreshErrorBanner.swift */; };
+		8BA22E0B2F28C29E00697626 /* WorldModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BA22E0A2F28C29E00697626 /* WorldModel.swift */; };
 		8BD032E92F1CA22F0040FE19 /* RunRecordCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD032E82F1CA22F0040FE19 /* RunRecordCardView.swift */; };
 		8BD032F12F1CDA500040FE19 /* FirestoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD032F02F1CDA500040FE19 /* FirestoreManager.swift */; };
 		8BF0776D2F07B7B8004D9277 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF077332F07B7B8004D9277 /* RootView.swift */; };
@@ -65,7 +66,6 @@
 		8BF5D01D2F1E14590075BEF1 /* FriendStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF5D01C2F1E14590075BEF1 /* FriendStore.swift */; };
 		8BF5D01F2F1E15380075BEF1 /* FriendShipModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF5D01E2F1E15380075BEF1 /* FriendShipModel.swift */; };
 		8BF5D0212F1E18220075BEF1 /* FriendRequestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF5D0202F1E18220075BEF1 /* FriendRequestView.swift */; };
-		8BF5D0232F1E1C340075BEF1 /* Practice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF5D0222F1E1C340075BEF1 /* Practice.swift */; };
 		8BF9200F2F1A077D00E8B04C /* View+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF9200E2F1A077D00E8B04C /* View+.swift */; };
 		8BF920112F1A07D400E8B04C /* HapticUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF920102F1A07D400E8B04C /* HapticUtils.swift */; };
 		8BF920152F1A090C00E8B04C /* InputCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BF920142F1A090C00E8B04C /* InputCard.swift */; };
@@ -74,6 +74,11 @@
 		9C1A1A1A2F30000100000001 /* UserModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1A1A1A2F30000100000002 /* UserModel.swift */; };
 		9C1A1A1A2F30000100000003 /* UserStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1A1A1A2F30000100000004 /* UserStore.swift */; };
 		9C1A1A1B2F30000100000006 /* SettingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C1A1A1B2F30000100000005 /* SettingViewModel.swift */; };
+		A1D0B0012F40000100000001 /* DuoBattleRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D0B0012F40000100000003 /* DuoBattleRepository.swift */; };
+		A1D0B0012F40000100000002 /* DuoBattleStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D0B0012F40000100000004 /* DuoBattleStore.swift */; };
+		A1D0B0012F40000100000005 /* FriendViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D0B0012F40000100000006 /* FriendViewModel.swift */; };
+		A1D0B0012F40000100000007 /* DuoWorldResultModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D0B0012F40000100000008 /* DuoWorldResultModalView.swift */; };
+		A1D0B0012F40000100000009 /* SplashLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D0B0012F4000010000000A /* SplashLoadingView.swift */; };
 		B36066862DEECF4200863D7F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B36066852DEECF4200863D7F /* FirebaseAuth */; };
 		B360668A2DEECF4200863D7F /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = B36066892DEECF4200863D7F /* FirebaseDatabase */; };
 		B360668C2DEECF4200863D7F /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = B360668B2DEECF4200863D7F /* FirebaseFirestore */; };
@@ -119,6 +124,7 @@
 		8B6CD05C2F18F56B002B993F /* AddressPickerSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressPickerSheet.swift; sourceTree = "<group>"; };
 		8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		8B98810E2F1E69C6009F8F87 /* RefreshErrorBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RefreshErrorBanner.swift; sourceTree = "<group>"; };
+		8BA22E0A2F28C29E00697626 /* WorldModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorldModel.swift; sourceTree = "<group>"; };
 		8BD032E82F1CA22F0040FE19 /* RunRecordCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunRecordCardView.swift; sourceTree = "<group>"; };
 		8BD032F02F1CDA500040FE19 /* FirestoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestoreManager.swift; sourceTree = "<group>"; };
 		8BF077332F07B7B8004D9277 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -154,7 +160,6 @@
 		8BF5D01C2F1E14590075BEF1 /* FriendStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendStore.swift; sourceTree = "<group>"; };
 		8BF5D01E2F1E15380075BEF1 /* FriendShipModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendShipModel.swift; sourceTree = "<group>"; };
 		8BF5D0202F1E18220075BEF1 /* FriendRequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendRequestView.swift; sourceTree = "<group>"; };
-		8BF5D0222F1E1C340075BEF1 /* Practice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Practice.swift; sourceTree = "<group>"; };
 		8BF9200E2F1A077D00E8B04C /* View+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+.swift"; sourceTree = "<group>"; };
 		8BF920102F1A07D400E8B04C /* HapticUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticUtils.swift; sourceTree = "<group>"; };
 		8BF920142F1A090C00E8B04C /* InputCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputCard.swift; sourceTree = "<group>"; };
@@ -163,6 +168,11 @@
 		9C1A1A1A2F30000100000002 /* UserModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserModel.swift; sourceTree = "<group>"; };
 		9C1A1A1A2F30000100000004 /* UserStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStore.swift; sourceTree = "<group>"; };
 		9C1A1A1B2F30000100000005 /* SettingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingViewModel.swift; sourceTree = "<group>"; };
+		A1D0B0012F40000100000003 /* DuoBattleRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoBattleRepository.swift; sourceTree = "<group>"; };
+		A1D0B0012F40000100000004 /* DuoBattleStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoBattleStore.swift; sourceTree = "<group>"; };
+		A1D0B0012F40000100000006 /* FriendViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendViewModel.swift; sourceTree = "<group>"; };
+		A1D0B0012F40000100000008 /* DuoWorldResultModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoWorldResultModalView.swift; sourceTree = "<group>"; };
+		A1D0B0012F4000010000000A /* SplashLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashLoadingView.swift; sourceTree = "<group>"; };
 		B34B7A9E2DE54FDB00B14CAB /* WAY_GYM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WAY_GYM.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B34B7AAB2DE54FDD00B14CAB /* WAY_GYMTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WAY_GYMTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B34B7AB52DE54FDD00B14CAB /* WAY_GYMUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WAY_GYMUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -242,6 +252,7 @@
 				8B2ED1D82F176508008AE661 /* AuthViewModel.swift */,
 				8B6CD05A2F18F53C002B993F /* ProfileSetupViewModel.swift */,
 				8B0537142F10E93200A61DFD /* MainViewModel.swift */,
+				A1D0B0012F40000100000006 /* FriendViewModel.swift */,
 				9C1A1A1B2F30000100000005 /* SettingViewModel.swift */,
 			);
 			path = ViewModels;
@@ -304,6 +315,7 @@
 				9C1A1A1A2F30000100000002 /* UserModel.swift */,
 				8BF5D01E2F1E15380075BEF1 /* FriendShipModel.swift */,
 				8BF077422F07B7B8004D9277 /* RunRecordModel.swift */,
+				8BA22E0A2F28C29E00697626 /* WorldModel.swift */,
 				8BF077412F07B7B8004D9277 /* MinionModel.swift */,
 				8BF077442F07B7B8004D9277 /* WeaponModel.swift */,
 			);
@@ -316,6 +328,7 @@
 				9C1A1A1A2F30000100000004 /* UserStore.swift */,
 				8BF5D01C2F1E14590075BEF1 /* FriendStore.swift */,
 				8BF077472F07B7B8004D9277 /* RunRecordStore.swift */,
+				A1D0B0012F40000100000004 /* DuoBattleStore.swift */,
 			);
 			path = Store;
 			sourceTree = "<group>";
@@ -325,6 +338,7 @@
 			children = (
 				8BF0774A2F07B7B8004D9277 /* CustomBorder.swift */,
 				8B98810E2F1E69C6009F8F87 /* RefreshErrorBanner.swift */,
+				A1D0B0012F4000010000000A /* SplashLoadingView.swift */,
 				8BF0774B2F07B7B8004D9277 /* CustomNavigationBar.swift */,
 				8B2ED1DE2F176D15008AE661 /* CustomButton.swift */,
 				8BF920142F1A090C00E8B04C /* InputCard.swift */,
@@ -400,9 +414,6 @@
 		8BF077652F07B7B8004D9277 /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
-				8BF077352F07B7B8004D9277 /* App.swift */,
-				8BF077342F07B7B8004D9277 /* Navigation */,
-				8BF077492F07B7B8004D9277 /* Store */,
 				8BF077642F07B7B8004D9277 /* Views */,
 				8B2ED1D72F1764ED008AE661 /* ViewModels */,
 			);
@@ -423,7 +434,10 @@
 			isa = PBXGroup;
 			children = (
 				8BF077682F07B7B8004D9277 /* Resources */,
+				8BF077352F07B7B8004D9277 /* App.swift */,
+				8BF077342F07B7B8004D9277 /* Navigation */,
 				8BF077402F07B7B8004D9277 /* Common */,
+				8BF077492F07B7B8004D9277 /* Store */,
 				8BF077652F07B7B8004D9277 /* Presentation */,
 				8BF077362F07B7B8004D9277 /* WAY_GYM.entitlements */,
 				8B9130942F1365D100C6ABE6 /* GoogleService-Info.plist */,
@@ -435,6 +449,7 @@
 			isa = PBXGroup;
 			children = (
 				8BF077622F07B7B8004D9277 /* RunResultModalView.swift */,
+				A1D0B0012F40000100000008 /* DuoWorldResultModalView.swift */,
 				8BF0775E2F07B7B8004D9277 /* RewardQueueView.swift */,
 				8BF0775F2F07B7B8004D9277 /* WeaponRewardView.swift */,
 			);
@@ -445,7 +460,6 @@
 			isa = PBXGroup;
 			children = (
 				8BF5D0182F1E002A0075BEF1 /* FriendView.swift */,
-				8BF5D0222F1E1C340075BEF1 /* Practice.swift */,
 				8BF5D0202F1E18220075BEF1 /* FriendRequestView.swift */,
 			);
 			path = Friend;
@@ -457,6 +471,7 @@
 				8C01A0012F2A0001 /* UserRepository.swift */,
 				8C01A0022F2A0001 /* RunRecordRepository.swift */,
 				8BF5D01A2F1E0DA60075BEF1 /* FriendRepository.swift */,
+				A1D0B0012F40000100000003 /* DuoBattleRepository.swift */,
 			);
 			path = Repository;
 			sourceTree = "<group>";
@@ -638,10 +653,13 @@
 				8B05370E2F10E2C000A61DFD /* CountdownOverlay.swift in Sources */,
 				8B2ED1D92F176508008AE661 /* AuthViewModel.swift in Sources */,
 				8B0537152F10E93200A61DFD /* MainViewModel.swift in Sources */,
+				A1D0B0012F40000100000005 /* FriendViewModel.swift in Sources */,
 				8BF077702F07B7B8004D9277 /* Color+hex+extension.swift in Sources */,
 				8BF077712F07B7B8004D9277 /* Font+extension.swift in Sources */,
 				8BF077722F07B7B8004D9277 /* FormatDate.swift in Sources */,
 				8B98810F2F1E69C6009F8F87 /* RefreshErrorBanner.swift in Sources */,
+				A1D0B0012F40000100000009 /* SplashLoadingView.swift in Sources */,
+				8BA22E0B2F28C29E00697626 /* WorldModel.swift in Sources */,
 				8B0537082F10DC0100A61DFD /* MapView.swift in Sources */,
 				8BF077732F07B7B8004D9277 /* MinionModel.swift in Sources */,
 				8BF5D01D2F1E14590075BEF1 /* FriendStore.swift in Sources */,
@@ -649,14 +667,15 @@
 				8BF9200F2F1A077D00E8B04C /* View+.swift in Sources */,
 				8BF077742F07B7B8004D9277 /* RunRecordModel.swift in Sources */,
 				9C1A1A1A2F30000100000001 /* UserModel.swift in Sources */,
-				8BF5D0232F1E1C340075BEF1 /* Practice.swift in Sources */,
 				8B2ED1E42F1787BA008AE661 /* ProfileSetupView.swift in Sources */,
 				8B2ED1DF2F176D15008AE661 /* CustomButton.swift in Sources */,
 				8BF077762F07B7B8004D9277 /* WeaponModel.swift in Sources */,
 				8BF077782F07B7B8004D9277 /* RunRecordStore.swift in Sources */,
 				9C1A1A1A2F30000100000003 /* UserStore.swift in Sources */,
+				A1D0B0012F40000100000002 /* DuoBattleStore.swift in Sources */,
 				8C01A0112F2A0001 /* UserRepository.swift in Sources */,
 				8C01A0122F2A0001 /* RunRecordRepository.swift in Sources */,
+				A1D0B0012F40000100000001 /* DuoBattleRepository.swift in Sources */,
 				8B047DB62F20D02B00B2614C /* FirestorePath.swift in Sources */,
 				8BF0777A2F07B7B8004D9277 /* CustomBorder.swift in Sources */,
 				8BD032F12F1CDA500040FE19 /* FirestoreManager.swift in Sources */,
@@ -689,6 +708,7 @@
 				8BF077892F07B7B8004D9277 /* WeaponRewardView.swift in Sources */,
 				8B05370A2F10DC4800A61DFD /* RouteMapView.swift in Sources */,
 				8BF0778B2F07B7B8004D9277 /* RunResultModalView.swift in Sources */,
+				A1D0B0012F40000100000007 /* DuoWorldResultModalView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

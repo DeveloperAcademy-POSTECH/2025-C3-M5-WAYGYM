@@ -2,16 +2,20 @@ import Foundation
 import MapKit
 import CoreLocation
 import HealthKit
-import FirebaseFirestore
 import FirebaseStorage
 import Photos
 import FirebaseCore
 import FirebaseAuth
 
+final class ColoredPolygon: MKPolygon {
+    var isMine: Bool = true
+}
+
 // - CLLocationManager에게 사용자 위치를 받아서, 앱에서 쓰기 좋은 상태(@Published)로 가공한다.
 // - 러닝(시뮬레이션) 중: 경로 좌표를 누적하고 폴리라인/폴리곤 오버레이 데이터를 만든다.
 final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     weak var runRecordStore: RunRecordStore?
+    var userStore: UserStore?
     
     private let clManager = CLLocationManager() /// GPS 위치를 받아오는 시스템 객체
     @Published var region = MKCoordinateRegion() // 지도가 보여줄 영역 (센터+줌)
@@ -159,6 +163,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     
     private let storage = Storage.storage()
     private let runRecordRepository: RunRecordRepositoryProtocol = RunRecordRepository()
+    private let duoBattleRepository: DuoBattleRepositoryProtocol = DuoBattleRepository()
 
     override init() {
         super.init()
@@ -180,9 +185,14 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
 
         let routeEncoded = PolylineEncoder.encode(coordinates)
         let routeFrame = computeRouteFrame(from: coordinates)
+        let activeDuoWorldId = userStore?.profile?.activeDuoWorldId
+        let runType: RunRecordType = activeDuoWorldId == nil ? .solo : .duo
+        print("🏃 saveRunRecord | userStoreNil=\(userStore == nil), activeDuoWorldId=\(String(describing: activeDuoWorldId)) runType=\(runType.rawValue)")
 
         let newData = RunRecord(
             id: nil,
+            type: runType,
+            activeDuoWorldId: activeDuoWorldId,
             startTime: start,
             endTime: endTime,
             distanceM: calculateTotalDistance(),
@@ -195,6 +205,16 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             do {
                 let runId = try await runRecordRepository.saveRunRecord(uid: uid, record: newData)
                 print("Firestore에 RunRecord 저장 성공 (uid=\(uid), runId=\(runId))")
+                if let worldId = activeDuoWorldId, runType == .duo {
+                    let capturedAt = newData.endTime ?? newData.startTime
+                    try await runRecordRepository.saveWorldCells(
+                        worldId: worldId,
+                        ownerUid: uid,
+                        runId: runId,
+                        cellIds: newData.capturedCellIds,
+                        lastCapturedAt: capturedAt
+                    )
+                }
                 await MainActor.run {
                     self.runRecord = newData
                 }
@@ -717,9 +737,41 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     /// 사용자의 전체 런닝 기록 중 "점유한 셀"을 지도에 표시하기 위한 MKPolygon 배열을 만든다.
     /// - records 안의 모든 capturedCellIds를 합쳐서, 각 셀을 사각형 폴리곤으로 변환한다.
     func loadCapturedPolygons(from records: [RunRecord]) {
+        let shouldFilterSoloOnly = userStore?.profile?.activeDuoWorldId == nil
+        let activeDuoWorldId = userStore?.profile?.activeDuoWorldId
+        let filteredRecords = shouldFilterSoloOnly
+            ? records.filter { $0.type == .solo }
+            : records
+
+        if let activeDuoWorldId {
+            guard let uid = Auth.auth().currentUser?.uid else {
+                self.polygons = []
+                return
+            }
+
+            Task {
+                var result: [MKPolygon] = []
+                let cells = (try? await duoBattleRepository.fetchWorldCells(worldId: activeDuoWorldId)) ?? []
+                result.reserveCapacity(cells.count)
+
+                for cell in cells {
+                    guard let cellId = cell.id else { continue }
+                    guard let origin = parseCellId(cellId) else { continue }
+                    let isMine = cell.ownerUid == uid
+                    let polygon = makeCellPolygon(originLat: origin.lat, originLng: origin.lng, isMine: isMine)
+                    result.append(polygon)
+                }
+
+                await MainActor.run {
+                    self.polygons = result
+                }
+            }
+            return
+        }
+
         // 1) 모든 기록의 capturedCellIds 합치기
         var allCellIds: Set<String> = []
-        for r in records {
+        for r in filteredRecords {
             allCellIds.formUnion(r.capturedCellIds)
         }
 
@@ -748,7 +800,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     }
 
     /// 셀의 원점(lat,lng)과 gridSize를 이용해 셀 사각형 폴리곤을 만든다.
-    private func makeCellPolygon(originLat: Double, originLng: Double) -> MKPolygon {
+    private func makeCellPolygon(originLat: Double, originLng: Double, isMine: Bool? = nil) -> MKPolygon {
         let minLat = originLat
         let minLng = originLng
         let maxLat = originLat + gridSize
@@ -761,6 +813,12 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
             .init(latitude: maxLat, longitude: minLng),
             .init(latitude: minLat, longitude: minLng) // close
         ]
+
+        if let isMine {
+            let polygon = ColoredPolygon(coordinates: coords, count: coords.count)
+            polygon.isMine = isMine
+            return polygon
+        }
 
         return MKPolygon(coordinates: coords, count: coords.count)
     }

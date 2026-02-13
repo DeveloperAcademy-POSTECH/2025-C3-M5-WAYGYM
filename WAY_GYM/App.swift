@@ -29,7 +29,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct WAY_GYMApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject private var coordinator = AppCoordinator()
-    @StateObject private var locationManager = LocationManager()
     
     var body: some Scene {
         WindowGroup {

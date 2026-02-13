@@ -8,10 +8,10 @@ struct User: Codable {
     let sex: String?
     let friendCode: String?
     // Duo 관련
-    let activeDuoWorldId: String? = nil
-    let pendingWorldResult: String? = nil
+    let activeDuoWorldId: String?
+    let pendingWorldResult: String?
     // 보상 관련
-    let nextMinionNumber: Int? = nil
+    let nextMinionNumber: Int?
     @ServerTimestamp var createdAt: Date? = nil
 
     enum Field: String, FirestoreFieldKey {

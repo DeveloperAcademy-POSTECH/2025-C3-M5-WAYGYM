@@ -14,6 +14,7 @@ protocol UserRepositoryProtocol {
     func doesUserExist(uid: String) async throws -> Bool
     func isFriendCodeAvailable(_ friendCode: String) async throws -> Bool
     func saveProfile(uid: String, profile: User) async throws
+    func updateProfile(uid: String, displayName: String, homeArea: String, sex: String) async throws
     func fetchUserProfile(uid: String) async throws -> User
     func fetchUserCountByHomeArea(_ homeArea: String) async throws -> Int
     func searchUsers(matching query: String) async throws -> [User]
@@ -44,6 +45,16 @@ final class UserRepository: UserRepositoryProtocol {
     func saveProfile(uid: String, profile: User) async throws {
         var data = try Firestore.Encoder().encode(profile)
         let path = FirestoreDocumentPath(collection: .users, documentId: uid)
+        try await firebaseManager.set(path: path, data: data, merge: true)
+    }
+
+    func updateProfile(uid: String, displayName: String, homeArea: String, sex: String) async throws {
+        let path = FirestoreDocumentPath(collection: .users, documentId: uid)
+        let data = firestoreData(
+            (User.Field.displayName, displayName),
+            (User.Field.homeArea, homeArea),
+            (User.Field.sex, sex)
+        )
         try await firebaseManager.set(path: path, data: data, merge: true)
     }
 
