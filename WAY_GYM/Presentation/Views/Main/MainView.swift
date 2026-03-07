@@ -39,18 +39,22 @@ struct MainView: View {
                 VStack(spacing: 10) {
                     HStack{
                         VStack(spacing: 30) {
-                            VStack(spacing: -20) {
+                            VStack {
                                 Button {
                                     coordinator.push(.friend)
                                 } label: {
-                                    Image("friendIcon")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(height: 100)
+                                    VStack {
+                                        Image("friendIcon")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(height: 35)
+                                        
+                                        Text("접수 대상 찾기")
+                                            .font(.text02)
+                                            .foregroundColor(.white)
+                                    }
                                 }
-                                Text("접수 대상 찾기")
-                                    .font(.text02)
-                                    .foregroundColor(.white)
+                                
                             }
                             
                             VStack {

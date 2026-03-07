@@ -27,6 +27,7 @@
 		8B6CD0592F18F51C002B993F /* AddressLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6CD0582F18F51C002B993F /* AddressLoader.swift */; };
 		8B6CD05B2F18F53C002B993F /* ProfileSetupViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6CD05A2F18F53C002B993F /* ProfileSetupViewModel.swift */; };
 		8B6CD05D2F18F56B002B993F /* AddressPickerSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B6CD05C2F18F56B002B993F /* AddressPickerSheet.swift */; };
+		8B79B1572F5C220D0084862B /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8B79B1552F5C220D0084862B /* GoogleService-Info.plist */; };
 		8B98810F2F1E69C6009F8F87 /* RefreshErrorBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B98810E2F1E69C6009F8F87 /* RefreshErrorBanner.swift */; };
 		8BA22E0B2F28C29E00697626 /* WorldModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BA22E0A2F28C29E00697626 /* WorldModel.swift */; };
 		8BD032E92F1CA22F0040FE19 /* RunRecordCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BD032E82F1CA22F0040FE19 /* RunRecordCardView.swift */; };
@@ -74,6 +75,7 @@
 		A1D0B0012F40000100000001 /* DuoBattleRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D0B0012F40000100000003 /* DuoBattleRepository.swift */; };
 		A1D0B0012F40000100000002 /* DuoBattleStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D0B0012F40000100000004 /* DuoBattleStore.swift */; };
 		A1D0B0012F40000100000005 /* FriendViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D0B0012F40000100000006 /* FriendViewModel.swift */; };
+		A1D0B0012F4000010000000B /* FriendRequestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D0B0012F4000010000000C /* FriendRequestViewModel.swift */; };
 		A1D0B0012F40000100000007 /* DuoWorldResultModalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D0B0012F40000100000008 /* DuoWorldResultModalView.swift */; };
 		A1D0B0012F40000100000009 /* SplashLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1D0B0012F4000010000000A /* SplashLoadingView.swift */; };
 		B36066862DEECF4200863D7F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B36066852DEECF4200863D7F /* FirebaseAuth */; };
@@ -168,6 +170,7 @@
 		A1D0B0012F40000100000003 /* DuoBattleRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoBattleRepository.swift; sourceTree = "<group>"; };
 		A1D0B0012F40000100000004 /* DuoBattleStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoBattleStore.swift; sourceTree = "<group>"; };
 		A1D0B0012F40000100000006 /* FriendViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendViewModel.swift; sourceTree = "<group>"; };
+		A1D0B0012F4000010000000C /* FriendRequestViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FriendRequestViewModel.swift; sourceTree = "<group>"; };
 		A1D0B0012F40000100000008 /* DuoWorldResultModalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoWorldResultModalView.swift; sourceTree = "<group>"; };
 		A1D0B0012F4000010000000A /* SplashLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashLoadingView.swift; sourceTree = "<group>"; };
 		B34B7A9E2DE54FDB00B14CAB /* WAY_GYM.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WAY_GYM.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -250,6 +253,7 @@
 				8B6CD05A2F18F53C002B993F /* ProfileSetupViewModel.swift */,
 				8B0537142F10E93200A61DFD /* MainViewModel.swift */,
 				A1D0B0012F40000100000006 /* FriendViewModel.swift */,
+				A1D0B0012F4000010000000C /* FriendRequestViewModel.swift */,
 				9C1A1A1B2F30000100000005 /* SettingViewModel.swift */,
 			);
 			path = ViewModels;
@@ -611,6 +615,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8BF0778D2F07B7B8004D9277 /* Assets.xcassets in Resources */,
+				8B79B1572F5C220D0084862B /* GoogleService-Info.plist in Resources */,
 				8BF0778E2F07B7B8004D9277 /* NeoDunggeunmoPro-Regular.ttf in Resources */,
 				8B6CD0542F18F3CB002B993F /* 3depth.json in Resources */,
 			);
@@ -648,6 +653,7 @@
 				8B2ED1D92F176508008AE661 /* AuthViewModel.swift in Sources */,
 				8B0537152F10E93200A61DFD /* MainViewModel.swift in Sources */,
 				A1D0B0012F40000100000005 /* FriendViewModel.swift in Sources */,
+				A1D0B0012F4000010000000B /* FriendRequestViewModel.swift in Sources */,
 				8BF077702F07B7B8004D9277 /* Color+hex+extension.swift in Sources */,
 				8BF077712F07B7B8004D9277 /* Font+extension.swift in Sources */,
 				8BF077722F07B7B8004D9277 /* FormatDate.swift in Sources */,

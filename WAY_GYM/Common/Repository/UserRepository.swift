@@ -43,7 +43,7 @@ final class UserRepository: UserRepositoryProtocol {
     }
 
     func saveProfile(uid: String, profile: User) async throws {
-        var data = try Firestore.Encoder().encode(profile)
+        let data = try Firestore.Encoder().encode(profile)
         let path = FirestoreDocumentPath(collection: .users, documentId: uid)
         try await firebaseManager.set(path: path, data: data, merge: true)
     }

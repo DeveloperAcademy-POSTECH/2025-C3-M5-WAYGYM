@@ -13,13 +13,6 @@ struct FriendView: View {
     @EnvironmentObject private var friendStore: FriendStore
     @EnvironmentObject private var userStore: UserStore
     @StateObject private var vm = FriendViewModel()
-
-    @State private var query: String = ""
-    @State private var isSearching: Bool = false
-    @State private var isSearchLoading: Bool = false
-
-    @State private var searchResults: [FriendUserRowModel] = []
-    @State private var friends: [FriendUserRowModel] = []
     private var incomingRequestCount: Int { friendStore.incomingPendingUids.count }
 
     var body: some View {
@@ -33,7 +26,7 @@ struct FriendView: View {
                     }
                     searchUser
 
-                    if query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    if vm.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         friendList
                     } else {
                         searchResultList
@@ -44,22 +37,6 @@ struct FriendView: View {
                 .padding(.top, 12)
             }
         }
-        .task {
-            await userStore.refresh()
-            await friendStore.refresh()
-        }
-        .task(id: friendStore.friendUids) {
-            await fetchFriendProfiles()
-        }
-        .onReceive(friendStore.$incomingWorldRequestUids) { _ in
-            sortFriends()
-        }
-        .onReceive(friendStore.$outgoingWorldRequestUids) { _ in
-            sortFriends()
-        }
-        .onReceive(friendStore.$activeDuoOpponentUid) { _ in
-            sortFriends()
-        }
         .padding(.horizontal, 16)
         .background {
             Color.gangBgPrimary5
@@ -67,6 +44,22 @@ struct FriendView: View {
         }
         .backHiddenSwipeEnabled()
         .dismissKeyboard()
+        .task {
+            await userStore.refresh()
+            await friendStore.refresh()
+        }
+        .task(id: friendStore.friendUids) {
+            await vm.fetchFriendProfiles(friendStore: friendStore)
+        }
+        .onReceive(friendStore.$incomingWorldRequestUids) { _ in
+            vm.sortFriends(friendStore: friendStore)
+        }
+        .onReceive(friendStore.$outgoingWorldRequestUids) { _ in
+            vm.sortFriends(friendStore: friendStore)
+        }
+        .onReceive(friendStore.$activeDuoOpponentUid) { _ in
+            vm.sortFriends(friendStore: friendStore)
+        }
     }
 
     // MARK: - UI
@@ -166,11 +159,11 @@ struct FriendView: View {
         VStack(spacing: 10) {
             sectionTitle("친구 목록")
 
-            if friends.isEmpty {
+            if vm.friends.isEmpty {
                 emptyState
             } else {
                 VStack(spacing: 10) {
-                    ForEach(friends) { friend in
+                    ForEach(vm.friends) { friend in
                         friendRow(friend)
                     }
                 }
@@ -185,7 +178,7 @@ struct FriendView: View {
 
             TextField(
                 "",
-                text: $query,
+                text: $vm.query,
                 prompt: Text("닉네임 또는 친구코드")
                     .foregroundStyle(Color.white.opacity(0.5))
             )
@@ -195,14 +188,18 @@ struct FriendView: View {
                 .font(.text01)
                 .submitLabel(.search)
                 .onSubmit {
-                    tapSearch()
+                    Task {
+                        await vm.tapSearch { uid in
+                            friendStore.status(for: uid)
+                        }
+                    }
                 }
 
-            if !query.isEmpty {
+            if !vm.query.isEmpty {
                 Button {
-                    query = ""
-                    isSearching = false
-                    searchResults = []
+                    vm.query = ""
+                    vm.isSearching = false
+                    vm.searchResults = []
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(Color.gangText2.opacity(0.7))
@@ -211,7 +208,11 @@ struct FriendView: View {
             }
 
             Button {
-                tapSearch()
+                Task {
+                    await vm.tapSearch { uid in
+                        friendStore.status(for: uid)
+                    }
+                }
             } label: {
                 Text("검색")
                     .font(.text02)
@@ -237,15 +238,15 @@ struct FriendView: View {
 
     private var searchResultList: some View {
         VStack(spacing: 10) {
-            if isSearchLoading {
+            if vm.isSearchLoading {
                 ProgressView()
                     .foregroundStyle(Color.gang_text_2)
                     .frame(width: 50)
-            } else if searchResults.isEmpty, isSearching {
+            } else if vm.searchResults.isEmpty, vm.isSearching {
                 helperText("검색 결과가 없어요")
                     .frame(maxWidth: .infinity, alignment: .leading)
             } else {
-                ForEach(searchResults) { user in
+                ForEach(vm.searchResults) { user in
                     searchResultRow(user)
                 }
             }
@@ -320,7 +321,14 @@ struct FriendView: View {
             } else if let uid = friend.uid,
                       friendStore.incomingWorldRequestUids.contains(uid) {
                 Button {
-                    acceptWorldRequest(fromUid: uid)
+                    Task {
+                        await vm.acceptWorldRequest(
+                            currentUid: Auth.auth().currentUser?.uid,
+                            fromUid: uid,
+                            friendStore: friendStore,
+                            userStore: userStore
+                        )
+                    }
                 } label: {
                     Text("경쟁전 수락")
                         .font(.text02)
@@ -371,7 +379,14 @@ struct FriendView: View {
 //                    )
             } else {
                 Button {
-                    sendWorldRequest(toUid: friend.uid)
+                    Task {
+                        await vm.sendWorldRequest(
+                            currentUid: Auth.auth().currentUser?.uid,
+                            toUid: friend.uid,
+                            friendStore: friendStore,
+                            userStore: userStore
+                        )
+                    }
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "bolt.fill")
@@ -448,20 +463,20 @@ struct FriendView: View {
             if isEnabled {
                 switch status {
                 case .canRequest:
-                    sendFriendRequest(toUid: uid)
-                case .incomingPending:
-                    guard let fromUid = uid,
-                          let toUid = Auth.auth().currentUser?.uid else { return }
                     Task {
-                        do {
-                            try await vm.acceptRequest(fromUid: fromUid, toUid: toUid)
-                            await friendStore.refresh()
-                            await MainActor.run {
-                                updateSearchResultStatus(uid: fromUid, status: .alreadyFriend)
-                            }
-                        } catch {
-                            print("⚠️ acceptFriendRequest 실패: \(error.localizedDescription)")
-                        }
+                        await vm.sendFriendRequest(
+                            currentUid: Auth.auth().currentUser?.uid,
+                            toUid: uid,
+                            friendStore: friendStore
+                        )
+                    }
+                case .incomingPending:
+                    Task {
+                        await vm.acceptIncomingFriendRequest(
+                            currentUid: Auth.auth().currentUser?.uid,
+                            fromUid: uid,
+                            friendStore: friendStore
+                        )
                     }
                 default:
                     break
@@ -543,186 +558,6 @@ struct FriendView: View {
     private var cardBorder: some View {
         RoundedRectangle(cornerRadius: 16, style: .continuous)
             .stroke(Color.white.opacity(0.10), lineWidth: 1)
-    }
-
-    // MARK: - Actions
-    private func tapSearch() {
-        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
-            isSearching = false
-            searchResults = []
-            return
-        }
-
-        isSearching = true
-        searchResults = []
-        isSearchLoading = true
-
-        Task {
-            do {
-                let users = try await vm.searchUsers(matching: trimmed)
-                let rows = users.map { makeRow(from: $0) }
-                await MainActor.run {
-                    searchResults = rows
-                    isSearchLoading = false
-                }
-            } catch {
-                await MainActor.run {
-                    searchResults = []
-                    isSearchLoading = false
-                }
-            }
-        }
-    }
-    
-    private func sendFriendRequest(toUid: String?) {
-        guard let fromUid = Auth.auth().currentUser?.uid else { return }
-        guard let toUid, toUid.isEmpty == false else { return }
-        guard fromUid != toUid else { return }
-
-        Task {
-            do {
-                try await vm.sendFriendRequest(fromUid: fromUid, toUid: toUid)
-                await MainActor.run {
-                    friendStore.markOutgoingPending(uid: toUid)
-                    updateSearchResultStatus(uid: toUid, status: .outgoingPending)
-                }
-            } catch {
-                // TODO: 에러 팝업창
-            }
-        }
-    }
-
-    private func sendWorldRequest(toUid: String?) {
-        guard let fromUid = Auth.auth().currentUser?.uid else { return }
-        guard let toUid, toUid.isEmpty == false else { return }
-        guard fromUid != toUid else { return }
-
-        Task {
-            await friendStore.markOutgoingWorldRequest(uid: toUid)
-            do {
-                try await vm.sendWorldRequest(fromUid: fromUid, toUid: toUid)
-                await friendStore.refresh()
-                await userStore.refresh()
-            } catch {
-                await friendStore.unmarkOutgoingWorldRequest(uid: toUid)
-                // TODO: 에러 팝업창
-            }
-        }
-    }
-
-    private func acceptWorldRequest(fromUid: String?) {
-        guard let toUid = Auth.auth().currentUser?.uid else { return }
-        guard let fromUid, fromUid.isEmpty == false else { return }
-        guard fromUid != toUid else { return }
-
-        Task {
-            await friendStore.markAcceptedWorldRequest(uid: fromUid)
-            do {
-                try await vm.acceptWorldRequest(fromUid: fromUid, toUid: toUid)
-                await friendStore.refresh()
-                await userStore.refresh()
-            } catch {
-                await friendStore.restoreIncomingWorldRequest(uid: fromUid)
-                print("⚠️ acceptWorldRequest 실패: \(error.localizedDescription)")
-            }
-        }
-    }
-
-    private func makeRow(from user: User) -> FriendUserRowModel {
-        let id = user.id ?? user.friendCode ?? user.displayName ?? UUID().uuidString
-        let displayName = user.displayName ?? "알 수 없음"
-        let subText: String
-        if let friendCode = user.friendCode, friendCode.isEmpty == false {
-            subText = "\(friendCode)"
-        } else if let homeArea = user.homeArea, homeArea.isEmpty == false {
-            subText = homeArea
-        } else {
-            subText = "검색된 유저"
-        }
-        let status = user.id.flatMap { friendStore.status(for: $0) }
-        return .init(
-            id: id,
-            uid: user.id,
-            displayName: displayName,
-            subText: subText,
-            status: status,
-            activeDuoWorldId: user.activeDuoWorldId
-        )
-    }
-
-    private func updateSearchResultStatus(uid: String, status: FriendStatus) {
-        for index in searchResults.indices {
-            if searchResults[index].uid == uid {
-                searchResults[index] = searchResults[index].withStatus(status)
-            }
-        }
-    }
-
-    private func fetchFriendProfiles() async {
-        let uids = Array(friendStore.friendUids)
-        guard uids.isEmpty == false else {
-            await MainActor.run { friends = [] }
-            return
-        }
-
-        let profiles = await vm.fetchFriendProfiles(uids: uids)
-        let fetched = profiles.map { makeRow(from: $0) }
-
-        await MainActor.run {
-            friends = fetched
-            sortFriends()
-        }
-    }
-
-    private func sortFriends() {
-        guard friends.isEmpty == false else { return }
-
-        let incoming = friendStore.incomingWorldRequestUids
-        let outgoing = friendStore.outgoingWorldRequestUids
-        let activeOpponentUid = friendStore.activeDuoOpponentUid
-
-        func priority(for uid: String?) -> Int {
-            guard let uid else { return 3 }
-            if activeOpponentUid == uid { return 0 }
-            if incoming.contains(uid) { return 1 }
-            if outgoing.contains(uid) { return 2 }
-            return 3
-        }
-
-        friends.sort { lhs, rhs in
-            let lp = priority(for: lhs.uid)
-            let rp = priority(for: rhs.uid)
-            if lp != rp { return lp < rp }
-
-            let nameOrder = lhs.displayName.localizedStandardCompare(rhs.displayName)
-            if nameOrder != .orderedSame {
-                return nameOrder == .orderedAscending
-            }
-
-            return (lhs.uid ?? lhs.id) < (rhs.uid ?? rhs.id)
-        }
-    }
-}
-
-// MARK: - Local Model (UI only)
-private struct FriendUserRowModel: Identifiable {
-    let id: String
-    let uid: String?
-    let displayName: String
-    let subText: String
-    let status: FriendStatus?
-    let activeDuoWorldId: String?
-
-    func withStatus(_ status: FriendStatus) -> FriendUserRowModel {
-        .init(
-            id: id,
-            uid: uid,
-            displayName: displayName,
-            subText: subText,
-            status: status,
-            activeDuoWorldId: activeDuoWorldId
-        )
     }
 }
 
