@@ -33,19 +33,18 @@ final class MainViewModel: ObservableObject {
         print("🎬 markRunStart | prevTotal(m)=\(runStartTotalDistanceM)")
     }
     
-    private let runRecordRepository: RunRecordRepositoryProtocol = RunRecordRepository()
-    
+    private let runRecordRepository: RunRecordRepositoryProtocol
+
+    init(runRecordRepository: RunRecordRepositoryProtocol = RunRecordRepository()) {
+        self.runRecordRepository = runRecordRepository
+    }
     @Published var isAreaActive: Bool = false
     private var backupPolylines: [MKPolyline] = []
     private var countdownTimer: Timer?
     private var finishHoldTimer: Timer?
 
-    func onTask(locationManager: LocationManager) {
-        locationManager.fetchRunRecordsFromFirestore()
-        locationManager.moveToCurrentLocation()
-
+    func onTask() {
         // 기본 상태로 리셋
-        locationManager.isSimulating = false
         runPhase = .root
         isAreaActive = false
         backupPolylines.removeAll()
@@ -68,7 +67,6 @@ final class MainViewModel: ObservableObject {
         } else {
             locationManager.polygons.removeAll()
             locationManager.polylines = backupPolylines
-            locationManager.runRecordList = records
         }
 
         // 기존 LocationManager 플래그도 동기화(프로젝트 내 다른 곳에서 쓸 수 있으니)

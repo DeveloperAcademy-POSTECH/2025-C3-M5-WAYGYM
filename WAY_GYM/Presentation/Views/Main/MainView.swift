@@ -18,7 +18,7 @@ struct MainView: View {
     @EnvironmentObject var runRecordStore: RunRecordStore
     @EnvironmentObject var userStore: UserStore
     @EnvironmentObject var duoBattleStore: DuoBattleStore
-    @StateObject var vm: MainViewModel
+    @StateObject private var vm = MainViewModel()
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     @ObservedObject var locationManager: LocationManager
     
@@ -39,18 +39,22 @@ struct MainView: View {
                 VStack(spacing: 10) {
                     HStack{
                         VStack(spacing: 30) {
-                            VStack(spacing: -20) {
+                            VStack {
                                 Button {
                                     coordinator.push(.friend)
                                 } label: {
-                                    Image("friendIcon")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(height: 100)
+                                    VStack {
+                                        Image("friendIcon")
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(height: 35)
+                                        
+                                        Text("접수 대상 찾기")
+                                            .font(.text02)
+                                            .foregroundColor(.white)
+                                    }
                                 }
-                                Text("접수 대상 찾기")
-                                    .font(.text02)
-                                    .foregroundColor(.white)
+                                
                             }
                             
                             VStack {
@@ -109,8 +113,9 @@ struct MainView: View {
             }
         }
         .task {
-            locationManager.userStore = userStore
-            vm.onTask(locationManager: locationManager)
+            locationManager.moveToCurrentLocation()
+            locationManager.isSimulating = false
+            vm.onTask()
         }
         .overlay {
             if let pendingResult = duoBattleStore.pendingWorldResult {
@@ -141,9 +146,8 @@ struct MainView: View {
     let userStore = UserStore()
     let duoBattleStore = DuoBattleStore()
     let locationManager = LocationManager()
-    let vm = MainViewModel()
     
-    return MainView(vm: vm, locationManager: locationManager)
+    return MainView(locationManager: locationManager)
         .environmentObject(coordinator)
         .environmentObject(runRecordStore)
         .environmentObject(userStore)

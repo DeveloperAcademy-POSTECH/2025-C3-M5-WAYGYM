@@ -22,6 +22,7 @@ protocol UserRepositoryProtocol {
 
 final class UserRepository: UserRepositoryProtocol {
     private let firebaseManager: FirestoreManagerProtocol
+    
     init(firebaseManager: FirestoreManagerProtocol = FirestoreManager.shared) {
         self.firebaseManager = firebaseManager
     }
@@ -43,7 +44,7 @@ final class UserRepository: UserRepositoryProtocol {
     }
 
     func saveProfile(uid: String, profile: User) async throws {
-        var data = try Firestore.Encoder().encode(profile)
+        let data = try Firestore.Encoder().encode(profile)
         let path = FirestoreDocumentPath(collection: .users, documentId: uid)
         try await firebaseManager.set(path: path, data: data, merge: true)
     }

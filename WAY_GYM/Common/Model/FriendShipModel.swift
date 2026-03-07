@@ -36,3 +36,9 @@ struct FriendRequest: Codable {
         case status
     }
 }
+
+struct PendingFriendRequestWithProfile {
+    let requestId: String
+    let fromUid: String
+    let profile: User
+}

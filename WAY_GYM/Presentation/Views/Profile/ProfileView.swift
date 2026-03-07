@@ -1,7 +1,5 @@
 import SwiftUI
 import FirebaseAuth
-import FirebaseFirestore
-import FirebaseFirestoreSwift
 
 struct ProfileView: View {
     @EnvironmentObject var coordinator: AppCoordinator
@@ -11,6 +9,11 @@ struct ProfileView: View {
     @EnvironmentObject var userStore: UserStore
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     @State private var hasUnlockedMinions: Bool = false
+    private let rewardRepository: RewardRepositoryProtocol
+
+    init(rewardRepository: RewardRepositoryProtocol = RewardRepository()) {
+        self.rewardRepository = rewardRepository
+    }
     
     var hasRunRecords: Bool {
         runRecordStore.totalDistance > 0
@@ -218,14 +221,7 @@ struct ProfileView: View {
         }
 
         do {
-            let snapshot = try await Firestore.firestore()
-                .collection("Users")
-                .document(uid)
-                .collection("minionUnlocks")
-                .limit(to: 1)
-                .getDocuments()
-
-            hasUnlockedMinions = !snapshot.documents.isEmpty
+            hasUnlockedMinions = try await rewardRepository.hasUnlockedMinions(uid: uid)
         } catch {
             hasUnlockedMinions = false
         }

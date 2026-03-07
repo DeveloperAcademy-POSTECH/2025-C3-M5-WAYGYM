@@ -30,26 +30,21 @@ final class RunRecordRepository: RunRecordRepositoryProtocol {
     }
 
     func fetchUserRunRecords(uid: String) async throws -> [RunRecord] {
-        let snapshot = try await Firestore.firestore()
-            .collection(FirestoreCollection.runRecords)
-            .document(uid)
-            .collection(RunRecord.Collection.runs)
-            .order(by: RunRecord.Field.startTime, descending: true)
-            .getDocuments()
-
-        return snapshot.documents.compactMap { mapRunRecord(doc: $0) }
+        try await firebaseManager.fetchCollection(
+            path: RunRecord.collectionPath(uid: uid),
+            orderBy: RunRecord.Field.startTime.key,
+            descending: true
+        )
     }
 
     func fetchLatestRunRecord(uid: String) async throws -> RunRecord? {
-        let snapshot = try await Firestore.firestore()
-            .collection(FirestoreCollection.runRecords)
-            .document(uid)
-            .collection(RunRecord.Collection.runs)
-            .order(by: RunRecord.Field.startTime, descending: true)
-            .limit(to: 1)
-            .getDocuments()
-
-        return snapshot.documents.compactMap { mapRunRecord(doc: $0) }.first
+        let records: [RunRecord] = try await firebaseManager.fetchCollection(
+            path: RunRecord.collectionPath(uid: uid),
+            orderBy: RunRecord.Field.startTime.key,
+            descending: true,
+            limit: 1
+        )
+        return records.first
     }
 
     func saveRunRecord(uid: String, record: RunRecord) async throws -> String {
@@ -70,7 +65,7 @@ final class RunRecordRepository: RunRecordRepositoryProtocol {
 
         for cellId in cellIds {
             let cell = WorldCell(
-                id: cellId,
+                id: nil,
                 ownerUid: ownerUid,
                 lastCapturedAt: lastCapturedAt,
                 lastCapturedRunId: runId
@@ -81,55 +76,4 @@ final class RunRecordRepository: RunRecordRepositoryProtocol {
         }
     }
 
-    private func mapRunRecord(doc: QueryDocumentSnapshot) -> RunRecord? {
-        let data = doc.data()
-
-        guard let startTS = data.value(RunRecord.Field.startTime) as? Timestamp else { return nil }
-        let startTime = startTS.dateValue()
-
-        let endTime: Date? = {
-            if let ts = data.value(RunRecord.Field.endTime) as? Timestamp { return ts.dateValue() }
-            return nil
-        }()
-
-        let distanceM: Double = {
-            if let d = data.value(RunRecord.Field.distanceM) as? Double { return d }
-            if let i = data.value(RunRecord.Field.distanceM) as? Int { return Double(i) }
-            return 0
-        }()
-
-        let routeEncoded = (data.value(RunRecord.Field.routeEncoded) as? String) ?? ""
-
-        let capturedCellIds: [String] = {
-            if let arr = data.value(RunRecord.Field.capturedCellIds) as? [String] { return arr }
-            return []
-        }()
-
-        let routeFrame: [Double] = {
-            if let arr = data.value(RunRecord.Field.routeFrame) as? [Double] { return arr }
-            if let arr = data.value(RunRecord.Field.routeFrame) as? [NSNumber] { return arr.map { $0.doubleValue } }
-            return [0, 0, 0, 0]
-        }()
-
-        let type: RunRecordType? = {
-            if let raw = data.value(RunRecord.Field.type) as? String {
-                return RunRecordType(rawValue: raw)
-            }
-            return nil
-        }()
-
-        let activeDuoWorldId = data.value(RunRecord.Field.activeDuoWorldId) as? String
-
-        return RunRecord(
-            id: doc.documentID,
-            type: type,
-            activeDuoWorldId: activeDuoWorldId,
-            startTime: startTime,
-            endTime: endTime,
-            distanceM: distanceM,
-            routeEncoded: routeEncoded,
-            capturedCellIds: capturedCellIds,
-            routeFrame: routeFrame
-        )
-    }
 }

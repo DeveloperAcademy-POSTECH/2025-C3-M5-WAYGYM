@@ -29,10 +29,6 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     
     @Published var isSimulating = false /// 러닝(경로 추적) 중인지 여부. (UI 표시 상태가 아니라, 좌표 누적/경로 생성 로직을 켤지 말지 결정)
     
-    /// 서버에서 가져오거나 보낼 런닝 기록 모델
-    @Published var runRecord: RunRecord?
-    @Published var runRecordList: [RunRecord] = [] /// 서버에서 받아온 모든 런닝 기록
-    
     private var coordinates: [CLLocationCoordinate2D] = [] /// 러닝 중 누적된 좌표 원본 (모든 이동 좌표)
     /// 폴리곤을 더 세부 데이터로 저장하는 용도
     @Published var capturedAreas: [CoordinatePairWithGroup] = [] // 닫힌 영역의 꼭짓점들을 모아서 저장한 배열
@@ -162,10 +158,19 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
     private var endTime: Date?
     
     private let storage = Storage.storage()
-    private let runRecordRepository: RunRecordRepositoryProtocol = RunRecordRepository()
-    private let duoBattleRepository: DuoBattleRepositoryProtocol = DuoBattleRepository()
+    private let runRecordRepository: RunRecordRepositoryProtocol
+    private let duoBattleRepository: DuoBattleRepositoryProtocol
 
-    override init() {
+    init(
+        runRecordRepository: RunRecordRepositoryProtocol = RunRecordRepository(),
+        duoBattleRepository: DuoBattleRepositoryProtocol = DuoBattleRepository(),
+        userStore: UserStore? = nil,
+        runRecordStore: RunRecordStore? = nil
+    ) {
+        self.runRecordRepository = runRecordRepository
+        self.duoBattleRepository = duoBattleRepository
+        self.userStore = userStore
+        self.runRecordStore = runRecordStore
         super.init()
         clManager.delegate = self
         clManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -215,9 +220,6 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
                         lastCapturedAt: capturedAt
                     )
                 }
-                await MainActor.run {
-                    self.runRecord = newData
-                }
                 if let runRecordStore {
                     await runRecordStore.refresh()
                 }
@@ -225,14 +227,6 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
                 print("Firestore 저장 실패: \(error.localizedDescription)")
             }
         }
-    }
-
-    /// 서버(runRecordStore)에서 런닝 기록 가져오기
-    func fetchRunRecordsFromFirestore() {
-        let records = runRecordStore?.runRecords ?? []
-        runRecordList = records
-        runRecord = records.first
-        polylines.removeAll()
     }
 
     // MARK: - 런닝 중
@@ -698,7 +692,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         }
 
         let coord = location.coordinate
-        print("📍 Current location available: \(coord)")
+        print("현위치 클릭 📍 Current location available: \(coord)")
 
         DispatchQueue.main.async {
             let span = MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)

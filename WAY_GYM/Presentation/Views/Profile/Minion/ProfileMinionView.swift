@@ -1,14 +1,19 @@
 import SwiftUI
-import FirebaseFirestore
+import FirebaseAuth
 
 struct ProfileMinionView: View {
     @StateObject var minionModel = MinionModel()
+    private let rewardRepository: RewardRepositoryProtocol
     
     @State private var recentMinions: [(minion: MinionDefinitionModel, acquisitionDate: Date)] = []
     
     @State private var isLoading: Bool = true
     
     @State private var hasLoaded = false
+
+    init(rewardRepository: RewardRepositoryProtocol = RewardRepository()) {
+        self.rewardRepository = rewardRepository
+    }
     
     var body: some View {
         HStack {
@@ -54,7 +59,35 @@ struct ProfileMinionView: View {
         .onAppear {
             if !hasLoaded {
                 hasLoaded = true
+                Task { await loadRecentMinions() }
             }
+        }
+    }
+
+    @MainActor
+    private func loadRecentMinions() async {
+        guard let uid = Auth.auth().currentUser?.uid else {
+            recentMinions = []
+            isLoading = false
+            return
+        }
+
+        do {
+            let unlocks = try await rewardRepository.fetchMinionUnlocks(uid: uid)
+            let mapped: [(minion: MinionDefinitionModel, acquisitionDate: Date)] = unlocks.compactMap { unlock in
+                guard let minionId = Int(unlock.minionId),
+                      let minion = minionModel.allMinions.first(where: { $0.minionId == minionId }) else {
+                    return nil
+                }
+                return (minion: minion, acquisitionDate: unlock.unlockedAt)
+            }
+
+            // 가장 최근 해금 순으로 최대 3개만 노출
+            recentMinions = Array(mapped.prefix(3))
+            isLoading = false
+        } catch {
+            recentMinions = []
+            isLoading = false
         }
     }
     

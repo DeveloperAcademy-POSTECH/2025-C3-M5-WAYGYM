@@ -37,16 +37,12 @@ final class ModuleFactory: ModuleFactoryProtocol {
     func make(_ route: AppRouter, locationManager: LocationManager? = nil) -> AnyView {
         switch route {
         case .auth:
-            let viewModel = AuthViewModel()
-            let view = AuthView(vm: viewModel)
-            return AnyView(view)
+            return AnyView(AuthView())
         case .profileSetup:
             return AnyView(ProfileSetupView())
         case .main:
-            let viewModel = MainViewModel()
             let manager = locationManager ?? LocationManager()
-            let view = MainView(vm: viewModel, locationManager: manager)
-            return AnyView(view)
+            return AnyView(MainView(locationManager: manager))
         case .friend:
             return AnyView(FriendView())
         case .friendRequest:
