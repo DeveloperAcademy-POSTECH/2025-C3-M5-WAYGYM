@@ -55,7 +55,7 @@ struct RunningListView: View {
                                     .foregroundColor(.gang_text_1)
                                     .padding(.leading, 5)
 
-                                    ForEach(monthSummaries) { summary in
+                                    ForEach(Array(monthSummaries.enumerated()), id: \.offset) { _, summary in
                                         NavigationLink(
                                             destination: BigSingleRunningView(summary: summary)
                                                 .foregroundColor(Color.gang_text_2)
