@@ -13,6 +13,13 @@ protocol RunRecordRepositoryProtocol {
 
     func fetchLatestRunRecord(uid: String) async throws -> RunRecord?
     func saveRunRecord(uid: String, record: RunRecord) async throws -> String
+    func saveWorldCells(
+        worldId: String,
+        ownerUid: String,
+        runId: String,
+        cellIds: [String],
+        lastCapturedAt: Date
+    ) async throws
 }
 
 final class RunRecordRepository: RunRecordRepositoryProtocol {
@@ -52,6 +59,28 @@ final class RunRecordRepository: RunRecordRepositoryProtocol {
         )
     }
 
+    func saveWorldCells(
+        worldId: String,
+        ownerUid: String,
+        runId: String,
+        cellIds: [String],
+        lastCapturedAt: Date
+    ) async throws {
+        guard cellIds.isEmpty == false else { return }
+
+        for cellId in cellIds {
+            let cell = WorldCell(
+                id: cellId,
+                ownerUid: ownerUid,
+                lastCapturedAt: lastCapturedAt,
+                lastCapturedRunId: runId
+            )
+            let data = try Firestore.Encoder().encode(cell)
+            let path = "Worlds/\(worldId)/cells/\(cellId)"
+            try await firebaseManager.set(path: path, data: data, merge: true)
+        }
+    }
+
     private func mapRunRecord(doc: QueryDocumentSnapshot) -> RunRecord? {
         let data = doc.data()
 
@@ -82,8 +111,19 @@ final class RunRecordRepository: RunRecordRepositoryProtocol {
             return [0, 0, 0, 0]
         }()
 
+        let type: RunRecordType? = {
+            if let raw = data.value(RunRecord.Field.type) as? String {
+                return RunRecordType(rawValue: raw)
+            }
+            return nil
+        }()
+
+        let activeDuoWorldId = data.value(RunRecord.Field.activeDuoWorldId) as? String
+
         return RunRecord(
             id: doc.documentID,
+            type: type,
+            activeDuoWorldId: activeDuoWorldId,
             startTime: startTime,
             endTime: endTime,
             distanceM: distanceM,

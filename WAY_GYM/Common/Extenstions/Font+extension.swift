@@ -16,6 +16,7 @@ extension Font {
     
     static let largeTitle01: Font = .custom(FontName.PixelRegular.rawValue, size: 44)
     static let largeTitle02: Font = .custom(FontName.PixelRegular.rawValue, size: 40)
+    static let largeTitle03: Font = .custom(FontName.PixelRegular.rawValue, size: 36)
     
     static let title01: Font = .custom(FontName.PixelRegular.rawValue, size: 24)
     static let title02: Font = .custom(FontName.PixelRegular.rawValue, size: 20)

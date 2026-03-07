@@ -9,6 +9,11 @@ import SwiftUI
 
 struct ControlPanel: View {
     let runPhase: RunPhase
+    let activeDuoWorldId: String?
+    let duoOwnedCellCount: Int
+    let duoOpponentCellCount: Int
+    let duoEndsAt: Date?
+    let shouldShowModeBadge: Bool
 
     /// 사용자 제스쳐 (로직은 메인뷰모델에서 처리)
     let onTapStartRun: () -> Void
@@ -16,10 +21,48 @@ struct ControlPanel: View {
     let onEndFinishHold: () -> Void
     let onTapMyLocation: () -> Void
     let onTapToggleCapturedArea: () -> Void
+    let onTapGoFriendList: () -> Void
     
     let isAreaActive: Bool
     @State private var isLocationTapped = false
     @State private var didStartHold: Bool = false
+    @State private var showSoloModeTip: Bool = false
+    @State private var countdownNow = Date()
+    private let countdownTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    private var isDuoMode: Bool {
+        activeDuoWorldId != nil
+    }
+
+    private var duoResultLabel: String {
+        if duoOwnedCellCount > duoOpponentCellCount { return "WIN" }
+        if duoOwnedCellCount < duoOpponentCellCount { return "LOSE" }
+        return "EVEN"
+    }
+
+    private var duoRatioText: String {
+        let total = duoOwnedCellCount + duoOpponentCellCount
+        guard total > 0 else { return "0:0" }
+        let myRatio = Int((Double(duoOwnedCellCount) / Double(total) * 100).rounded())
+        let opponentRatio = max(0, 100 - myRatio)
+        return "\(myRatio):\(opponentRatio)"
+    }
+
+    private var duoStatusText: String {
+        if duoOwnedCellCount > duoOpponentCellCount { return "이기고 있습니다!" }
+        if duoOwnedCellCount < duoOpponentCellCount { return "지고 있습니다!" }
+        return "팽팽합니다!"
+    }
+
+    private var duoRemainingTimeText: String? {
+        guard let duoEndsAt else { return nil }
+        let remaining = max(0, Int(duoEndsAt.timeIntervalSince(countdownNow)))
+        let days = remaining / 86_400
+        let hours = (remaining % 86_400) / 3_600
+        let minutes = (remaining % 3_600) / 60
+        let seconds = remaining % 60
+        return String(format: "%d:%02d:%02d:%02d", days, hours, minutes, seconds)
+    }
 
     var body: some View {
         ZStack {
@@ -44,6 +87,10 @@ struct ControlPanel: View {
 
                 Spacer()
 
+                if shouldShowModeBadge {
+                    modeBadge
+                        .padding(.bottom, 8)
+                }
                 buttomRunButton
             }
         }
@@ -77,6 +124,99 @@ struct ControlPanel: View {
         .zIndex(1)
     }
     
+    private var modeBadge: some View {
+        VStack(spacing: 8) {
+            if showSoloModeTip {
+                modeTipBubble
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+
+            HStack(spacing: 8) {
+                Image(systemName: isDuoMode ? "person.2.fill" : "figure.run")
+                    .font(.system(size: 12, weight: .bold))
+                VStack(alignment: .center, spacing: 1) {
+                    Text(isDuoMode ? "경쟁 MODE • \(duoResultLabel)" : "개인 MODE")
+                        .font(.text01)
+                        .kerning(0.5)
+                    if isDuoMode, let remaining = duoRemainingTimeText {
+                        Text("\(remaining)")
+                            .font(.text02)
+                    }
+                }
+            }
+            .foregroundColor(isDuoMode ? .black : .yellow)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(isDuoMode ? Color.red : Color.black.opacity(0.78))
+            )
+            .overlay(
+                Capsule(style: .continuous)
+                    .stroke(Color.white.opacity(0.25), lineWidth: 1)
+                    .padding(2)
+            )
+            .shadow(color: isDuoMode ? Color.red.opacity(0.28) : Color.black.opacity(0.45), radius: 8, y: 3)
+            .contentShape(Capsule(style: .continuous))
+            .onTapGesture {
+                if showSoloModeTip {
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        showSoloModeTip = false
+                    }
+                    return
+                }
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.86)) {
+                    showSoloModeTip = true
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        showSoloModeTip = false
+                    }
+                }
+            }
+            .onReceive(countdownTimer) { date in
+                countdownNow = date
+            }
+        }
+    }
+
+    private var modeTipBubble: some View {
+        VStack(spacing: 4) {
+            if isDuoMode {
+                Text("\(duoRatioText)으로 \(duoStatusText)")
+                    .font(.text02)
+                    .foregroundColor(.yellow)
+            } else {
+                Text("친구를 맺어 경쟁전을 플레이해보세요!")
+                    .font(.text02)
+                    .foregroundColor(.yellow)
+
+                Button(action: {
+                    onTapGoFriendList()
+                    showSoloModeTip = false
+                }) {
+                    Text("친구 목록으로 가기")
+                        .font(.text02)
+                        .foregroundColor(.gray)
+                        .underline()
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .multilineTextAlignment(.center)
+        .padding(.horizontal, 12)
+        .padding(.top, 10)
+        .padding(.bottom, 18)
+        .background(
+            ModeTipBubbleShape(cornerRadius: 12, pointerWidth: 16, pointerHeight: 8)
+                    .fill(Color.black.opacity(0.92))
+            )
+            .overlay(
+                ModeTipBubbleShape(cornerRadius: 12, pointerWidth: 16, pointerHeight: 8)
+                    .stroke(Color.yellow.opacity(0.9), lineWidth: 1.5)
+            )
+    }
+
     private var capturedAreaButton: some View {
         VStack(spacing: 12) {
             Button(action: {
@@ -172,5 +312,59 @@ struct ControlPanel: View {
 
             Spacer()
         }
+    }
+}
+
+private struct ModeTipBubbleShape: Shape {
+    let cornerRadius: CGFloat
+    let pointerWidth: CGFloat
+    let pointerHeight: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        let radius = min(cornerRadius, rect.width / 2, (rect.height - pointerHeight) / 2)
+        let bodyMaxY = rect.maxY - pointerHeight
+        let midX = rect.midX
+        let pointerHalfWidth = pointerWidth / 2
+
+        var path = Path()
+
+        path.move(to: CGPoint(x: rect.minX + radius, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX - radius, y: rect.minY))
+        path.addArc(
+            center: CGPoint(x: rect.maxX - radius, y: rect.minY + radius),
+            radius: radius,
+            startAngle: .degrees(-90),
+            endAngle: .degrees(0),
+            clockwise: false
+        )
+        path.addLine(to: CGPoint(x: rect.maxX, y: bodyMaxY - radius))
+        path.addArc(
+            center: CGPoint(x: rect.maxX - radius, y: bodyMaxY - radius),
+            radius: radius,
+            startAngle: .degrees(0),
+            endAngle: .degrees(90),
+            clockwise: false
+        )
+        path.addLine(to: CGPoint(x: midX + pointerHalfWidth, y: bodyMaxY))
+        path.addLine(to: CGPoint(x: midX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: midX - pointerHalfWidth, y: bodyMaxY))
+        path.addLine(to: CGPoint(x: rect.minX + radius, y: bodyMaxY))
+        path.addArc(
+            center: CGPoint(x: rect.minX + radius, y: bodyMaxY - radius),
+            radius: radius,
+            startAngle: .degrees(90),
+            endAngle: .degrees(180),
+            clockwise: false
+        )
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + radius))
+        path.addArc(
+            center: CGPoint(x: rect.minX + radius, y: rect.minY + radius),
+            radius: radius,
+            startAngle: .degrees(180),
+            endAngle: .degrees(270),
+            clockwise: false
+        )
+        path.closeSubpath()
+        return path
     }
 }

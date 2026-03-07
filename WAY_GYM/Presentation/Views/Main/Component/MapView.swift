@@ -100,6 +100,7 @@ struct MapView: UIViewRepresentable {
             }
         }
         
+        // 차지한 땅 색칠
         func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
             if let polyline = overlay as? MKPolyline {
                 let renderer = MKPolylineRenderer(polyline: polyline)
@@ -111,8 +112,10 @@ struct MapView: UIViewRepresentable {
 
             if let polygon = overlay as? MKPolygon {
                 let renderer = MKPolygonRenderer(polygon: polygon)
-                renderer.fillColor = UIColor(Color.green).withAlphaComponent(0.5)
-                renderer.strokeColor = UIColor(Color.green)
+                let isMine = (polygon as? ColoredPolygon)?.isMine ?? true
+                let fillColor = isMine ? UIColor(Color.green) : UIColor(Color.red)
+                renderer.fillColor = fillColor.withAlphaComponent(0.5)
+                renderer.strokeColor = fillColor
                 renderer.lineWidth = 2
                 return renderer
             }

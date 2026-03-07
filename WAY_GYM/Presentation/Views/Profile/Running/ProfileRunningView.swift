@@ -1,5 +1,5 @@
 //
-//  Practicew.swift
+//  ProfileRunningView.swift
 //  WAY_GYM
 //
 //  Created by 이주현 on 6/8/25.

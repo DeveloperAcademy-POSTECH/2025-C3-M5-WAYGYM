@@ -223,6 +223,9 @@ extension ProfileSetupViewModel {
             homeArea: homeArea,
             sex: sex.rawValue,
             friendCode: friendCode,
+            activeDuoWorldId: nil,
+            pendingWorldResult: nil,
+            nextMinionNumber: nil,
             createdAt: nil
         )
         Task {

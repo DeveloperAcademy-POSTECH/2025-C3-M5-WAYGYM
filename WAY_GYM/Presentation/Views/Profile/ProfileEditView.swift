@@ -121,7 +121,7 @@ struct ProfileEditView: View {
             CustomButton(
                 title: "수정하기",
                 action: {
-                    vm.saveProfileToFirestore {
+                    vm.reSaveProfileToFirestore {
                         Task {
                             await userStore.refresh()
                             await MainActor.run {

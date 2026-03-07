@@ -114,6 +114,11 @@ protocol FirestoreManagerProtocol {
         descending: Bool,
         handler: @escaping (Result<[QueryDocumentSnapshot], Error>) -> Void
     ) throws -> ListenerRegistration
+
+    /// 트랜잭션 실행
+    func runTransaction(
+        _ block: @escaping (Transaction, NSErrorPointer) -> Any?
+    ) async throws
     
     // MARK: - Firestore 쓰기
     /// 문서 생성 (ID 지정)
@@ -442,6 +447,21 @@ final class FirestoreManager: FirestoreManagerProtocol {
                 return
             }
             handler(.success(snapshot?.documents ?? []))
+        }
+    }
+
+    func runTransaction(
+        _ block: @escaping (Transaction, NSErrorPointer) -> Any?
+    ) async throws {
+        let db = Firestore.firestore()
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            db.runTransaction(block, completion: { _, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            })
         }
     }
     

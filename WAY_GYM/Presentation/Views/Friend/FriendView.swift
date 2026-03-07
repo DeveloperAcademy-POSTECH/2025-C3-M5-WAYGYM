@@ -11,6 +11,8 @@ import FirebaseAuth
 struct FriendView: View {
     @EnvironmentObject private var coordinator: AppCoordinator
     @EnvironmentObject private var friendStore: FriendStore
+    @EnvironmentObject private var userStore: UserStore
+    @StateObject private var vm = FriendViewModel()
     private let userRepository = UserRepository()
     private let friendRepository = FriendRepository()
 
@@ -44,8 +46,21 @@ struct FriendView: View {
                 .padding(.top, 12)
             }
         }
+        .task {
+            await userStore.refresh()
+            await friendStore.refresh()
+        }
         .task(id: friendStore.friendUids) {
             await fetchFriendProfiles()
+        }
+        .onReceive(friendStore.$incomingWorldRequestUids) { _ in
+            sortFriends()
+        }
+        .onReceive(friendStore.$outgoingWorldRequestUids) { _ in
+            sortFriends()
+        }
+        .onReceive(friendStore.$activeDuoOpponentUid) { _ in
+            sortFriends()
         }
         .padding(.horizontal, 16)
         .background {
@@ -269,7 +284,9 @@ struct FriendView: View {
     }
 
     private func friendRow(_ friend: FriendUserRowModel) -> some View {
-        HStack(spacing: 12) {
+        let isMyOpponent = friend.uid == friendStore.activeDuoOpponentUid
+
+        return HStack(spacing: 12) {
             avatar
 
             VStack(alignment: .leading, spacing: 2) {
@@ -286,34 +303,113 @@ struct FriendView: View {
 
             Spacer(minLength: 0)
 
-            Button {
-                // TODO: 경쟁전 신청 걸기
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "bolt.fill")
-                        .font(.system(size: 12, weight: .bold))
-
-                    Text("경쟁전")
+            if let uid = friend.uid,
+               friendStore.activeDuoOpponentUid == uid {
+                Text("경쟁전 플레이 중")
+                    .font(.text02)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Color.red.opacity(0.92))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(Color.red.opacity(0.14))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(Color.red.opacity(0.8), lineWidth: 1)
+                    )
+            } else if let uid = friend.uid,
+                      friendStore.incomingWorldRequestUids.contains(uid) {
+                Button {
+                    acceptWorldRequest(fromUid: uid)
+                } label: {
+                    Text("경쟁전 수락")
                         .font(.text02)
                         .fontWeight(.semibold)
+                        .foregroundStyle(Color.white.opacity(0.92))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .fill(Color.gang_highlight_2.opacity(0.55))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .stroke(Color.gang_highlight_2.opacity(0.65), lineWidth: 1)
+                        )
                 }
-                .foregroundStyle(Color.white.opacity(0.92))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Color.white.opacity(0.14))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                )
+                .buttonStyle(.plain)
+            } else if let uid = friend.uid,
+                      friendStore.outgoingWorldRequestUids.contains(uid) {
+                Text("경쟁전 신청중")
+                    .font(.text02)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Color.gangText2.opacity(0.8))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+//                    .background(
+//                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+//                            .fill(Color.white.opacity(0.08))
+//                    )
+//                    .overlay(
+//                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+//                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
+//                    )
+            } else if friend.activeDuoWorldId != nil {
+                Text("경쟁전 플레이 중")
+                    .font(.text02)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Color.gangText2.opacity(0.8))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+//                    .background(
+//                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+//                            .fill(Color.white.opacity(0.08))
+//                    )
+//                    .overlay(
+//                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+//                            .stroke(Color.white.opacity(0.08), lineWidth: 1)
+//                    )
+            } else {
+                Button {
+                    sendWorldRequest(toUid: friend.uid)
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "bolt.fill")
+                            .font(.system(size: 12, weight: .bold))
+                        
+                        Text("경쟁전 신청하기")
+                            .font(.text02)
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundStyle(Color.red.opacity(0.92))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .fill(Color.red.opacity(0.14))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(Color.red.opacity(0.8), lineWidth: 1)
+                    )
+                    
+                }
+                .buttonStyle(.plain)
+                .disabled(friend.activeDuoWorldId != nil || friendStore.activeDuoOpponentUid == friend.uid)
             }
-            .buttonStyle(.plain)
         }
         .padding(14)
         .background(cardBackground)
-        .overlay(cardBorder)
+        .overlay {
+            if isMyOpponent {
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(Color.red.opacity(0.8), lineWidth: 1)
+            } else {
+                cardBorder
+            }
+        }
     }
     
     private func statusButton(status: FriendStatus, uid: String?) -> some View {
@@ -338,7 +434,7 @@ struct FriendView: View {
             textColor = Color.white.opacity(0.90)
         case .incomingPending:
             title = "수락하기"
-            isEnabled = false
+            isEnabled = true
             fill = Color.gang_highlight_2.opacity(0.4)
             stroke = Color.gang_highlight_2.opacity(0.4)
             textColor = Color.white
@@ -352,7 +448,26 @@ struct FriendView: View {
 
         return Button {
             if isEnabled {
-                sendFriendRequest(toUid: uid)
+                switch status {
+                case .canRequest:
+                    sendFriendRequest(toUid: uid)
+                case .incomingPending:
+                    guard let fromUid = uid,
+                          let toUid = Auth.auth().currentUser?.uid else { return }
+                    Task {
+                        do {
+                            try await vm.acceptRequest(fromUid: fromUid, toUid: toUid)
+                            await friendStore.refresh()
+                            await MainActor.run {
+                                updateSearchResultStatus(uid: fromUid, status: .alreadyFriend)
+                            }
+                        } catch {
+                            print("⚠️ acceptFriendRequest 실패: \(error.localizedDescription)")
+                        }
+                    }
+                default:
+                    break
+                }
             }
         } label: {
             Text(title)
@@ -480,6 +595,42 @@ struct FriendView: View {
         }
     }
 
+    private func sendWorldRequest(toUid: String?) {
+        guard let fromUid = Auth.auth().currentUser?.uid else { return }
+        guard let toUid, toUid.isEmpty == false else { return }
+        guard fromUid != toUid else { return }
+
+        Task {
+            await friendStore.markOutgoingWorldRequest(uid: toUid)
+            do {
+                try await friendRepository.sendWorldRequest(fromUid: fromUid, toUid: toUid)
+                await friendStore.refresh()
+                await userStore.refresh()
+            } catch {
+                await friendStore.unmarkOutgoingWorldRequest(uid: toUid)
+                // TODO: handle error if UI needs to react
+            }
+        }
+    }
+
+    private func acceptWorldRequest(fromUid: String?) {
+        guard let toUid = Auth.auth().currentUser?.uid else { return }
+        guard let fromUid, fromUid.isEmpty == false else { return }
+        guard fromUid != toUid else { return }
+
+        Task {
+            await friendStore.markAcceptedWorldRequest(uid: fromUid)
+            do {
+                try await friendRepository.acceptWorldRequest(fromUid: fromUid, toUid: toUid)
+                await friendStore.refresh()
+                await userStore.refresh()
+            } catch {
+                await friendStore.restoreIncomingWorldRequest(uid: fromUid)
+                print("⚠️ acceptWorldRequest 실패: \(error.localizedDescription)")
+            }
+        }
+    }
+
     private func makeRow(from user: User) -> FriendUserRowModel {
         let id = user.id ?? user.friendCode ?? user.displayName ?? UUID().uuidString
         let displayName = user.displayName ?? "알 수 없음"
@@ -492,7 +643,14 @@ struct FriendView: View {
             subText = "검색된 유저"
         }
         let status = user.id.flatMap { friendStore.status(for: $0) }
-        return .init(id: id, uid: user.id, displayName: displayName, subText: subText, status: status)
+        return .init(
+            id: id,
+            uid: user.id,
+            displayName: displayName,
+            subText: subText,
+            status: status,
+            activeDuoWorldId: user.activeDuoWorldId
+        )
     }
 
     private func updateSearchResultStatus(uid: String, status: FriendStatus) {
@@ -530,9 +688,38 @@ struct FriendView: View {
             }
         }
 
-        fetched.sort { $0.displayName < $1.displayName }
         await MainActor.run {
             friends = fetched
+            sortFriends()
+        }
+    }
+
+    private func sortFriends() {
+        guard friends.isEmpty == false else { return }
+
+        let incoming = friendStore.incomingWorldRequestUids
+        let outgoing = friendStore.outgoingWorldRequestUids
+        let activeOpponentUid = friendStore.activeDuoOpponentUid
+
+        func priority(for uid: String?) -> Int {
+            guard let uid else { return 3 }
+            if activeOpponentUid == uid { return 0 }
+            if incoming.contains(uid) { return 1 }
+            if outgoing.contains(uid) { return 2 }
+            return 3
+        }
+
+        friends.sort { lhs, rhs in
+            let lp = priority(for: lhs.uid)
+            let rp = priority(for: rhs.uid)
+            if lp != rp { return lp < rp }
+
+            let nameOrder = lhs.displayName.localizedStandardCompare(rhs.displayName)
+            if nameOrder != .orderedSame {
+                return nameOrder == .orderedAscending
+            }
+
+            return (lhs.uid ?? lhs.id) < (rhs.uid ?? rhs.id)
         }
     }
 }
@@ -544,9 +731,17 @@ private struct FriendUserRowModel: Identifiable {
     let displayName: String
     let subText: String
     let status: FriendStatus?
+    let activeDuoWorldId: String?
 
     func withStatus(_ status: FriendStatus) -> FriendUserRowModel {
-        .init(id: id, uid: uid, displayName: displayName, subText: subText, status: status)
+        .init(
+            id: id,
+            uid: uid,
+            displayName: displayName,
+            subText: subText,
+            status: status,
+            activeDuoWorldId: activeDuoWorldId
+        )
     }
 }
 

@@ -28,6 +28,8 @@ final class UserStore: ObservableObject {
             } else {
                 addressRank = nil
             }
+            print("✅ userStore.refresh | uid=\(uid), activeDuoWorldId=\(profile.activeDuoWorldId ?? "nil")")
+                  
         } catch {
             print("⚠️ UserProfile fetch 실패: \(error.localizedDescription)")
         }

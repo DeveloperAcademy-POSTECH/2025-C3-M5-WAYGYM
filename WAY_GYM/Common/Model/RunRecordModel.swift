@@ -6,7 +6,8 @@ import CoreLocation
 // MARK: - 데이터 모델
 struct RunRecord: Identifiable, Codable, Equatable {
     @DocumentID var id: String? // Firestore 문서 ID
-    // type / activeDuoWorldId 는 지금 단계에서는 제외
+    let type: RunRecordType?
+    let activeDuoWorldId: String?
     let startTime: Date
     let endTime: Date?
     var duration: TimeInterval {
@@ -19,6 +20,8 @@ struct RunRecord: Identifiable, Codable, Equatable {
     let routeFrame: [Double] /// [minLat, minLng, maxLat, maxLng]
 
     enum CodingKeys: String, CodingKey {
+        case type
+        case activeDuoWorldId = "active_duo_world_id"
         case startTime = "start_time"
         case endTime = "end_time"
         case distanceM = "distance_m"
@@ -28,6 +31,8 @@ struct RunRecord: Identifiable, Codable, Equatable {
     }
 
     enum Field: String, FirestoreFieldKey {
+        case type
+        case activeDuoWorldId = "active_duo_world_id"
         case startTime = "start_time"
         case endTime = "end_time"
         case distanceM = "distance_m"
@@ -61,6 +66,8 @@ struct RunRecord: Identifiable, Codable, Equatable {
 
     init(
         id: String? = nil,
+        type: RunRecordType? = nil,
+        activeDuoWorldId: String? = nil,
         startTime: Date,
         endTime: Date?,
         distanceM: Double,
@@ -69,6 +76,8 @@ struct RunRecord: Identifiable, Codable, Equatable {
         routeFrame: [Double]
     ) {
         self.id = id
+        self.type = type
+        self.activeDuoWorldId = activeDuoWorldId
         self.startTime = startTime
         self.endTime = endTime
         self.distanceM = distanceM
@@ -83,6 +92,11 @@ struct RunRecord: Identifiable, Codable, Equatable {
         formatter.timeZone = TimeZone(identifier: "Asia/Seoul")
         return formatter.date(from: dateString) ?? Date()
     }
+}
+
+enum RunRecordType: String, Codable {
+    case solo
+    case duo
 }
 
 // MARK: - 좌표 쌍 구조체
