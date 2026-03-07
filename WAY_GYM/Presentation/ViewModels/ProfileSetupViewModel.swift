@@ -11,7 +11,7 @@ import FirebaseAuth
 
 
 final class ProfileSetupViewModel: ObservableObject {
-    private let userRepository: UserRepositoryProtocol = UserRepository()
+    private let userRepository: UserRepositoryProtocol
     
     enum Sex: String, CaseIterable {
         case male
@@ -53,7 +53,8 @@ final class ProfileSetupViewModel: ObservableObject {
     @Published var isSavingProfile: Bool = false
     @Published var saveProfileError: String? = nil
 
-    init() {
+    init(userRepository: UserRepositoryProtocol = UserRepository()) {
+        self.userRepository = userRepository
         self.addressData = (try? AddressLoader.load3DepthJSON()) ?? []
     }
 

@@ -9,7 +9,7 @@ import Foundation
 import FirebaseAuth
 
 final class ProfileEditViewModel: ObservableObject {
-    private let userRepository: UserRepositoryProtocol = UserRepository()
+    private let userRepository: UserRepositoryProtocol
 
     @Published var sex: ProfileSetupViewModel.Sex? = nil
     @Published var nickname: String = ""
@@ -40,7 +40,8 @@ final class ProfileEditViewModel: ObservableObject {
     private var originalHomeArea: String = ""
     private var originalUserId: String = ""
 
-    init() {
+    init(userRepository: UserRepositoryProtocol = UserRepository()) {
+        self.userRepository = userRepository
         self.addressData = (try? AddressLoader.load3DepthJSON()) ?? []
     }
 

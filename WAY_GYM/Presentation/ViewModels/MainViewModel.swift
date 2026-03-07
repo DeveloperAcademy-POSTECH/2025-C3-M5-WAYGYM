@@ -33,8 +33,11 @@ final class MainViewModel: ObservableObject {
         print("🎬 markRunStart | prevTotal(m)=\(runStartTotalDistanceM)")
     }
     
-    private let runRecordRepository: RunRecordRepositoryProtocol = RunRecordRepository()
-    
+    private let runRecordRepository: RunRecordRepositoryProtocol
+
+    init(runRecordRepository: RunRecordRepositoryProtocol = RunRecordRepository()) {
+        self.runRecordRepository = runRecordRepository
+    }
     @Published var isAreaActive: Bool = false
     private var backupPolylines: [MKPolyline] = []
     private var countdownTimer: Timer?

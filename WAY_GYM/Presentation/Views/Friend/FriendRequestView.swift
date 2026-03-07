@@ -11,18 +11,29 @@ import FirebaseAuth
 struct FriendRequestView: View {
     @EnvironmentObject private var friendStore: FriendStore
     @StateObject private var vm = FriendViewModel()
-    private let userRepository = UserRepository()
-    private let friendRepository = FriendRepository()
+    private let userRepository: UserRepositoryProtocol
+    private let friendRepository: FriendRepositoryProtocol
 
     @State private var requests: [FriendRequestRowModel] = []
     @State private var isLoading: Bool = false
     private let isPreview: Bool
 
-    init() {
+    init(
+        userRepository: UserRepositoryProtocol = UserRepository(),
+        friendRepository: FriendRepositoryProtocol = FriendRepository()
+    ) {
+        self.userRepository = userRepository
+        self.friendRepository = friendRepository
         isPreview = false
     }
 
-    fileprivate init(previewRequests: [FriendRequestRowModel]) {
+    fileprivate init(
+        previewRequests: [FriendRequestRowModel],
+        userRepository: UserRepositoryProtocol = UserRepository(),
+        friendRepository: FriendRepositoryProtocol = FriendRepository()
+    ) {
+        self.userRepository = userRepository
+        self.friendRepository = friendRepository
         _requests = State(initialValue: previewRequests)
         _isLoading = State(initialValue: false)
         isPreview = true
@@ -157,31 +168,10 @@ struct FriendRequestView: View {
 
         await MainActor.run { isLoading = true }
         do {
-            let pending = try await friendRepository.fetchPendingFriendRequestsReceived(to: uid)
-            var fetched: [FriendRequestRowModel] = []
-            await withTaskGroup(of: FriendRequestRowModel?.self) { group in
-                for request in pending {
-                    guard let requestId = request.id else { continue }
-                    group.addTask {
-                        do {
-                            let profile = try await userRepository.fetchUserProfile(uid: request.fromUid)
-                            return await makeRow(requestId: requestId, fromUid: request.fromUid, profile: profile)
-                        } catch {
-                            return nil
-                        }
-                    }
-                }
+            let mapped = try await fetchPendingRequestsWithProfiles(to: uid)
 
-                for await row in group {
-                    if let row {
-                        fetched.append(row)
-                    }
-                }
-            }
-
-            fetched.sort { $0.displayName < $1.displayName }
             await MainActor.run {
-                requests = fetched
+                requests = mapped
                 isLoading = false
             }
         } catch {
@@ -190,6 +180,32 @@ struct FriendRequestView: View {
                 isLoading = false
             }
         }
+    }
+
+    private func fetchPendingRequestsWithProfiles(to uid: String) async throws -> [FriendRequestRowModel] {
+        let pending = try await fetchPendingRequests(to: uid)
+        var fetched: [FriendRequestRowModel] = []
+
+        await withTaskGroup(of: FriendRequestRowModel?.self) { group in
+            for request in pending {
+                guard let requestId = request.id else { continue }
+                group.addTask {
+                    guard let profile = try? await fetchProfile(uid: request.fromUid) else {
+                        return nil
+                    }
+                    return makeRow(requestId: requestId, fromUid: request.fromUid, profile: profile)
+                }
+            }
+
+            for await row in group {
+                if let row {
+                    fetched.append(row)
+                }
+            }
+        }
+
+        fetched.sort { $0.displayName < $1.displayName }
+        return fetched
     }
 
     private func makeRow(requestId: String, fromUid: String, profile: User) -> FriendRequestRowModel {
@@ -205,6 +221,14 @@ struct FriendRequestView: View {
         return .init(id: requestId, requestId: requestId, fromUid: fromUid, displayName: displayName, subText: subText)
     }
 
+    private func fetchProfile(uid: String) async throws -> User {
+        try await userRepository.fetchUserProfile(uid: uid)
+    }
+
+    private func fetchPendingRequests(to uid: String) async throws -> [FriendRequest] {
+        try await friendRepository.fetchPendingFriendRequestsReceived(to: uid)
+    }
+
     private func acceptRequest(_ request: FriendRequestRowModel) {
         guard let toUid = Auth.auth().currentUser?.uid else { return }
 
@@ -216,7 +240,7 @@ struct FriendRequestView: View {
                 }
                 await friendStore.refresh()
             } catch {
-                // TODO: handle error if UI needs to react
+                // TODO: 에러 팝업창
             }
         }
     }

@@ -13,8 +13,6 @@ struct FriendView: View {
     @EnvironmentObject private var friendStore: FriendStore
     @EnvironmentObject private var userStore: UserStore
     @StateObject private var vm = FriendViewModel()
-    private let userRepository = UserRepository()
-    private let friendRepository = FriendRepository()
 
     @State private var query: String = ""
     @State private var isSearching: Bool = false
@@ -562,7 +560,7 @@ struct FriendView: View {
 
         Task {
             do {
-                let users = try await userRepository.searchUsers(matching: trimmed)
+                let users = try await vm.searchUsers(matching: trimmed)
                 let rows = users.map { makeRow(from: $0) }
                 await MainActor.run {
                     searchResults = rows
@@ -584,13 +582,13 @@ struct FriendView: View {
 
         Task {
             do {
-                try await friendRepository.sendFriendRequest(fromUid: fromUid, toUid: toUid)
+                try await vm.sendFriendRequest(fromUid: fromUid, toUid: toUid)
                 await MainActor.run {
                     friendStore.markOutgoingPending(uid: toUid)
                     updateSearchResultStatus(uid: toUid, status: .outgoingPending)
                 }
             } catch {
-                // TODO: handle error if UI needs to react
+                // TODO: 에러 팝업창
             }
         }
     }
@@ -603,12 +601,12 @@ struct FriendView: View {
         Task {
             await friendStore.markOutgoingWorldRequest(uid: toUid)
             do {
-                try await friendRepository.sendWorldRequest(fromUid: fromUid, toUid: toUid)
+                try await vm.sendWorldRequest(fromUid: fromUid, toUid: toUid)
                 await friendStore.refresh()
                 await userStore.refresh()
             } catch {
                 await friendStore.unmarkOutgoingWorldRequest(uid: toUid)
-                // TODO: handle error if UI needs to react
+                // TODO: 에러 팝업창
             }
         }
     }
@@ -621,7 +619,7 @@ struct FriendView: View {
         Task {
             await friendStore.markAcceptedWorldRequest(uid: fromUid)
             do {
-                try await friendRepository.acceptWorldRequest(fromUid: fromUid, toUid: toUid)
+                try await vm.acceptWorldRequest(fromUid: fromUid, toUid: toUid)
                 await friendStore.refresh()
                 await userStore.refresh()
             } catch {
@@ -668,25 +666,8 @@ struct FriendView: View {
             return
         }
 
-        var fetched: [FriendUserRowModel] = []
-        await withTaskGroup(of: FriendUserRowModel?.self) { group in
-            for uid in uids {
-                group.addTask {
-                    do {
-                        let profile = try await userRepository.fetchUserProfile(uid: uid)
-                        return await makeRow(from: profile)
-                    } catch {
-                        return nil
-                    }
-                }
-            }
-
-            for await row in group {
-                if let row {
-                    fetched.append(row)
-                }
-            }
-        }
+        let profiles = await vm.fetchFriendProfiles(uids: uids)
+        let fetched = profiles.map { makeRow(from: $0) }
 
         await MainActor.run {
             friends = fetched

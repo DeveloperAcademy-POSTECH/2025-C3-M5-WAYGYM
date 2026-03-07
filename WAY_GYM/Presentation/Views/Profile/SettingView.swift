@@ -31,11 +31,11 @@ struct SettingView: View {
             
             VStack(spacing: 14) {
                 settingRow(title: "Privacy Policy") {
-                    // TODO: coordinator.push(.privacyPolicy) or open URL
+                    // TODO:
                 }
 
                 settingRow(title: "Contact us") {
-                    // TODO: coordinator.push(.contact) or open mail composer
+                    // TODO:
                 }
 
                 Rectangle()
