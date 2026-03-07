@@ -12,17 +12,21 @@ struct RootView: View {
     @EnvironmentObject
     private var coordinator: AppCoordinator
     private let moduleFactory: ModuleFactoryProtocol
+    
     @StateObject var runRecordStore = RunRecordStore()
     @StateObject var userStore = UserStore()
     @StateObject var friendStore = FriendStore()
     @StateObject var duoBattleStore = DuoBattleStore()
+    
     @StateObject var locationManager = LocationManager()
-    private let userRepository: UserRepositoryProtocol = UserRepository()
+    private let userRepository: UserRepositoryProtocol
 
     init(
-        moduleFactory: ModuleFactoryProtocol
+        moduleFactory: ModuleFactoryProtocol,
+        userRepository: UserRepositoryProtocol = UserRepository()
     ) {
         self.moduleFactory = moduleFactory
+        self.userRepository = userRepository
     }
 
     @State private var authListener: AuthStateDidChangeListenerHandle?

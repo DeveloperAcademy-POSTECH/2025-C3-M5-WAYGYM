@@ -18,7 +18,7 @@ struct MainView: View {
     @EnvironmentObject var runRecordStore: RunRecordStore
     @EnvironmentObject var userStore: UserStore
     @EnvironmentObject var duoBattleStore: DuoBattleStore
-    @StateObject var vm: MainViewModel
+    @StateObject private var vm = MainViewModel()
     @AppStorage("selectedWeaponId") var selectedWeaponId: String = "0"
     @ObservedObject var locationManager: LocationManager
     
@@ -145,9 +145,8 @@ struct MainView: View {
     let userStore = UserStore()
     let duoBattleStore = DuoBattleStore()
     let locationManager = LocationManager()
-    let vm = MainViewModel()
     
-    return MainView(vm: vm, locationManager: locationManager)
+    return MainView(locationManager: locationManager)
         .environmentObject(coordinator)
         .environmentObject(runRecordStore)
         .environmentObject(userStore)

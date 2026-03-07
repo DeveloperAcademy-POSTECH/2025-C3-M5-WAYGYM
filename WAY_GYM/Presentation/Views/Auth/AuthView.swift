@@ -10,7 +10,7 @@ import FirebaseAuth
 
 struct AuthView: View {
     @EnvironmentObject var coordinator: AppCoordinator
-    @StateObject var vm: AuthViewModel
+    @StateObject private var vm = AuthViewModel()
 
     private enum FocusField: Hashable {
         case phone
@@ -150,7 +150,7 @@ struct AuthView: View {
 
 
 #Preview {
-    AuthView(vm: AuthViewModel())
+    AuthView()
     .font(.text01)
     .foregroundColor(Color("gang_text_2"))
 }
