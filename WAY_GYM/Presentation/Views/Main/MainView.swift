@@ -113,8 +113,9 @@ struct MainView: View {
             }
         }
         .task {
-            locationManager.userStore = userStore
-            vm.onTask(locationManager: locationManager)
+            locationManager.moveToCurrentLocation()
+            locationManager.isSimulating = false
+            vm.onTask()
         }
         .overlay {
             if let pendingResult = duoBattleStore.pendingWorldResult {

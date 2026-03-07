@@ -13,20 +13,42 @@ struct RootView: View {
     private var coordinator: AppCoordinator
     private let moduleFactory: ModuleFactoryProtocol
     
-    @StateObject var runRecordStore = RunRecordStore()
-    @StateObject var userStore = UserStore()
-    @StateObject var friendStore = FriendStore()
-    @StateObject var duoBattleStore = DuoBattleStore()
+    @StateObject var runRecordStore: RunRecordStore
+    @StateObject var userStore: UserStore
+    @StateObject var friendStore: FriendStore
+    @StateObject var duoBattleStore: DuoBattleStore
     
-    @StateObject var locationManager = LocationManager()
+    @StateObject private var locationManager: LocationManager
     private let userRepository: UserRepositoryProtocol
 
     init(
         moduleFactory: ModuleFactoryProtocol,
-        userRepository: UserRepositoryProtocol = UserRepository()
+        userRepository: UserRepositoryProtocol = UserRepository(),
+        runRecordStore: RunRecordStore = RunRecordStore(),
+        userStore: UserStore = UserStore(),
+        friendStore: FriendStore = FriendStore(),
+        duoBattleStore: DuoBattleStore = DuoBattleStore(),
+        injectedLocationManager: LocationManager? = nil
     ) {
         self.moduleFactory = moduleFactory
         self.userRepository = userRepository
+        _runRecordStore = StateObject(wrappedValue: runRecordStore)
+        _userStore = StateObject(wrappedValue: userStore)
+        _friendStore = StateObject(wrappedValue: friendStore)
+        _duoBattleStore = StateObject(wrappedValue: duoBattleStore)
+
+        let resolvedLocationManager: LocationManager
+        if let locationManager = injectedLocationManager {
+            locationManager.userStore = userStore
+            locationManager.runRecordStore = runRecordStore
+            resolvedLocationManager = locationManager
+        } else {
+            resolvedLocationManager = LocationManager(
+                userStore: userStore,
+                runRecordStore: runRecordStore
+            )
+        }
+        _locationManager = StateObject(wrappedValue: resolvedLocationManager)
     }
 
     @State private var authListener: AuthStateDidChangeListenerHandle?
