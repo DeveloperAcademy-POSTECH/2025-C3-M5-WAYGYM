@@ -27,7 +27,7 @@ struct ProfileRunningView: View {
                     .frame(maxWidth: .infinity)
                     .multilineTextAlignment(.center)
                 } else {
-                    ForEach(topSummaries) { summary in
+                    ForEach(Array(topSummaries.enumerated()), id: \.offset) { _, summary in
                         Button {
                             guard let runId = summary.id else {
                                 return

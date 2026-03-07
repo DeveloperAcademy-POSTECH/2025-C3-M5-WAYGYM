@@ -171,8 +171,7 @@ final class DuoBattleRepository: DuoBattleRepositoryProtocol {
 
     /// 원래 firebase function으로 실행하려 했던, 우승자 서버에 업데이트 하는 로직
     private func endWorldIfNeeded(worldId: String) async throws {
-        let db = Firestore.firestore()
-        let worldRef = db.collection("Worlds").document(worldId)
+        let worldRef = try firebaseManager.documentReference(path: "Worlds/\(worldId)")
         let worldDoc = try await worldRef.getDocument()
         guard worldDoc.exists else { return }
         guard let world = try? worldDoc.data(as: World.self) else { return }
@@ -200,14 +199,21 @@ final class DuoBattleRepository: DuoBattleRepositoryProtocol {
         }()
 
         let now = Date()
+        let winnerRef: DocumentReference?
+        if let winnerUid {
+            winnerRef = try firebaseManager.documentReference(
+                path: "\(FirestoreCollection.users.key)/\(winnerUid)"
+            )
+        } else {
+            winnerRef = nil
+        }
 
         try await firebaseManager.runTransaction { transaction, errorPointer in
             let snapshot: DocumentSnapshot
             var winnerSnapshot: DocumentSnapshot?
             do {
                 snapshot = try transaction.getDocument(worldRef)
-                if let winnerUid {
-                    let winnerRef = db.collection(FirestoreCollection.users).document(winnerUid)
+                if let winnerRef {
                     winnerSnapshot = try transaction.getDocument(winnerRef)
                 }
             } catch {
@@ -230,7 +236,15 @@ final class DuoBattleRepository: DuoBattleRepositoryProtocol {
             transaction.updateData(worldUpdate, forDocument: worldRef)
 
             for uid in world.memberUids {
-                let userRef = db.collection(FirestoreCollection.users).document(uid)
+                let userRef: DocumentReference
+                do {
+                    userRef = try self.firebaseManager.documentReference(
+                        path: "\(FirestoreCollection.users.key)/\(uid)"
+                    )
+                } catch {
+                    errorPointer?.pointee = error as NSError
+                    return nil
+                }
                 transaction.updateData(
                     [
                         User.Field.activeDuoWorldId.key: FieldValue.delete(),
@@ -240,11 +254,10 @@ final class DuoBattleRepository: DuoBattleRepositoryProtocol {
                 )
             }
 
-            if let winnerUid {
-                let winnerRef = db.collection(FirestoreCollection.users).document(winnerUid)
+            if let winnerRef {
                 let nextMinionNumber = winnerSnapshot?.data()?[User.Field.nextMinionNumber.key] as? Int ?? 1
                 let minionId = "\(nextMinionNumber)"
-                let opponentUid = world.memberUids.first(where: { $0 != winnerUid }) ?? ""
+                let opponentUid = world.memberUids.first(where: { $0 != winnerRef.documentID }) ?? ""
                 let unlockRef = winnerRef.collection("minionUnlocks").document(minionId)
 
                 transaction.setData(

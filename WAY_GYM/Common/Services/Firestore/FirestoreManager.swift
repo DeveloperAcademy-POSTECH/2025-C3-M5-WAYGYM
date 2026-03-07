@@ -119,6 +119,10 @@ protocol FirestoreManagerProtocol {
     func runTransaction(
         _ block: @escaping (Transaction, NSErrorPointer) -> Any?
     ) async throws
+
+    /// 참조 객체 접근 (복잡한 쿼리/트랜잭션 구성용)
+    func documentReference(path: String) throws -> DocumentReference
+    func collectionReference(path: String) throws -> CollectionReference
     
     // MARK: - Firestore 쓰기
     /// 문서 생성 (ID 지정)
@@ -463,6 +467,14 @@ final class FirestoreManager: FirestoreManagerProtocol {
                 }
             })
         }
+    }
+
+    func documentReference(path: String) throws -> DocumentReference {
+        try parseFirestorePath(path)
+    }
+
+    func collectionReference(path: String) throws -> CollectionReference {
+        try parseCollectionPath(path)
     }
     
     // MARK: - Firestore 쓰기

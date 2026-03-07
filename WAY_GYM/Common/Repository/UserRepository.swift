@@ -22,6 +22,7 @@ protocol UserRepositoryProtocol {
 
 final class UserRepository: UserRepositoryProtocol {
     private let firebaseManager: FirestoreManagerProtocol
+    
     init(firebaseManager: FirestoreManagerProtocol = FirestoreManager.shared) {
         self.firebaseManager = firebaseManager
     }

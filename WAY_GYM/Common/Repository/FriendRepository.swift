@@ -51,12 +51,14 @@ final class FriendRepository: FriendRepositoryProtocol {
         let uidA = ordered[0]
         let uidB = ordered[1]
         let requestId = "\(uidA)_\(uidB)"
+        let requestRef = try firebaseManager.documentReference(
+            path: "\(FirestoreCollection.friendRequests.key)/\(requestId)"
+        )
+        let friendshipRef = try firebaseManager.documentReference(
+            path: "\(FirestoreCollection.friendships.key)/\(requestId)"
+        )
 
         try await firebaseManager.runTransaction { transaction, errorPointer in
-            let db = Firestore.firestore()
-            let requestRef = db.collection(FirestoreCollection.friendRequests).document(requestId)
-            let friendshipRef = db.collection(FirestoreCollection.friendships).document(requestId)
-
             let requestSnapshot: DocumentSnapshot
             let friendshipSnapshot: DocumentSnapshot
 
@@ -114,9 +116,12 @@ final class FriendRepository: FriendRepositoryProtocol {
         let uidB = ordered[1]
         let pairId = "\(uidA)_\(uidB)"
 
-        let db = Firestore.firestore()
-        let requestRef = db.collection(FirestoreCollection.friendRequests).document(pairId)
-        let friendshipRef = db.collection(FirestoreCollection.friendships).document(pairId)
+        let requestRef = try firebaseManager.documentReference(
+            path: "\(FirestoreCollection.friendRequests.key)/\(pairId)"
+        )
+        let friendshipRef = try firebaseManager.documentReference(
+            path: "\(FirestoreCollection.friendships.key)/\(pairId)"
+        )
 
         try await firebaseManager.runTransaction { transaction, errorPointer in
             let requestSnapshot: DocumentSnapshot
@@ -202,14 +207,19 @@ final class FriendRepository: FriendRepositoryProtocol {
         let createdAt = Date()
         let endsAt = Date().addingTimeInterval(15 * 24 * 60 * 60)
 
-        let db = Firestore.firestore()
-        let requestRef = db.collection(FirestoreCollection.worldRequests).document(requestId)
-        let userRefA = db.collection(FirestoreCollection.users).document(uidA)
-        let userRefB = db.collection(FirestoreCollection.users).document(uidB)
-        let worldRef = db.collection("Worlds").document(worldId)
+        let requestRef = try firebaseManager.documentReference(
+            path: "\(FirestoreCollection.worldRequests.key)/\(requestId)"
+        )
+        let userRefA = try firebaseManager.documentReference(
+            path: "\(FirestoreCollection.users.key)/\(uidA)"
+        )
+        let userRefB = try firebaseManager.documentReference(
+            path: "\(FirestoreCollection.users.key)/\(uidB)"
+        )
+        let worldRef = try firebaseManager.documentReference(path: "Worlds/\(worldId)")
 
         // uidA 또는 uidB가 얽혀 있는 모든 다른 pending 점령전 요청들
-        let pendingBase = db.collection(FirestoreCollection.worldRequests)
+        let pendingBase = try firebaseManager.collectionReference(path: FirestoreCollection.worldRequests.key)
             .whereField(WorldRequest.Field.status, isEqualTo: "pending")
         let pendingOutgoing = try await pendingBase
             .whereField(WorldRequest.Field.fromUid, in: [uidA, uidB])
