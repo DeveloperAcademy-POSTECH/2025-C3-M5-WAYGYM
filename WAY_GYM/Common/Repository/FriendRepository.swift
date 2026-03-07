@@ -269,7 +269,7 @@ final class FriendRepository: FriendRepositoryProtocol {
             
             // Worlds/{worldId} 생성
             let world = World(
-                id: worldId,
+                id: nil,
                 memberUids: [uidA, uidB],
                 createdAt: createdAt,
                 endsAt: endsAt,

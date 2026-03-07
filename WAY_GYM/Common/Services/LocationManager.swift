@@ -698,7 +698,7 @@ final class LocationManager: NSObject, ObservableObject, CLLocationManagerDelega
         }
 
         let coord = location.coordinate
-        print("📍 Current location available: \(coord)")
+        print("현위치 클릭 📍 Current location available: \(coord)")
 
         DispatchQueue.main.async {
             let span = MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)

@@ -70,7 +70,7 @@ final class RunRecordRepository: RunRecordRepositoryProtocol {
 
         for cellId in cellIds {
             let cell = WorldCell(
-                id: cellId,
+                id: nil,
                 ownerUid: ownerUid,
                 lastCapturedAt: lastCapturedAt,
                 lastCapturedRunId: runId

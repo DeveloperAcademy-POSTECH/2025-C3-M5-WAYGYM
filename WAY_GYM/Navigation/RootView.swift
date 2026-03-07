@@ -26,9 +26,11 @@ struct RootView: View {
     }
 
     @State private var authListener: AuthStateDidChangeListenerHandle?
-    @State private var isBootstrapping: Bool = true
+    @State private var isBootstrapping: Bool = false
     @State private var bootProgress: Double = 0
     @State private var bootStatusText: String = "접속 준비 중..."
+    @State private var lastObservedUid: String?
+    @State private var hasBootstrappedForCurrentLogin: Bool = false
 
     var body: some View {
         ZStack {
@@ -91,32 +93,49 @@ struct RootView: View {
 
     @MainActor
     func decideEntryAfterAuth() async {
-        startBoot(message: "유저 접속 상태 확인 중...")
-        guard let uid = Auth.auth().currentUser?.uid else {
+        let currentUid = Auth.auth().currentUser?.uid
+        if currentUid != lastObservedUid {
+            lastObservedUid = currentUid
+            hasBootstrappedForCurrentLogin = false
+        }
+
+        guard let uid = currentUid else {
             runRecordStore.resetRunRecordStore()
             userStore.resetUserStore()
             friendStore.resetFriendStore()
             duoBattleStore.resetDuoBattleStore()
             if coordinator.root != .auth { coordinator.replaceRoot(.auth) }
-            await finishBoot(message: "로그인 화면으로 이동")
+            isBootstrapping = false
             return
         }
 
+        let shouldBootstrap = !hasBootstrappedForCurrentLogin
+        if shouldBootstrap {
+            startBoot(message: "유저 접속 상태 확인 중...")
+        }
+
         do {
-            updateBoot(progress: 0.1, message: "프로필 존재 여부 확인 중...")
+            if shouldBootstrap {
+                updateBoot(progress: 0.1, message: "프로필 존재 여부 확인 중...")
+            }
             let exists = try await userRepository.doesUserExist(uid: uid)
             let target: AppRouter = exists ? .main : .profileSetup
             if coordinator.root != target { coordinator.replaceRoot(target) }
 
-            if exists {
+            if exists, shouldBootstrap {
                 await hydrateStoresAfterLogin()
                 await finishBoot(message: "접속 준비 완료")
-            } else {
+                hasBootstrappedForCurrentLogin = true
+            } else if shouldBootstrap {
                 await finishBoot(message: "프로필 설정으로 이동")
+                hasBootstrappedForCurrentLogin = true
             }
         } catch {
             if coordinator.root != .profileSetup { coordinator.replaceRoot(.profileSetup) }
-            await finishBoot(message: "프로필 설정으로 이동")
+            if shouldBootstrap {
+                await finishBoot(message: "프로필 설정으로 이동")
+                hasBootstrappedForCurrentLogin = true
+            }
         }
     }
     
